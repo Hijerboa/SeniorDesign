@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+    - ./app/:/app/
+    command: ['python3', 'runner.py']
+    depends_on:
+      - db
+
+  mongo:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - 27017:27017
+    
+volumes:
+  mongo_data:
