@@ -62,7 +62,7 @@ class TwitterAPI:
     def search_tweets(self, query: str, next_token: str = None):
         args = {
             'query': query,
-            'tweet.fields': 'author_id,created_at',
+            'tweet.fields': 'author_id,created_at,lang,referenced_tweets,source,in_reply_to_user_id',
             'max_results': 100
         }
         if next_token is not None:

@@ -1,0 +1,30 @@
+import functools
+from db.database_connection import create_session
+from authorization.auth_utils import get_token, BadAuthTokenException, is_valid_user
+from util.make_error import make_error
+from server.tasks import tweet_puller
+
+from flask import (
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, jsonify
+)
+
+bp = Blueprint('endpoint', __name__, url_prefix='/')
+
+
+@bp.route('/', methods=(['GET']))
+def main_page():
+    session = create_session()
+    token = get_token(request)
+    if token is None:
+        return make_error(401, 1, "No access token provided", "Provide access token")
+    try:
+        user = is_valid_user(token, session)
+        query_param = request.args.get('query')
+        if query_param is None:
+            return make_error(405, 1, "No Query", "Add a query parameter")
+        tweet_puller.delay(query_param)
+        session.close()
+        return jsonify("Task created")
+    except BadAuthTokenException:
+        session.close()
+        return make_error(403, 1, "Unauthorized access token", "Contact AppSec")

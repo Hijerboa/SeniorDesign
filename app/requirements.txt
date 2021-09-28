@@ -1,7 +1,15 @@
 #app
+flask
 pydantic
-devtools
+gunicorn
+msgpack-python
+celery[redis]
 requests
 
 #db
-pymongo
+databases[postgresql]==0.4.2
+SQLAlchemy==1.4.22
+SQLAlchemy-serializer==1.4.1
+alembic==1.4.2
+PyMySQL==0.9.3
+mysqlclient

@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.3"
 services:
   app:
     build:
@@ -6,16 +6,71 @@ services:
       dockerfile: Dockerfile
     volumes:
     - ./app/:/app/
-    command: ['python3', 'runner.py']
+    - ../data/:/app/data
+    ports:
+      - 5000:5000
+    environment:
+      - SECRET_KEY=wowsuchsecret
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
+    command: ['gunicorn', 'server:create_app()', '-b', '0.0.0.0:5000', '--reload']
+    depends_on:
+      - db
+      - initializer
+
+  initializer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ['python3', 'initializer.py']
     depends_on:
       - db
 
-  mongo:
-    image: mongo:latest
+  db:
+    image: library/mysql:5.7.35
     volumes:
-      - mongo_data:/data/db
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      db_url: mysql://mysql:mysql@db:3306/mysql
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
+      MYSQL_DATABASE: mysql
     ports:
-      - 27017:27017
-    
+      - 3306:3306
+
+  redis:
+    image: redis:latest
+
+  rabbit:
+    image: rabbitmq:3.8
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=bigpassword
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1
+    volumes:
+    - ./app/:/app/
+    - ../data/:/app/data
+    environment:
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
+    depends_on:
+      - rabbit
+
+  nginx:
+    build:
+      context: .
+      dockerfile: app/nginx/Dockerfile.nginx
+    ports:
+      - 1337:80
+    depends_on:
+      - app
+
 volumes:
-  mongo_data:
+  mysql_data:

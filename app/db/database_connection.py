@@ -1,14 +1,21 @@
-from pymongo import MongoClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from db.models import Base
 from util.cred_handler import get_secret
 
+engine = None
 
-def get_connection():
-    """
-    Creates a database connection
-    :return: a db connection object
-    """
 
-    connection_string = 'mongodb://mongo:27017'
-    client = MongoClient(connection_string)
-    db = client[get_secret('mongo_database')]
-    return db
+def initialize():
+    engine = create_engine(get_secret('connection_string'))
+    Base.metadata.bind = engine
+
+
+def create_session():
+    """
+    Creates a session in the database for the program
+    :return: a session variable
+    """
+    DB_session = sessionmaker(bind=engine)
+    session = DB_session()
+    return session

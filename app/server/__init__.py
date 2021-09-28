@@ -1,7 +1,8 @@
 import logging
 
 from flask import Flask
-from app.util.cred_handler import get_secret
+from util.cred_handler import get_secret
+from db.database_connection import initialize
 
 
 def create_app(test_config=None):
@@ -17,6 +18,8 @@ def create_app(test_config=None):
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
+
+    initialize()
 
     app.logger.setLevel(logging.INFO)
     
