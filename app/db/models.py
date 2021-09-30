@@ -34,10 +34,12 @@ class Tweet(Base):
     text = Column(String(length=1024), nullable=False)
     source = Column(String(length=64), nullable=True)
     lang = Column(String(length=8), nullable=True)
-    retweet = Column(Boolean, default=False, nullable=False)
-    retweet_original_id = Column(String(length=32), nullable=True, default=None)
     reply = Column(Boolean, default=False, nullable=False)
     reply_to_id = Column(String(length=32), nullable=True, default=None)
+    retweets = Column(Integer, nullable=False)
+    likes = Column(Integer, nullable=False)
+    replies = Column(Integer, nullable=False)
+    quote_count = Column(Integer, nullable=False)
     search_phrases = relationship(SearchPhrase, secondary=tweet_to_search)
 
 

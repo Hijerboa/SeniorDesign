@@ -48,13 +48,11 @@ def tweet_puller(tweet_query: str):
             'text': tweet['text'],
             'source': tweet['source'],
             'lang': tweet['lang'],
+            'retweets': tweet['public_metrics']['retweet_count'],
+            'likes': tweet['public_metrics']['like_count'],
+            'replies': tweet['public_metrics']['reply_count'],
+            'quote_count': tweet['public_metrics']['quote_count']
         }
-        try:
-            if tweet['text'].startswith('RT'):
-                tweet_dict['retweet'] = True
-                tweet_dict['retweet_original_id'] = tweet['referenced_tweets'][0]['id']
-        except KeyError:
-            pass
         try:
             if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                 tweet_dict['reply'] = True
@@ -79,13 +77,11 @@ def tweet_puller(tweet_query: str):
                     'text': tweet['text'],
                     'source': tweet['source'],
                     'lang': tweet['lang'],
+                    'retweets': tweet['public_metrics']['retweet_count'],
+                    'likes': tweet['public_metrics']['like_count'],
+                    'replies': tweet['public_metrics']['reply_count'],
+                    'quote_count': tweet['public_metrics']['quote_count']
                 }
-                try:
-                    if tweet['text'].startswith('RT'):
-                        tweet_dict['retweet'] = True
-                        tweet_dict['retweet_original_id'] = tweet['referenced_tweets'][0]['id']
-                except KeyError:
-                    pass
                 try:
                     if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                         tweet_dict['reply'] = True

@@ -61,8 +61,8 @@ class TwitterAPI:
 
     def search_tweets(self, query: str, next_token: str = None):
         args = {
-            'query': query,
-            'tweet.fields': 'author_id,created_at,lang,referenced_tweets,source,in_reply_to_user_id',
+            'query': "{0} -is:retweet".format(query),
+            'tweet.fields': 'author_id,created_at,lang,referenced_tweets,source,in_reply_to_user_id,public_metrics',
             'max_results': 100
         }
         if next_token is not None:

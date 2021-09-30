@@ -26,10 +26,12 @@ def upgrade() -> None:
     sa.Column('text', sa.String(length=1024), nullable=False),
     sa.Column('source', sa.String(length=64), nullable=True),
     sa.Column('lang', sa.String(length=8), nullable=True),
-    sa.Column('retweet', sa.Boolean(), nullable=False),
-    sa.Column('retweet_original_id', sa.String(length=32), nullable=True),
     sa.Column('reply', sa.Boolean(), nullable=False),
     sa.Column('reply_to_id', sa.String(length=32), nullable=True),
+    sa.Column('retweets', sa.Integer(), nullable=False),
+    sa.Column('likes', sa.Integer(), nullable=False),
+    sa.Column('replies', sa.Integer(), nullable=False),
+    sa.Column('quote_count', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
     )
