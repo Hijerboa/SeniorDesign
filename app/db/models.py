@@ -43,6 +43,26 @@ class Tweet(Base):
     search_phrases = relationship(SearchPhrase, secondary=tweet_to_search)
 
 
+class TwitterUser(Base):
+    __tablename__ = 'twitter_users'
+
+    id = Column(String(length=32), unique=True, nullable=False, primary_key=True)
+    display_name = Column(String(length=128), nullable=False)
+    followers_count = Column(Integer(), nullable=False)
+    following_count = Column(Integer(), nullable=False)
+    tweet_count = Column(Integer(), nullable=False)
+    listed_count = Column(Integer(), nullable=False)
+    url = Column(String(length=256), nullable=True)
+    protected = Column(Boolean, nullable=False, default=False)
+    verified = Column(Boolean, nullable=False, default=False)
+    description = Column(String(length=1024), nullable=True)
+    inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
+    created_at = Column(DateTime, name='account_created', nullable=False)
+    profile_image_url = Column(String(length=256), nullable=True)
+    username = Column(String(length=128), nullable=False)
+    location = Column(String(length=128), nullable=False)
+
+
 class User(PrimaryKeyBase, Base):
     __tablename__ = 'users'
 

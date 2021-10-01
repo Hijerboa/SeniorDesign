@@ -10,7 +10,7 @@ from util.cred_handler import get_secret
 from apis.twitter_api import TwitterAPI
 from db.database_connection import initialize, create_session
 from db.db_utils import get_or_create
-from db.models import Tweet, SearchPhrase
+from db.models import Tweet, SearchPhrase, TwitterUser
 
 REDIS_URL = 'redis://redis:6379/0'
 BROKER_URL = 'amqp://{0}:{1}@rabbit//'.format(get_secret("RABBITMQ_USER"), get_secret("RABBITMQ_PASS"))
@@ -93,3 +93,25 @@ def tweet_puller(tweet_query: str):
         except KeyError:
             break
         session.commit()
+    session.close()
+
+
+@CELERY.task()
+def retrieve_user_info_by_id(user_id: int):
+    session = create_session()
+    twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
+    user_data = twitter_api.get_user_by_id(user_id)['data']['data']
+    print(user_data)
+    user_stats = user_data.pop('public_metrics')
+    user_data.pop('entities')
+    user_data['created_at'] = datetime.datetime.strptime(user_data['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    user_data['followers_count'] = user_stats['followers_count']
+    user_data['following_count'] = user_stats['following_count']
+    user_data['tweet_count'] = user_stats['tweet_count']
+    user_data['listed_count'] = user_stats['listed_count']
+    user_data['display_name'] = user_data['name']
+    user_data.pop('name')
+    user_object, created = get_or_create(session, TwitterUser, id=user_data['id'], defaults=user_data)
+    session.commit()
+    session.close()
+
