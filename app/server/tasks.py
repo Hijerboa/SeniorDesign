@@ -123,3 +123,31 @@ def retrieve_user_info_by_id(user_id: int):
     session.commit()
     session.close()
 
+
+@CELERY.task()
+def retrieve_users_info_by_ids(user_ids: str):
+    time.sleep(2)
+    session = create_session()
+    twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
+    user_response = twitter_api.get_users_by_ids(user_ids)['data']['data']
+    print(user_response)
+    for user_data in user_response:
+        user_stats = user_data.pop('public_metrics')
+        if 'entities' in user_data.keys():
+            user_data.pop('entities')
+        if 'pinned_tweet_id' in user_data.keys():
+            user_data.pop('pinned_tweet_id')
+        if 'includes' in user_data.keys():
+            user_data.pop('includes')
+        if 'errors' in user_data.keys():
+            user_data.pop('errors')
+        user_data['created_at'] = datetime.datetime.strptime(user_data['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        user_data['followers_count'] = user_stats['followers_count']
+        user_data['following_count'] = user_stats['following_count']
+        user_data['tweet_count'] = user_stats['tweet_count']
+        user_data['listed_count'] = user_stats['listed_count']
+        user_data['display_name'] = user_data['name']
+        user_data.pop('name')
+        user_object, created = get_or_create(session, TwitterUser, id=user_data['id'], defaults=user_data)
+        session.commit()
+    session.close()
