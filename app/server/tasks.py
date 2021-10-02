@@ -98,7 +98,7 @@ def tweet_puller(tweet_query: str):
 
 @CELERY.task()
 def retrieve_user_info_by_id(user_id: int):
-    sleep(2)
+    time.sleep(2)
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_data = twitter_api.get_user_by_id(user_id)['data']['data']
