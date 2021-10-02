@@ -28,7 +28,7 @@ def upgrade() -> None:
     sa.Column('account_created', sa.DateTime(), nullable=False),
     sa.Column('profile_image_url', sa.String(length=256), nullable=True),
     sa.Column('username', sa.String(length=128), nullable=False),
-    sa.Column('location', sa.String(length=128), nullable=False),
+    sa.Column('location', sa.String(length=128), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
     )

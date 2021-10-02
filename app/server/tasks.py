@@ -103,7 +103,8 @@ def retrieve_user_info_by_id(user_id: int):
     user_data = twitter_api.get_user_by_id(user_id)['data']['data']
     print(user_data)
     user_stats = user_data.pop('public_metrics')
-    user_data.pop('entities')
+    if 'entities' in user_data.keys():
+        user_data.pop('entities')
     user_data['created_at'] = datetime.datetime.strptime(user_data['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
     user_data['followers_count'] = user_stats['followers_count']
     user_data['following_count'] = user_stats['following_count']

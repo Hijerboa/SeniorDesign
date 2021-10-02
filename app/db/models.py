@@ -60,7 +60,7 @@ class TwitterUser(Base):
     created_at = Column(DateTime, name='account_created', nullable=False)
     profile_image_url = Column(String(length=256), nullable=True)
     username = Column(String(length=128), nullable=False)
-    location = Column(String(length=128), nullable=False)
+    location = Column(String(length=128), nullable=True)
 
 
 class User(PrimaryKeyBase, Base):
