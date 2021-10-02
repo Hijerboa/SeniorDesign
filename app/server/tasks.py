@@ -107,6 +107,10 @@ def retrieve_user_info_by_id(user_id: int):
         user_data.pop('entities')
     if 'pinned_tweet_id' in user_data.keys():
         user_data.pop('pinned_tweet_id')
+    if 'includes' in user_data.keys():
+        user_data.pop('includes')
+    if 'errors' in user_data.keys():
+        user_data.pop('errors')
     user_data['created_at'] = datetime.datetime.strptime(user_data['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
     user_data['followers_count'] = user_stats['followers_count']
     user_data['following_count'] = user_stats['following_count']
