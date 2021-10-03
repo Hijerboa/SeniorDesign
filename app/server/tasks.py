@@ -42,6 +42,7 @@ def tweet_puller(tweet_query: str):
     tweets = response['data']['data']
     tweet_list = []
     for tweet in tweets:
+        
         tweet_dict = {
             'author_id': tweet['author_id'],
             'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),

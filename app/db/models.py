@@ -63,6 +63,10 @@ class TwitterUser(Base):
     location = Column(String(length=128), nullable=True)
 
 
+class CongressMemberData(Base, PrimaryKeyBase):
+    __tablename__ = 'congress_member_data'
+
+
 class User(PrimaryKeyBase, Base):
     __tablename__ = 'users'
 
