@@ -2,6 +2,7 @@
 import time
 import random
 import datetime
+from kombu import Queue
 
 from celery import Celery, current_task
 from celery.exceptions import CeleryError
@@ -9,11 +10,26 @@ from celery.result import AsyncResult
 from util.cred_handler import get_secret
 from apis.twitter_api import TwitterAPI
 from db.database_connection import initialize, create_session
-from db.db_utils import get_or_create
+from db.db_utils import get_or_create, get_single_object
 from db.models import Tweet, SearchPhrase, TwitterUser
+from twitter_utils.user_gatherer import create_user_object
 
 REDIS_URL = 'redis://redis:6379/0'
 BROKER_URL = 'amqp://{0}:{1}@rabbit//'.format(get_secret("RABBITMQ_USER"), get_secret("RABBITMQ_PASS"))
+
+task_routes = {
+    'server.tasks.tweet_puller': {'queue': 'long_task'},
+    'server.tasks.retrieve_user_info_by_id': {'queue': 'short_task'},
+    'server.tasks.retrieve_users_info_by_ids': {'queue': 'long_task'}
+}
+
+
+def route_task(name, args, kwargs, options, task=None, **kw):
+    if name == 'server.tasks.tweet_puller':
+        return {'queue': 'long_task', 'routing_key': 'tweet.puller'}
+    elif name == 'server.tasks.retrieve_user_info_by_id':
+        return {'queue': 'short_task', 'routing_key': 'user.puller'}
+
 
 CELERY = Celery('tasks',
             backend=REDIS_URL,
@@ -21,8 +37,11 @@ CELERY = Celery('tasks',
 
 CELERY.conf.accept_content = ['json', 'msgpack']
 CELERY.conf.result_serializer = 'msgpack'
+CELERY.conf.task_routes = task_routes
+
 
 initialize()
+
 
 def get_job(job_id):
     '''
@@ -31,7 +50,7 @@ def get_job(job_id):
     return AsyncResult(job_id, app=CELERY)
 
 
-@CELERY.task()
+@CELERY.task
 def tweet_puller(tweet_query: str):
     print(tweet_query)
     session = create_session()
@@ -60,6 +79,9 @@ def tweet_puller(tweet_query: str):
                 tweet_dict['reply_to_id'] = tweet['referenced_tweets'][0]['id']
         except KeyError:
             pass
+        twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
+        if twitter_user is None:
+            retrieve_user_info_by_id.delay(tweet['author_id'])
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
         tweet_object.search_phrases.append(db_search_phrase)
         session.commit()
@@ -89,6 +111,9 @@ def tweet_puller(tweet_query: str):
                         tweet_dict['reply_to_id'] = tweet['referenced_tweets'][0]['id']
                 except KeyError:
                     pass
+                twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
+                if twitter_user is None:
+                    retrieve_user_info_by_id.delay(tweet['author_id'])
                 tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
                 tweet_object.search_phrases.append(db_search_phrase)
         except KeyError:
@@ -103,25 +128,7 @@ def retrieve_user_info_by_id(user_id: int):
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_data = twitter_api.get_user_by_id(user_id)['data']['data']
-    print(user_data)
-    user_stats = user_data.pop('public_metrics')
-    if 'entities' in user_data.keys():
-        user_data.pop('entities')
-    if 'pinned_tweet_id' in user_data.keys():
-        user_data.pop('pinned_tweet_id')
-    if 'includes' in user_data.keys():
-        user_data.pop('includes')
-    if 'errors' in user_data.keys():
-        user_data.pop('errors')
-    user_data['created_at'] = datetime.datetime.strptime(user_data['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
-    user_data['followers_count'] = user_stats['followers_count']
-    user_data['following_count'] = user_stats['following_count']
-    user_data['tweet_count'] = user_stats['tweet_count']
-    user_data['listed_count'] = user_stats['listed_count']
-    user_data['display_name'] = user_data['name']
-    user_data.pop('name')
-    user_object, created = get_or_create(session, TwitterUser, id=user_data['id'], defaults=user_data)
-    session.commit()
+    create_user_object(user_data, session)
     session.close()
 
 
@@ -131,24 +138,6 @@ def retrieve_users_info_by_ids(user_ids: str):
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_response = twitter_api.get_users_by_ids(user_ids)['data']['data']
-    print(user_response)
     for user_data in user_response:
-        user_stats = user_data.pop('public_metrics')
-        if 'entities' in user_data.keys():
-            user_data.pop('entities')
-        if 'pinned_tweet_id' in user_data.keys():
-            user_data.pop('pinned_tweet_id')
-        if 'includes' in user_data.keys():
-            user_data.pop('includes')
-        if 'errors' in user_data.keys():
-            user_data.pop('errors')
-        user_data['created_at'] = datetime.datetime.strptime(user_data['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        user_data['followers_count'] = user_stats['followers_count']
-        user_data['following_count'] = user_stats['following_count']
-        user_data['tweet_count'] = user_stats['tweet_count']
-        user_data['listed_count'] = user_stats['listed_count']
-        user_data['display_name'] = user_data['name']
-        user_data.pop('name')
-        user_object, created = get_or_create(session, TwitterUser, id=user_data['id'], defaults=user_data)
-        session.commit()
+        create_user_object(user_data, session)
     session.close()

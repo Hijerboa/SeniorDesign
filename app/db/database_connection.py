@@ -7,7 +7,10 @@ engine = None
 
 
 def initialize():
-    engine = create_engine(get_secret('connection_string'), pool_pre_ping=True)
+    engine_args = {
+        'pool_recycle': 3600
+    }
+    engine = create_engine(get_secret('connection_string'), pool_pre_ping=True, **engine_args)
     Base.metadata.bind = engine
 
 

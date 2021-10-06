@@ -5,6 +5,7 @@ gunicorn
 msgpack-python
 celery[redis]
 requests
+kombu
 
 #db
 databases[postgresql]==0.4.2
