@@ -6,9 +6,16 @@ from os import urandom
 from db.models import User
 from db.db_utils import get_single_object
 
+
 class BadAuthTokenException(Exception):
     """ Raised when an invalid authentication token is passed """
     pass
+
+
+role_to_permission = {
+    'user': ['self_profile'],
+    'admin': ['user_admin', 'twitter_tasks', 'pro_publica_tasks', 'self_profile']
+}
 
 
 def secure_string():
@@ -58,3 +65,11 @@ def get_token(request):
     if bearer is None:
         return None
     return bearer.split()[1]
+
+
+def does_user_have_permission(user: User, permission: str):
+    role = user.role
+    if permission in role_to_permission[role]:
+        return True
+    else:
+        return False

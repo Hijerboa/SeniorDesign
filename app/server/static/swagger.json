@@ -1,0 +1,186 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "description": "This is the API docs for the Senior Design Project",
+    "version": "1.0.0",
+    "title": "Senior Design API",
+    "contact": {
+      "email": "nick@nickcleary.tech"
+    }
+  },
+  "tags": [
+    {
+      "name": "User",
+      "description": "User administration operations"
+    },
+    {
+      "name": "Twitter",
+      "description": "Twitter task operations"
+    }
+  ],
+  "paths": {
+    "/user/me": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Return information about user",
+        "description": "Returns information about currently logged in user (can also be used to validate API key)",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/twitter/tweets/stream/search": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The query to search for in recent tweets"
+          }
+        ],
+        "tags": [
+          "Twitter"
+        ],
+        "summary": "Launch a search on the twitter API",
+        "description": "Launch a search on the twitter API with the specified query for the past week of tweets",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInitiated"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/twitter/users/lookup/single": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The user ID to look up on twitter"
+          }
+        ],
+        "tags": [
+          "Twitter"
+        ],
+        "summary": "Get information about a twitter user",
+        "description": "Gather user information about a twitter user and store it",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInitiated"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/twitter/users/lookup/multiple": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "user_ids",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma seperated list of user IDs to search"
+          }
+        ],
+        "tags": [
+          "Twitter"
+        ],
+        "summary": "Get information about twitter users",
+        "description": "Get information about up to 100 twitter users",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInitiated"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TaskInitiated": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "description": "The role the user is defined with"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  }
+}

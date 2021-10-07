@@ -6,6 +6,7 @@ msgpack-python
 celery[redis]
 requests
 kombu
+flask_swagger_ui
 
 #db
 databases[postgresql]==0.4.2

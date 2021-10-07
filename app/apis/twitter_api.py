@@ -71,12 +71,14 @@ class TwitterAPI:
 
     def get_user_by_id(self, user_id: int):
         args = {
-            'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld'
+            'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,'
+                           'protected,public_metrics,url,username,verified,withheld'
         }
         return self.request_get('users/{0}'.format(str(user_id)), args=args)
 
     def get_users_by_ids(self, user_ids: str):
         args = {
-            'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld'
+            'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,'
+                           'protected,public_metrics,url,username,verified,withheld'
         }
         return self.request_get('users?ids={0}'.format(user_ids), args=args)
