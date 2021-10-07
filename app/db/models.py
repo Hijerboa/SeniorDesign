@@ -71,21 +71,42 @@ class CongressMemberData(Base, PrimaryKeyBase):
     middle_name = Column(String(length=64), nullable=True)
     last_name = Column(String(length=64), nullable=False)
     suffix = Column(String(length=16), nullable=True, default=None)
-    date_of_birth = Column(Date)
-    gender = Column(String(length=2), nullable=False)
-    party = Column(String(length = 32), nullable=False)
+    date_of_birth = Column(String(length=32))
+    gender = Column(String(length=2), nullable=True)
+    party = Column(String(length = 32), nullable=True)
     twitter_account = Column(String(length=128), nullable=True)
     facebook_account = Column(String(length=128), nullable=True)
     youtube_account = Column(String(length=128), nullable=True)
-    govtrack_id  = Column(Integer(), nullable=False)
-    cspan_id = Column(Integer(), nullable=False)
-    votesmart_id = Column(Integer(), nullable=False)
-    icpsr_id = Column(Integer(), nullable=False)
+    govtrack_id  = Column(Integer(), nullable=True)
+    cspan_id = Column(Integer(), nullable=True)
+    votesmart_id = Column(Integer(), nullable=True)
+    icpsr_id = Column(Integer(), nullable=True)
     crp_id = Column(String(length=32))
     google_entity_id = Column(String(length=64))
-    fec_canidate_id = Column(String(length=32
-                                    ))
+    fec_canidate_id = Column(String(length=32))
+    inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
 
+
+class CongressMemberInstance(Base, PrimaryKeyBase):
+    __tablename__ = 'congress_member_instance'
+
+    congress_member_id = Column(Integer(), ForeignKey('congress_member_data.id'))
+    congress = Column(Integer(), nullable=False)
+    chamber = Column(String(length=16), nullable=False)
+    title = Column(String(length=64), nullable=True)
+    short_title = Column(String(length=16), nullable=True)
+    leadership_role = Column(String(length=64), nullable=True)
+    seniority = Column(String(length=8), nullable=True)
+    next_election = Column(String(length=8), nullable=True)
+    total_votes = Column(Integer())
+    missed_votes = Column(Integer())
+    total_present = Column(Integer())
+    senate_class = Column(String(length=16), nullable=True)
+    senate_rank = Column(String(length=16), nullable=True)
+    missed_votes_pct = Column(Float())
+    votes_with_party_pct = Column(Float())
+    votes_against_party_pct = Column(Float())
+    inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
 
 
 class User(PrimaryKeyBase, Base):
