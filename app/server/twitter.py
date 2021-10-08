@@ -1,7 +1,8 @@
 from db.database_connection import create_session
 from authorization.auth_utils import get_token, does_user_have_permission, secure_hash
 from util.make_error import make_error
-from server.tasks import tweet_puller, retrieve_user_info_by_id, retrieve_users_info_by_ids
+from server.tasks import tweet_puller, retrieve_user_info_by_id, retrieve_users_info_by_ids, \
+    retrieve_user_info_by_username
 from db.models import User
 from db.db_utils import get_single_object
 
@@ -30,7 +31,7 @@ def stream_search():
     return jsonify("Task created")
 
 
-@bp.route('/users/lookup/single', methods=(['GET']))
+@bp.route('/users/lookup/by_id/single', methods=(['GET']))
 def single_user_lookup():
     session = create_session()
     token = get_token(request)
@@ -48,7 +49,25 @@ def single_user_lookup():
     return jsonify("Task created")
 
 
-@bp.route('/users/lookup/multiple', methods=(['GET']))
+@bp.route('/users/lookup/by_username/single', methods=(['GET']))
+def single_user_lookup_username():
+    session = create_session()
+    token = get_token(request)
+    if token is None:
+        return make_error(401, 1, 'No access token provided', 'Provide access token')
+    user = get_single_object(session, User, key_hash=secure_hash(token))
+    if user is None or not does_user_have_permission(user, 'twitter_tasks'):
+        session.close()
+        return make_error(403, 1, 'Unauthorized access token', 'Contact Nick')
+    user_param = request.args.get('username')
+    if user_param is None:
+        return make_error(405, 1, "No user", "Add a user parameter")
+    retrieve_user_info_by_username.delay(user_param)
+    session.close()
+    return jsonify("Task created")
+
+
+@bp.route('/users/lookup/by_id/multiple', methods=(['GET']))
 def multiple_user_lookup():
     session = create_session()
     token = get_token(request)

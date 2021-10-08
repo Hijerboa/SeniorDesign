@@ -52,7 +52,7 @@ paths:
       security:
         - HTTPBearer: []
                 
-  /twitter/users/lookup/single:
+  /twitter/users/lookup/by_id/single:
     get:
       parameters:
         - in: query
@@ -76,7 +76,7 @@ paths:
       security:
         - HTTPBearer: []
                 
-  /twitter/users/lookup/multiple:
+  /twitter/users/lookup/by_id/multiple:
     get:
       parameters:
         - in: query
@@ -90,6 +90,30 @@ paths:
         - "Twitter"
       summary: Get information about twitter users
       description: Get information about up to 100 twitter users
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskInitiated"
+      security:
+        - HTTPBearer: []
+        
+  /twitter/users/lookup/by_username/single:
+    get:
+      parameters:
+        - in: query
+          name: username
+          required: true
+          schema:
+            type: "string"
+          description: The username to look up on twitter
+          
+      tags:
+        - "Twitter"
+      summary: Get information about a twitter user
+      description: Gather user information about a twitter user and store it
       responses:
         '200':
           description: Successful response

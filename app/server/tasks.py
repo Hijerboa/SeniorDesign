@@ -20,6 +20,7 @@ BROKER_URL = 'amqp://{0}:{1}@rabbit//'.format(get_secret("RABBITMQ_USER"), get_s
 task_routes = {
     'server.tasks.tweet_puller': {'queue': 'long_task'},
     'server.tasks.retrieve_user_info_by_id': {'queue': 'short_task'},
+    'server.tasks.retrieve_user_info_by_username': {'queue': 'short_task'},
     'server.tasks.retrieve_users_info_by_ids': {'queue': 'long_task'}
 }
 
@@ -140,4 +141,14 @@ def retrieve_users_info_by_ids(user_ids: str):
     user_response = twitter_api.get_users_by_ids(user_ids)['data']['data']
     for user_data in user_response:
         create_user_object(user_data, session)
+    session.close()
+
+
+@CELERY.task()
+def retrieve_user_info_by_username(username: str):
+    time.sleep(2)
+    session = create_session()
+    twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
+    user_data = twitter_api.get_user_by_username(username)['data']['data']
+    create_user_object(user_data, session)
     session.close()

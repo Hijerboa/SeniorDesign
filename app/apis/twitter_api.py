@@ -82,3 +82,10 @@ class TwitterAPI:
                            'protected,public_metrics,url,username,verified,withheld'
         }
         return self.request_get('users?ids={0}'.format(user_ids), args=args)
+
+    def get_user_by_username(self, username: str):
+        args = {
+            'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,'
+                           'protected,public_metrics,url,username,verified,withheld'
+        }
+        return self.request_get('users/by/username/{0}'.format(str(username)), args=args)
