@@ -49,6 +49,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TaskInitiated"
+      security:
+        - HTTPBearer: []
                 
   /twitter/users/lookup/single:
     get:
@@ -71,6 +73,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TaskInitiated"
+      security:
+        - HTTPBearer: []
                 
   /twitter/users/lookup/multiple:
     get:
@@ -93,6 +97,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TaskInitiated"
+      security:
+        - HTTPBearer: []
     
 components:
   schemas:

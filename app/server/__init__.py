@@ -31,7 +31,7 @@ def create_app(test_config=None):
         SWAGGER_URL,
         API_URL,
         config={
-            'app_name': 'CSP Auditing'
+            'app_name': 'Senior Design'
         }
     )
 
