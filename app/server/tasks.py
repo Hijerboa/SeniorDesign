@@ -21,7 +21,7 @@ task_routes = {
     'server.tasks.tweet_puller': {'queue': 'long_task'},
     'server.tasks.retrieve_user_info_by_id': {'queue': 'short_task'},
     'server.tasks.retrieve_user_info_by_username': {'queue': 'short_task'},
-    'server.tasks.retrieve_users_info_by_ids': {'queue': 'long_task'}
+    'server.tasks.retrieve_users_info_by_ids': {'queue': 'short_task'}
 }
 
 
@@ -61,6 +61,7 @@ def tweet_puller(tweet_query: str):
     db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
     tweets = response['data']['data']
     tweet_list = []
+    twitter_users = []
     for tweet in tweets:
 
         tweet_dict = {
@@ -82,7 +83,11 @@ def tweet_puller(tweet_query: str):
             pass
         twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
         if twitter_user is None:
-            retrieve_user_info_by_id.delay(tweet['author_id'])
+            twitter_users.append(str(tweet['author_id']))
+            if len(twitter_users) == 100:
+                string = ','.join(twitter_users)
+                retrieve_users_info_by_ids.delay(string)
+                twitter_users = []
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
         tweet_object.search_phrases.append(db_search_phrase)
         session.commit()
@@ -114,12 +119,18 @@ def tweet_puller(tweet_query: str):
                     pass
                 twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
                 if twitter_user is None:
-                    retrieve_user_info_by_id.delay(tweet['author_id'])
+                    twitter_users.append(str(tweet['author_id']))
+                    if len(twitter_users) == 100:
+                        string = ','.join(twitter_users)
+                        retrieve_users_info_by_ids.delay(string)
+                        twitter_users = []
                 tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
                 tweet_object.search_phrases.append(db_search_phrase)
         except KeyError:
             break
         session.commit()
+    string = ','.join(twitter_users)
+    retrieve_users_info_by_ids.delay(string)
     session.close()
 
 

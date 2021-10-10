@@ -1,4 +1,5 @@
 import requests
+import time
 
 """
 Basic API client for the Twitter API with a response handler and convenience methods
@@ -67,7 +68,12 @@ class TwitterAPI:
         }
         if next_token is not None:
             args['next_token'] = next_token
-        return self.request_get('tweets/search/recent', args=args)
+        try:
+            response = self.request_get('tweets/search/recent', args=args)
+            return response
+        except:
+            time.sleep(5)
+            return self.search_tweets(query, next_token=next_token)
 
     def get_user_by_id(self, user_id: int):
         args = {

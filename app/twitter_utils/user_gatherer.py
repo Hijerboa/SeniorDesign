@@ -19,6 +19,8 @@ def create_user_object(user_info: dict, session):
     if 'errors' in user_info.keys():
         user_info.pop('errors')
         raise InvalidTwitterUser
+    if 'withheld' in user_info.keys():
+        user_info.pop('withheld')
     user_info['created_at'] = datetime.datetime.strptime(user_info['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
     user_info['followers_count'] = user_stats['followers_count']
     user_info['following_count'] = user_stats['following_count']
