@@ -35,10 +35,11 @@ def do_things():
         if user_id not in author_ids_detailed:
             author_ids_not_detailed.append(user_id)
     print(len(author_ids_not_detailed))
-    """arrays = divide_chunks(author_ids_not_detailed, 100)
+    arrays = divide_chunks(author_ids_not_detailed, 100)
     for array in arrays:
         string = ','.join(array)
-        print(string)
-        requests.get("http://bunny.nicleary.com:5000/multiple_user_lookup?users={0}".format(str(string)), headers={
+        #print(string)
+        response = requests.get("http://bunny.nicleary.com:5000/twitter/users/lookup/by_id/multiple?users={0}".format(str(string)), headers={
             'Authorization': 'Bearer {0}'.format(get_secret("bunny_server_api_key"))
-        })"""
+        })
+        print(response)

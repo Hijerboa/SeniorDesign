@@ -93,7 +93,7 @@ def tweet_puller(tweet_query: str):
         session.commit()
 
     for i in range(50000):
-        time.sleep(2)
+        time.sleep(2.7)
         try:
             next_token = response['data']['meta']['next_token']
             response = twitter_api.search_tweets(tweet_query, next_token=next_token)
@@ -136,7 +136,7 @@ def tweet_puller(tweet_query: str):
 
 @CELERY.task()
 def retrieve_user_info_by_id(user_id: int):
-    time.sleep(2)
+    time.sleep(3)
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_data = twitter_api.get_user_by_id(user_id)['data']['data']
@@ -146,7 +146,7 @@ def retrieve_user_info_by_id(user_id: int):
 
 @CELERY.task()
 def retrieve_users_info_by_ids(user_ids: str):
-    time.sleep(2)
+    time.sleep(2.5)
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_response = twitter_api.get_users_by_ids(user_ids)['data']['data']
@@ -157,7 +157,7 @@ def retrieve_users_info_by_ids(user_ids: str):
 
 @CELERY.task()
 def retrieve_user_info_by_username(username: str):
-    time.sleep(2)
+    time.sleep(3)
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_data = twitter_api.get_user_by_username(username)['data']['data']

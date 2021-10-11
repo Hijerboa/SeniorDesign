@@ -12,8 +12,8 @@ get_tweets('biden high crimes')
 get_tweets('impeach joe biden')
 get_tweets('criminal biden')"""
 
-#from scripts.twitter_user_delete_old_user import do_things
-#do_things()
+from scripts.congress_twitter_gatherer import do_things
+do_things()
 
-from scripts.congress_info_puller import get_congress_members
-get_congress_members()
+#from scripts.congress_info_puller import get_congress_members
+#get_congress_members()
