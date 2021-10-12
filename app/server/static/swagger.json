@@ -16,6 +16,10 @@
     {
       "name": "Twitter",
       "description": "Twitter task operations"
+    },
+    {
+      "name": "Propublica",
+      "description": "Propublica API Tasks"
     }
   ],
   "paths": {
@@ -174,6 +178,54 @@
         ],
         "summary": "Get information about a twitter user",
         "description": "Gather user information about a twitter user and store it",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInitiated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/propublica/bills/{congress}/{chamber}": {
+      "get": {
+        "tags": [
+          "Propublica"
+        ],
+        "summary": "Get bills from propublica",
+        "description": "Launches async task to retrieve bills from specified congress and chamber",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "congress",
+              "type": "integer"
+            },
+            "name": "congress",
+            "in": "path",
+            "description": "Between 109 and 117"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "chamber",
+              "type": "string"
+            },
+            "name": "chamber",
+            "in": "path",
+            "description": "senate or house"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",

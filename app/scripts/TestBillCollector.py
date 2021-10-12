@@ -9,7 +9,7 @@ def do_things():
     session = create_session()
     current_offset = 0
     pro_publica_api: ProPublicaAPI = ProPublicaAPI(get_secret('pro_publica_url'), get_secret('pro_publica_api_key'))
-    results = pro_publica_api.get_recent_bills(117, 'senate', 20)['data']['results'][0]['bills']
+    results = pro_publica_api.get_recent_bills(117, 'senate', 40)['data']['results'][0]['bills']
     for bill in results:
         co_sponsor_parties = bill['cosponsors_by_party']
         committee_codes = bill['committee_codes']
@@ -27,11 +27,11 @@ def do_things():
         for committee_code in committee_codes:
             committee_object, created = get_or_create(session, CommitteeCodes, committee_code=committee_code)
             session.commit()
-            object.committee_codes.add(committee_object)
+            object.committee_codes.append(committee_object)
         for subcommittee_code in subcommittee_codes:
             subcommittee_object, created = get_or_create(session, SubcommitteeCodes, subcommittee_code=subcommittee_code)
             session.commit()
-            object.sub_committee_codes.add(subcommittee_object)
+            object.sub_committee_codes.append(subcommittee_object)
         session.commit()
 
 

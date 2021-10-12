@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Float, UniqueConstraint, LargeBinary, \
-    Table, DateTime, Date
+    Table, DateTime, Date, Text
 from sqlalchemy.orm import relationship
 import datetime
 
@@ -174,8 +174,8 @@ class Bill(Base):
     rep_cosponsors = Column(Integer())
     committees = Column(String(length=128))
     primary_subject = Column(String(length=1024))
-    summary = Column(String(length=4096))
-    summary_short = Column(String(length=2048))
+    summary = Column(Text(16000000))
+    summary_short = Column(String(length=4096))
     latest_major_action_date = Column(String(length=32))
     latest_major_action = Column(String(length=2048))
     committee_codes = relationship(CommitteeCodes, secondary=bill_to_committee_code)

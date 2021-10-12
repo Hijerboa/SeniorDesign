@@ -62,7 +62,7 @@ def get_congress_members():
     initialize()
     session = create_session()
     propublica_api: ProPublicaAPI = ProPublicaAPI(get_secret("pro_publica_url"), get_secret("pro_publica_api_key"))
-    for i in range(80, 118):
+    for i in range(117, 118):
         congress_members = propublica_api.get_congress_members(i, 'senate')['data']['results'][0]['members']
         for member in congress_members:
             store_member(member, session, i, 'senate')

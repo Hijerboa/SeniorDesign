@@ -17,3 +17,6 @@ do_things()
 
 #from scripts.congress_info_puller import get_congress_members
 #get_congress_members()
+
+#from scripts.congress_info_puller import get_congress_members
+#get_congress_members()
