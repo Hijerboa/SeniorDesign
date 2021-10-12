@@ -17,6 +17,25 @@ tweet_to_search = Table(
     Column('phrase_id', ForeignKey('search_phrases.id'))
 )
 
+bill_to_committee_code = Table(
+    'bill_to_committee_code', Base.metadata,
+    Column('bill_id', ForeignKey('bills.bill_id')),
+    Column('committee_code', ForeignKey('committee_codes.id'))
+)
+
+bill_to_subcommittee_code = Table(
+    'bill_to_subcommittee_code', Base.metadata,
+    Column('bill_id', ForeignKey('bills.bill_id')),
+    Column('subcommittee_code', ForeignKey('subcommittee_codes.id'))
+)
+
+bill_to_subject = Table(
+    'bill_to_subject', Base.metadata,
+    Column('bill_id', ForeignKey('bills.bill_id')),
+    Column('subject', ForeignKey('bill_subjects.id'))
+)
+
+
 class SearchPhrase(PrimaryKeyBase, Base):
     __tablename__ = 'search_phrases'
 
@@ -106,6 +125,61 @@ class CongressMemberInstance(Base, PrimaryKeyBase):
     missed_votes_pct = Column(Float())
     votes_with_party_pct = Column(Float())
     votes_against_party_pct = Column(Float())
+    inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
+
+
+class CommitteeCodes(PrimaryKeyBase, Base):
+    __tablename__ = 'committee_codes'
+
+    committee_code = Column(String(length=32))
+
+
+class SubcommitteeCodes(PrimaryKeyBase, Base):
+    __tablename__ = 'subcommittee_codes'
+
+    subcommittee_code = Column(String(length=32))
+
+
+class BillSubject(PrimaryKeyBase, Base):
+    __tablename__ = 'bill_subjects'
+
+    name = Column(String(length=128))
+    url_name = Column(String(length=128))
+
+
+class Bill(Base):
+    __tablename__ = 'bills'
+
+    bill_id = Column(String(length=16), unique=True, primary_key=True, nullable=False)
+    congress = Column(Integer(), nullable=False)
+    bill_slug = Column(String(length=16), nullable=False)
+    bill_type = Column(String(length=8), nullable=False)
+    number = Column(String(length=16), nullable=False)
+    title = Column(String(length=2048))
+    short_title = Column(String(length=1024))
+    sponsor_id = Column(String(length=16), ForeignKey('congress_member_data.propublica_id'))
+    gpo_pdf_url = Column(String(length=1024))
+    congressdotgov_ur = Column(String(length=1024))
+    govtrack_uri = Column(String(length=1024))
+    introducted_date = Column(String(length=32))
+    active = Column(Boolean())
+    last_vote = Column(String(length=32))
+    house_passage = Column(String(length=32))
+    senate_passage = Column(String(length=32))
+    enacted = Column(String(length=32))
+    vetoed = Column(String(length=32))
+    cosponsors = Column(Integer())
+    dem_cosponsors = Column(Integer())
+    rep_cosponsors = Column(Integer())
+    committees = Column(Integer())
+    primary_subject = Column(String(length=1024))
+    summary = Column(String(length=4096))
+    short_summary = Column(String(length=2048))
+    latest_major_action_date = Column(String(length=32))
+    latest_major_action = Column(String(length=2048))
+    committee_codes = relationship(CommitteeCodes, secondary=bill_to_committee_code)
+    sub_committee_codes = relationship(SubcommitteeCodes, secondary=bill_to_subcommittee_code)
+    subjects = relationship(BillSubject, secondary=bill_to_subject)
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
 
 

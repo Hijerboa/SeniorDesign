@@ -61,3 +61,9 @@ class ProPublicaAPI:
 
     def get_congress_members(self, congress_number: int, chamber: str):
         return self.request_get('{0}/{1}/members.json'.format(str(congress_number), chamber))
+
+    def get_recent_bills(self, congress_number: int, chamber: str, offset: int):
+        args = {
+            'offset': str(offset)
+        }
+        return self.request_get('{0}/{1}/bills/introduced.json'.format(str(congress_number), chamber), args=args)
