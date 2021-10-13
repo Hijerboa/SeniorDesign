@@ -157,7 +157,7 @@ class Bill(Base):
     number = Column(String(length=16), nullable=False)
     title = Column(String(length=2048))
     short_title = Column(String(length=1024))
-    sponsor_id = Column(String(length=16), ForeignKey('congress_member_data.propublica_id'))
+    sponsor_id = Column(String(length=16))
     sponsor_party = Column(String(length=16))
     gpo_pdf_uri = Column(String(length=1024))
     congressdotgov_url = Column(String(length=1024))
