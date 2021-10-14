@@ -37,6 +37,8 @@ services:
       MYSQL_USER: mysql
       MYSQL_PASSWORD: mysql
       MYSQL_DATABASE: mysql
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
     ports:
       - 3306:3306
 
