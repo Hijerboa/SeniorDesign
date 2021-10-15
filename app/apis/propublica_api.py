@@ -29,7 +29,7 @@ def handle_propublica_response(response: requests.Response, raw_out: bool, ignor
 
     if raw_out:
         return response
-    if not response.status_code == 504 and not ignore_errors:
+    if response.status_code == 504 and not ignore_errors:
         raise PropublicaAPITimeoutError
     if not response.ok and not ignore_errors:
         raise PropublicaAPIError(response.status_code, data)
