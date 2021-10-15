@@ -10,6 +10,9 @@ class PropublicaAPIError(Exception):
     """API returned an unsuccessful status code"""
     pass
 
+class PropublicaAPITimeoutError(Exception):
+    """API took too long to respond"""
+    pass
 
 def handle_propublica_response(response: requests.Response, raw_out: bool, ignore_errors=False):
     """
@@ -26,6 +29,8 @@ def handle_propublica_response(response: requests.Response, raw_out: bool, ignor
 
     if raw_out:
         return response
+    if not response.status_code == 504 and not ignore errors:
+
     if not response.ok and not ignore_errors:
         raise PropublicaAPIError(response.status_code, data)
     return {'status': response.status_code, 'data': data}
@@ -61,13 +66,13 @@ class ProPublicaAPI:
         return handle_propublica_response(response, raw_out, ignore_errors)
 
     @backoff.on_exception(backoff.expo,
-                          requests.exceptions.RequestException,
+                          (requests.exceptions.RequestException, PropublicaAPITimeoutError),
                           max_tries=10)
     def get_congress_members(self, congress_number: int, chamber: str):
         return self.request_get('{0}/{1}/members.json'.format(str(congress_number), chamber))
 
     @backoff.on_exception(backoff.expo,
-                          requests.exceptions.RequestException,
+                          (requests.exceptions.RequestException, PropublicaAPITimeoutError),
                           max_tries=10)
     def get_recent_bills(self, congress_number: int, chamber: str, offset: int):
         args = {
