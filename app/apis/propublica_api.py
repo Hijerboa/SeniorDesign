@@ -1,4 +1,5 @@
 import requests
+import backoff
 
 """
 Basic API client for the Propublica API with a response handler and convenience methods
@@ -59,9 +60,15 @@ class ProPublicaAPI:
         response = requests.get(url, params=args, headers=self.api_headers)
         return handle_propublica_response(response, raw_out, ignore_errors)
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=10)
     def get_congress_members(self, congress_number: int, chamber: str):
         return self.request_get('{0}/{1}/members.json'.format(str(congress_number), chamber))
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=10)
     def get_recent_bills(self, congress_number: int, chamber: str, offset: int):
         args = {
             'offset': str(offset)

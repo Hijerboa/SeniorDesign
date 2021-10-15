@@ -1,5 +1,6 @@
 import requests
 import time
+import backoff
 
 """
 Basic API client for the Twitter API with a response handler and convenience methods
@@ -60,6 +61,9 @@ class TwitterAPI:
         response = requests.get(url, params=args, headers=self.api_headers)
         return handle_twitter_response(response, raw_out, ignore_errors)
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=10)
     def search_tweets(self, query: str, next_token: str = None):
         args = {
             'query': "{0} -is:retweet".format(query),
@@ -75,6 +79,9 @@ class TwitterAPI:
             time.sleep(5)
             return self.search_tweets(query, next_token=next_token)
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=10)
     def get_user_by_id(self, user_id: int):
         args = {
             'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,'
@@ -82,6 +89,9 @@ class TwitterAPI:
         }
         return self.request_get('users/{0}'.format(str(user_id)), args=args)
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=10)
     def get_users_by_ids(self, user_ids: str):
         args = {
             'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,'
@@ -89,6 +99,9 @@ class TwitterAPI:
         }
         return self.request_get('users?ids={0}'.format(user_ids), args=args)
 
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=10)
     def get_user_by_username(self, username: str):
         args = {
             'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,'
