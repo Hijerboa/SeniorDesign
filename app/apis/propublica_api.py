@@ -30,7 +30,7 @@ def handle_propublica_response(response: requests.Response, raw_out: bool, ignor
     if raw_out:
         return response
     if not response.status_code == 504 and not ignore_errors:
-
+        raise PropublicaAPITimeoutError
     if not response.ok and not ignore_errors:
         raise PropublicaAPIError(response.status_code, data)
     return {'status': response.status_code, 'data': data}
@@ -72,7 +72,7 @@ class ProPublicaAPI:
         return self.request_get('{0}/{1}/members.json'.format(str(congress_number), chamber))
 
     @backoff.on_exception(backoff.expo,
-                          (requests.exceptions.RequestException, PropublicaAPITimeoutError),
+                          (requests.exceptions.RequestException, PropublicaAPIError),
                           max_tries=10)
     def get_recent_bills(self, congress_number: int, chamber: str, offset: int):
         args = {
