@@ -23,7 +23,8 @@ task_routes = {
     'server.tasks.retrieve_user_info_by_id': {'queue': 'short_task'},
     'server.tasks.retrieve_user_info_by_username': {'queue': 'short_task'},
     'server.tasks.retrieve_users_info_by_ids': {'queue': 'short_task'},
-    'server.tasks.get_bill_data_by_congress': {'queue': 'long_task'}
+    'server.tasks.get_bill_data_by_congress': {'queue': 'long_task'},
+    'server.tasks.add': {'queue': 'short_task'}
 }
 
 
@@ -54,7 +55,7 @@ def get_job(job_id):
 
 
 @CELERY.task
-def tweet_puller(tweet_query: str):
+def tweet_puller(tweet_query: str, useless):
     print(tweet_query)
     session = create_session()
     twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
@@ -131,13 +132,15 @@ def tweet_puller(tweet_query: str):
         except KeyError:
             break
         session.commit()
-    string = ','.join(twitter_users)
-    retrieve_users_info_by_ids.delay(string)
+    if not len(twitter_users) == 0:
+        string = ','.join(twitter_users)
+        retrieve_users_info_by_ids.delay(string)
     session.close()
+    return "Hello there"
 
 
 @CELERY.task()
-def retrieve_user_info_by_id(user_id: int):
+def retrieve_user_info_by_id(user_id: int, useless):
     time.sleep(3)
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
@@ -147,7 +150,7 @@ def retrieve_user_info_by_id(user_id: int):
 
 
 @CELERY.task()
-def retrieve_users_info_by_ids(user_ids: str):
+def retrieve_users_info_by_ids(user_ids: str, useless):
     time.sleep(2.5)
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
@@ -158,7 +161,7 @@ def retrieve_users_info_by_ids(user_ids: str):
 
 
 @CELERY.task()
-def retrieve_user_info_by_username(username: str):
+def retrieve_user_info_by_username(username: str, useless):
     time.sleep(3)
     session = create_session()
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
@@ -168,7 +171,7 @@ def retrieve_user_info_by_username(username: str):
 
 
 @CELERY.task()
-def get_bill_data_by_congress(congress_id: int, congress_chamber: str):
+def get_bill_data_by_congress(congress_id: int, congress_chamber: str, useless):
     initialize()
     session = create_session()
     current_offset = 0

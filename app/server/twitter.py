@@ -2,13 +2,15 @@ from db.database_connection import create_session
 from authorization.auth_utils import get_token, does_user_have_permission, secure_hash
 from util.make_error import make_error
 from server.tasks import tweet_puller, retrieve_user_info_by_id, retrieve_users_info_by_ids, \
-    retrieve_user_info_by_username
+    retrieve_user_info_by_username, get_job
 from db.models import User
 from db.db_utils import get_single_object
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, jsonify
 )
+from celery import uuid
+import time
 
 bp = Blueprint('twitter', __name__)
 
@@ -26,7 +28,8 @@ def stream_search():
     query_param = request.args.get('query')
     if query_param is None:
         return make_error(405, 1, "No Query", "Add a query parameter")
-    tweet_puller.delay(query_param)
+    task_id = uuid()
+    tweet_puller.apply_async((query_param, 0), task_id=task_id)
     session.close()
     return jsonify("Task created")
 

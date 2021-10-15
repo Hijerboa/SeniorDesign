@@ -184,6 +184,15 @@ class Bill(Base):
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
 
 
+class Task(PrimaryKeyBase, Base):
+    __tablename__ = 'tasks'
+
+    task_id = Column(String(length=64), nullable=False)
+    user_id = Column(Integer(), ForeignKey('users.id'))
+    launched_by = relationship('User', back_populates='tasks')
+    status = Column(String(length=16))
+    message = Column(String(length=512))
+
 class User(PrimaryKeyBase, Base):
     __tablename__ = 'users'
 
@@ -193,3 +202,4 @@ class User(PrimaryKeyBase, Base):
     creation = Column(DateTime, name='creation_time', default=datetime.datetime.utcnow(), nullable=False)
     updated = Column(DateTime, name='updated_time', default=datetime.datetime.utcnow(), nullable=False)
     role = Column(String(length=32), name='role', nullable=False)
+    tasks = relationship('Task', back_populates='launched_by')
