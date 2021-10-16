@@ -11,6 +11,8 @@ from flask import (
 
 bp = Blueprint('propublica', __name__)
 
+from celery import uuid
+
 
 @bp.route('/bills/<congress>/<chamber>', methods=(['GET']))
 def get_bills_by_congress(congress, chamber):
@@ -28,6 +30,7 @@ def get_bills_by_congress(congress, chamber):
     if not int(congress) >= 109:
         session.close()
         return make_error(405, 2, 'Congress is must be >= 109', 'Specify congress >= 109')
-    get_bill_data_by_congress.delay(int(congress), chamber)
+    task_id = uuid()
+    get_bill_data_by_congress.apply_async((int(congress), chamber, 0), task_id=0)
     session.close()
     return jsonify("Task created")

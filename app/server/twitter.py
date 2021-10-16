@@ -47,7 +47,8 @@ def single_user_lookup():
     user_param = request.args.get('user')
     if user_param is None:
         return make_error(405, 1, "No user", "Add a user parameter")
-    retrieve_user_info_by_id.delay(user_param)
+    task_id = uuid()
+    retrieve_user_info_by_id.apply_async((user_param, 0), task_id=task_id)
     session.close()
     return jsonify("Task created")
 
@@ -65,7 +66,8 @@ def single_user_lookup_username():
     user_param = request.args.get('username')
     if user_param is None:
         return make_error(405, 1, "No user", "Add a user parameter")
-    retrieve_user_info_by_username.delay(user_param)
+    task_id = uuid()
+    retrieve_user_info_by_username.apply_async((user_param, 0), task_id=task_id)
     session.close()
     return jsonify("Task created")
 
@@ -83,6 +85,7 @@ def multiple_user_lookup():
     users_param = request.args.get('users')
     if users_param is None:
         return make_error(405, 1, "No user", "Add a user parameter")
-    retrieve_users_info_by_ids.delay(users_param)
+    task_id = uuid()
+    retrieve_users_info_by_ids.apply_async((users_param, 0), task_id=task_id)
     session.close()
     return jsonify("Task created")

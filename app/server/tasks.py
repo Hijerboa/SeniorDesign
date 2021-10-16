@@ -54,6 +54,9 @@ def get_job(job_id):
     return AsyncResult(job_id, app=CELERY)
 
 
+# Each of these tasks has a parameter named "useless". Don't touch it. It is used in order to make the apply async method work from celery. Without it, things get messy. No touchie.
+
+
 @CELERY.task
 def tweet_puller(tweet_query: str, useless):
     print(tweet_query)
