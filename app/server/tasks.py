@@ -4,15 +4,15 @@ import random
 import datetime
 from kombu import Queue
 
-from celery import Celery, current_task
+from celery import Celery, current_task, uuid
 from celery.exceptions import CeleryError
 from celery.result import AsyncResult
 from util.cred_handler import get_secret
 from apis.twitter_api import TwitterAPI
 from apis.propublica_api import ProPublicaAPI
 from db.database_connection import initialize, create_session
-from db.db_utils import get_or_create, get_single_object
-from db.models import Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes
+from db.db_utils import get_or_create, get_single_object, create_single_object
+from db.models import Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, User
 from twitter_utils.user_gatherer import create_user_object
 
 REDIS_URL = 'redis://redis:6379/0'
@@ -42,6 +42,7 @@ CELERY = Celery('tasks',
 CELERY.conf.accept_content = ['json', 'msgpack']
 CELERY.conf.result_serializer = 'msgpack'
 CELERY.conf.task_routes = task_routes
+CELERY.conf.task_track_started = True
 
 
 initialize()
@@ -59,10 +60,10 @@ def get_job(job_id):
 
 @CELERY.task
 def tweet_puller(tweet_query: str, useless):
-    print(tweet_query)
     session = create_session()
+    task_object: Task = get_single_object(session, Task, task_id=current_task.request.id)
+    user_object = get_single_object(session, User, id=task_object.user_id)
     twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
-
     response = twitter_api.search_tweets(tweet_query)
     db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
     tweets = response['data']['data']
@@ -92,8 +93,16 @@ def tweet_puller(tweet_query: str, useless):
             twitter_users.append(str(tweet['author_id']))
             if len(twitter_users) == 100:
                 string = ','.join(twitter_users)
-                retrieve_users_info_by_ids.delay(string)
+                task_id = uuid()
+                retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
                 twitter_users = []
+                created = create_single_object(session, Task, task_id=task_id, defaults={
+                    'user_id': user_object.id,
+                    'task_type': 'users.by_id.multiple',
+                    'status': 'PENDING',
+                    'message': 'Task has been queued'
+                })
+                user_object.tasks.append(created)
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
         tweet_object.search_phrases.append(db_search_phrase)
         session.commit()
@@ -128,8 +137,16 @@ def tweet_puller(tweet_query: str, useless):
                     twitter_users.append(str(tweet['author_id']))
                     if len(twitter_users) == 100:
                         string = ','.join(twitter_users)
-                        retrieve_users_info_by_ids.delay(string)
+                        task_id = uuid()
+                        retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
                         twitter_users = []
+                        created = create_single_object(session, Task, task_id=task_id, defaults={
+                            'user_id': user_object.id,
+                            'task_type': 'users.by_id.multiple',
+                            'status': 'PENDING',
+                            'message': 'Task has been queued'
+                        })
+                        user_object.tasks.append(created)
                 tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
                 tweet_object.search_phrases.append(db_search_phrase)
         except KeyError:
@@ -137,7 +154,15 @@ def tweet_puller(tweet_query: str, useless):
         session.commit()
     if not len(twitter_users) == 0:
         string = ','.join(twitter_users)
-        retrieve_users_info_by_ids.delay(string)
+        task_id = uuid()
+        retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
+        created = create_single_object(session, Task, task_id=task_id, defaults={
+            'user_id': user_object.id,
+            'task_type': 'users.by_id.multiple',
+            'status': 'PENDING',
+            'message': 'Task has been queued'
+        })
+        user_object.tasks.append(created)
     session.close()
     return "Hello there"
 

@@ -3,8 +3,8 @@ from authorization.auth_utils import get_token, does_user_have_permission, secur
 from util.make_error import make_error
 from server.tasks import tweet_puller, retrieve_user_info_by_id, retrieve_users_info_by_ids, \
     retrieve_user_info_by_username, get_job
-from db.models import User
-from db.db_utils import get_single_object
+from db.models import User, Task
+from db.db_utils import get_single_object, create_single_object
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, jsonify
@@ -30,6 +30,14 @@ def stream_search():
         return make_error(405, 1, "No Query", "Add a query parameter")
     task_id = uuid()
     tweet_puller.apply_async((query_param, 0), task_id=task_id)
+    created = create_single_object(session, Task, task_id=task_id, defaults={
+        'user_id': user.id,
+        'task_type': 'tweets.stream.search',
+        'status': 'PENDING',
+        'message': 'Task has been queued'
+    })
+    user.tasks.append(created)
+    session.commit()
     session.close()
     return jsonify("Task created")
 

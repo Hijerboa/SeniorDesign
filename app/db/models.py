@@ -190,6 +190,7 @@ class Task(PrimaryKeyBase, Base):
     task_id = Column(String(length=64), nullable=False)
     user_id = Column(Integer(), ForeignKey('users.id'))
     launched_by = relationship('User', back_populates='tasks')
+    task_type = Column(String(length=64), nullable=False)
     status = Column(String(length=16))
     message = Column(String(length=512))
 
