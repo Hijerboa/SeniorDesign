@@ -1,9 +1,6 @@
 ''' Tasks related to celery functions '''
 import time
-import random
 import datetime
-from kombu import Queue
-
 from celery import Celery, current_task, uuid
 from celery.exceptions import CeleryError
 from celery.result import AsyncResult
@@ -14,6 +11,7 @@ from db.database_connection import initialize, create_session
 from db.db_utils import get_or_create, get_single_object, create_single_object
 from db.models import Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, User
 from twitter_utils.user_gatherer import create_user_object
+from util.task_utils import create_task_db_object
 
 REDIS_URL = 'redis://redis:6379/0'
 BROKER_URL = 'amqp://{0}:{1}@rabbit//'.format(get_secret("RABBITMQ_USER"), get_secret("RABBITMQ_PASS"))
@@ -24,16 +22,7 @@ task_routes = {
     'server.tasks.retrieve_user_info_by_username': {'queue': 'short_task'},
     'server.tasks.retrieve_users_info_by_ids': {'queue': 'short_task'},
     'server.tasks.get_bill_data_by_congress': {'queue': 'long_task'},
-    'server.tasks.add': {'queue': 'short_task'}
 }
-
-
-def route_task(name, args, kwargs, options, task=None, **kw):
-    if name == 'server.tasks.tweet_puller':
-        return {'queue': 'long_task', 'routing_key': 'tweet.puller'}
-    elif name == 'server.tasks.retrieve_user_info_by_id':
-        return {'queue': 'short_task', 'routing_key': 'user.puller'}
-
 
 CELERY = Celery('tasks',
             backend=REDIS_URL,
@@ -62,12 +51,14 @@ def get_job(job_id):
 def tweet_puller(tweet_query: str, useless):
     session = create_session()
     task_object: Task = get_single_object(session, Task, task_id=current_task.request.id)
+    task_object.status = 'STARTED'
+    task_object.message = 'Task has started to be run by the worker. This may take a while.'
     user_object = get_single_object(session, User, id=task_object.user_id)
     twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     response = twitter_api.search_tweets(tweet_query)
     db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
     tweets = response['data']['data']
-    tweet_list = []
+    tweet_count = 0
     twitter_users = []
     for tweet in tweets:
 
@@ -96,18 +87,15 @@ def tweet_puller(tweet_query: str, useless):
                 task_id = uuid()
                 retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
                 twitter_users = []
-                created = create_single_object(session, Task, task_id=task_id, defaults={
-                    'user_id': user_object.id,
-                    'task_type': 'users.by_id.multiple',
-                    'status': 'PENDING',
-                    'message': 'Task has been queued'
-                })
-                user_object.tasks.append(created)
+                new_task_object = create_task_db_object(user_object.id, 'twitter.users.by_id.multiple', 'Task has been queued', task_id, session)
+                user_object.tasks.append(new_task_object)
+                session.commit()
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
         tweet_object.search_phrases.append(db_search_phrase)
         session.commit()
+        tweet_count += 1
 
-    for i in range(50000):
+    for i in range(5000):
         time.sleep(2.7)
         try:
             next_token = response['data']['meta']['next_token']
@@ -140,15 +128,12 @@ def tweet_puller(tweet_query: str, useless):
                         task_id = uuid()
                         retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
                         twitter_users = []
-                        created = create_single_object(session, Task, task_id=task_id, defaults={
-                            'user_id': user_object.id,
-                            'task_type': 'users.by_id.multiple',
-                            'status': 'PENDING',
-                            'message': 'Task has been queued'
-                        })
-                        user_object.tasks.append(created)
+                        new_task_object = create_task_db_object(user_object.id, 'twitter.users.by_id.multiple', 'Task has been queued', task_id, session)
+                        user_object.tasks.append(new_task_object)
+                        session.commit()
                 tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
                 tweet_object.search_phrases.append(db_search_phrase)
+                tweet_count += 1
         except KeyError:
             break
         session.commit()
@@ -156,15 +141,14 @@ def tweet_puller(tweet_query: str, useless):
         string = ','.join(twitter_users)
         task_id = uuid()
         retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
-        created = create_single_object(session, Task, task_id=task_id, defaults={
-            'user_id': user_object.id,
-            'task_type': 'users.by_id.multiple',
-            'status': 'PENDING',
-            'message': 'Task has been queued'
-        })
-        user_object.tasks.append(created)
+        new_task_object = create_task_db_object(user_object.id, 'twitter.users.by_id.multiple', 'Task has been queued', task_id, session)
+        user_object.tasks.append(new_task_object)
+        session.commit()
+    task_object.status = 'SUCCESS'
+    task_object.message = 'Task has successfully been completed. {0} tweets collected'.format(str(tweet_count))
+    session.commit()
     session.close()
-    return "Hello there"
+    return '{0} tweets collected'.format(str(tweet_count))
 
 
 @CELERY.task()
