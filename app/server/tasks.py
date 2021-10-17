@@ -85,11 +85,11 @@ def tweet_puller(tweet_query: str, useless):
             if len(twitter_users) == 100:
                 string = ','.join(twitter_users)
                 task_id = uuid()
-                retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
-                twitter_users = []
                 new_task_object = create_task_db_object(user_object.id, 'twitter.users.by_id.multiple', 'Task has been queued', task_id, session)
                 user_object.tasks.append(new_task_object)
                 session.commit()
+                retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
+                twitter_users = []
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
         tweet_object.search_phrases.append(db_search_phrase)
         session.commit()
@@ -126,11 +126,11 @@ def tweet_puller(tweet_query: str, useless):
                     if len(twitter_users) == 100:
                         string = ','.join(twitter_users)
                         task_id = uuid()
-                        retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
-                        twitter_users = []
                         new_task_object = create_task_db_object(user_object.id, 'twitter.users.by_id.multiple', 'Task has been queued', task_id, session)
                         user_object.tasks.append(new_task_object)
                         session.commit()
+                        retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
+                        twitter_users = []
                 tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
                 tweet_object.search_phrases.append(db_search_phrase)
                 tweet_count += 1
@@ -140,10 +140,10 @@ def tweet_puller(tweet_query: str, useless):
     if not len(twitter_users) == 0:
         string = ','.join(twitter_users)
         task_id = uuid()
-        retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
         new_task_object = create_task_db_object(user_object.id, 'twitter.users.by_id.multiple', 'Task has been queued', task_id, session)
         user_object.tasks.append(new_task_object)
         session.commit()
+        retrieve_users_info_by_ids.apply_async((string, 0), task_id=task_id)
     task_object.status = 'SUCCESS'
     task_object.message = 'Task has successfully been completed. {0} tweets collected'.format(str(tweet_count))
     session.commit()
@@ -153,39 +153,70 @@ def tweet_puller(tweet_query: str, useless):
 
 @CELERY.task()
 def retrieve_user_info_by_id(user_id: int, useless):
-    time.sleep(3)
     session = create_session()
+    task_object: Task = get_single_object(session, Task, task_id=current_task.request.id)
+    task_object.status = 'STARTED'
+    task_object.message = 'Task has started to be run by the worker. This may take a while.'
+    session.commit()
+    time.sleep(3)
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_data = twitter_api.get_user_by_id(user_id)['data']['data']
     create_user_object(user_data, session)
+    task_object.status = 'SUCCESS'
+    task_object.message = 'Task has successfully been completed. User info collected'
+    session.commit()
     session.close()
+    return 'User info collected'
 
 
 @CELERY.task()
 def retrieve_users_info_by_ids(user_ids: str, useless):
-    time.sleep(2.5)
     session = create_session()
+    print(current_task.request.id)
+    task_object: Task = get_single_object(session, Task, task_id=current_task.request.id)
+    task_object.status = 'STARTED'
+    task_object.message = 'Task has started to be run by the worker. This may take a while.'
+    session.commit()
+    time.sleep(2.5)
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_response = twitter_api.get_users_by_ids(user_ids)['data']['data']
+    user_num = 0
     for user_data in user_response:
         create_user_object(user_data, session)
+        user_num += 1
+    task_object.status = 'SUCCESS'
+    task_object.message = 'Task has successfully been completed. User info collected for {0} users'.format(str(user_num))
+    session.commit()
     session.close()
+    return 'User info collected for {0} users'.format(str(user_num))
 
 
 @CELERY.task()
 def retrieve_user_info_by_username(username: str, useless):
-    time.sleep(3)
     session = create_session()
+    task_object: Task = get_single_object(session, Task, task_id=current_task.request.id)
+    task_object.status = 'STARTED'
+    task_object.message = 'Task has started to be run by the worker. This may take a while.'
+    session.commit()
+    time.sleep(3)
     twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     user_data = twitter_api.get_user_by_username(username)['data']['data']
     create_user_object(user_data, session)
+    task_object.status = 'SUCCESS'
+    task_object.message = 'Task has successfully been completed. User info collected'
+    session.commit()
     session.close()
+    return 'User info collected'
 
 
 @CELERY.task()
 def get_bill_data_by_congress(congress_id: int, congress_chamber: str, useless):
-    initialize()
     session = create_session()
+    task_object: Task = get_single_object(session, Task, task_id=current_task.request.id)
+    task_object.status = 'STARTED'
+    task_object.message = 'Task has started to be run by the worker. This may take a while.'
+    session.commit()
+    num_bills = 0
     current_offset = 0
     valid_results = True
     pro_publica_api: ProPublicaAPI = ProPublicaAPI(get_secret('pro_publica_url'), get_secret('pro_publica_api_key'))
@@ -210,6 +241,7 @@ def get_bill_data_by_congress(congress_id: int, congress_chamber: str, useless):
                 bill['dem_cosponsors'] = co_sponsor_parties['D']
             bill['congress'] = congress_id
             object, created = get_or_create(session, Bill, bill_id=bill['bill_id'], defaults=bill)
+            num_bills += 1
             session.commit()
             for committee_code in committee_codes:
                 committee_object, created = get_or_create(session, CommitteeCodes, committee_code=committee_code)
@@ -222,3 +254,7 @@ def get_bill_data_by_congress(congress_id: int, congress_chamber: str, useless):
                 object.sub_committee_codes.append(subcommittee_object)
         current_offset += 20
         session.commit()
+    task_object.status = 'SUCCESS'
+    task_object.message = 'Task has successfully been completed. {0} bills collected'.format(str(num_bills))
+    session.commit()
+    return '{0} bills collected'.format(str(num_bills))
