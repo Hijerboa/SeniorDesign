@@ -94,7 +94,6 @@ def tweet_puller(tweet_query: str, useless):
         tweet_object.search_phrases.append(db_search_phrase)
         session.commit()
         tweet_count += 1
-
     for i in range(5000):
         time.sleep(2.7)
         try:

@@ -72,12 +72,8 @@ class TwitterAPI:
         }
         if next_token is not None:
             args['next_token'] = next_token
-        try:
-            response = self.request_get('tweets/search/recent', args=args)
-            return response
-        except:
-            time.sleep(5)
-            return self.search_tweets(query, next_token=next_token)
+        response = self.request_get('tweets/search/recent', args=args)
+        return response
 
     @backoff.on_exception(backoff.expo,
                           requests.exceptions.RequestException,

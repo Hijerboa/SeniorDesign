@@ -26,10 +26,10 @@ def stream_search():
     if query_param is None:
         return make_error(405, 1, "No Query", "Add a query parameter")
     task_id = uuid()
-    tweet_puller.apply_async((query_param, 0), task_id=task_id)
     task_object = create_task_db_object(user.id, 'twitter.tweets.stream.search', 'Task has been queued', task_id, session)
     user.tasks.append(task_object)
     session.commit()
+    tweet_puller.apply_async((query_param, 0), task_id=task_id)
     session.close()
     return jsonify("Task ID {0} has been created and queued".format(task_id))
 
