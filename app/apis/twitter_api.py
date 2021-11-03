@@ -78,6 +78,22 @@ class TwitterAPI:
     @backoff.on_exception(backoff.expo,
                           requests.exceptions.RequestException,
                           max_tries=10)
+    def search_tweets_archive(self, query: str, start_time: str, end_time: str, next_token: str = None):
+        args = {
+            'query': "{0} -is:retweet".format(query),
+            'tweet.fields': 'author_id,created_at,lang,referenced_tweets,source,in_reply_to_user_id,public_metrics',
+            'max_results': 500,
+            'start_time': '{0}T00:00:00Z'.format(start_time),
+            'end_time': '{0}T00:00:00Z'.format(end_time)
+        }
+        if next_token is not None:
+            args['next_token'] = next_token
+        response = self.request_get('tweets/search/all', args=args)
+        return response
+
+    @backoff.on_exception(backoff.expo,
+                          requests.exceptions.RequestException,
+                          max_tries=10)
     def get_user_by_id(self, user_id: int):
         args = {
             'user.fields': 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,'
