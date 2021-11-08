@@ -79,3 +79,9 @@ class ProPublicaAPI:
             'offset': str(offset)
         }
         return self.request_get('{0}/{1}/bills/introduced.json'.format(str(congress_number), chamber), args=args)
+
+    @backoff.on_exception(backoff.expo,
+                          (requests.exceptions.RequestException, PropublicaAPITimeoutError),
+                          max_tries=10)
+    def get_bill_activity(self, bill_slug: str, congress: int):
+        print("I do things")

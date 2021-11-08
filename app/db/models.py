@@ -194,6 +194,7 @@ class Task(PrimaryKeyBase, Base):
     status = Column(String(length=16))
     message = Column(String(length=512))
 
+
 class User(PrimaryKeyBase, Base):
     __tablename__ = 'users'
 
@@ -204,3 +205,24 @@ class User(PrimaryKeyBase, Base):
     updated = Column(DateTime, name='updated_time', default=datetime.datetime.utcnow(), nullable=False)
     role = Column(String(length=32), name='role', nullable=False)
     tasks = relationship('Task', back_populates='launched_by')
+
+
+class BillAction(PrimaryKeyBase, Base):
+    __tablename__ = 'bill_actions'
+
+    bill = Column(String(length=16), ForeignKey('bills.bill_id'))
+    order = Column(Integer)
+    chamber = Column(String(length=16), nullable=False)
+    action_type = Column(String(length=128))
+    datetime = Column(DateTime, nullable=False)
+    description = Column(String(length=1024))
+
+
+class BillVersion(PrimaryKeyBase, Base):
+    __tablename__ = 'bill_verions'
+
+    bill = Column(String(length=16), ForeignKey('bills.bill_id'))
+    status = Column(String(length=64))
+    title = Column(String(length=8))
+    url = Column(String(length=512))
+    congressdotgov_url = Column(String(length=512), nullable=True)
