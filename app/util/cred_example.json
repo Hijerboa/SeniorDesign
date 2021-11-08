@@ -1,3 +1,14 @@
 {
-  "pro_publica_api_key": ""
+  "connection_string": "mysql://mysql:mysql@db:3306/mysql?charset=utf8mb4",
+  "hash_salt": "",
+  "initial_admin_email": "",
+  "pro_publica_url": "https://api.propublica.org/congress/v1/",
+  "pro_publica_api_key": "",
+  "twitter_api_url": "https://api.twitter.com/2/",
+  "twitter_consumer_key": "",
+  "twitter_consumer_secret": "",
+  "twitter_access_token": "",
+  "twitter_token_secret": "",
+  "twitter_bearer_token": "",
+  "bunny_server_api_key": ""
 }
