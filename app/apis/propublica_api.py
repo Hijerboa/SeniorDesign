@@ -84,4 +84,4 @@ class ProPublicaAPI:
                           (requests.exceptions.RequestException, PropublicaAPITimeoutError),
                           max_tries=10)
     def get_bill_activity(self, bill_slug: str, congress: int):
-        print("I do things")
+        return self.request_get('{0}/bills/{1}.json'.format(str(congress), bill_slug))

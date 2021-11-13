@@ -1,4 +1,6 @@
 import pathlib
+#import pymysql
+#pymysql.install_as_MySQLdb()
 import sys
 import alembic
 from sqlalchemy import engine_from_config, pool, MetaData
