@@ -213,9 +213,9 @@ class BillAction(PrimaryKeyBase, Base):
     bill = Column(String(length=16), ForeignKey('bills.bill_id'))
     order = Column(Integer)
     chamber = Column(String(length=16), nullable=False)
-    action_type = Column(String(length=128))
+    action_type = Column(String(length=256))
     datetime = Column(DateTime, nullable=False)
-    description = Column(String(length=1024))
+    description = Column(String(length=4096))
 
 
 class BillVersion(PrimaryKeyBase, Base):
