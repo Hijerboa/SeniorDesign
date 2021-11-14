@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../CIS_465_Final" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../flask-postgres-base" vcs="Git" />
   </component>
 </project>

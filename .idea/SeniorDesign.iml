@@ -11,5 +11,6 @@
     <orderEntry type="module" module-name="CIS434_Fall2021_G3" />
     <orderEntry type="module" module-name="scripts" />
     <orderEntry type="module" module-name="flask-postgres-base" />
+    <orderEntry type="module" module-name="CIS_465_Final" />
   </component>
 </module>
