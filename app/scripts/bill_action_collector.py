@@ -29,6 +29,7 @@ def bill_action_collector():
             action['bill'] = bill.bill_id
             instance, created = get_or_create(session, BillAction, bill=action['bill'], order=action['order'], defaults=action)
             session.commit()
-        if num % 4900 == 0:
+        if num % 4800 == 0:
             print('sleeping')
             time.sleep(86400)
+            
