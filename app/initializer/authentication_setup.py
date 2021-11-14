@@ -3,9 +3,9 @@ from util.cred_handler import get_secret
 from authorization.auth_utils import secure_string, secure_hash, get_serialized_user_by_token
 from initializer.initializer_utils import is_initial_admin_present
 import db.models as models
-from db.db_utils import get_or_create
-from sqlalchemy import select
-from typing import List
+from time import sleep
+
+sleep(2)
 
 initialize()
 

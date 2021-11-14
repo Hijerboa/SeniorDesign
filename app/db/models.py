@@ -212,7 +212,7 @@ class BillAction(PrimaryKeyBase, Base):
 
     bill = Column(String(length=16), ForeignKey('bills.bill_id'))
     order = Column(Integer)
-    chamber = Column(String(length=16), nullable=False)
+    chamber = Column(String(length=16))
     action_type = Column(String(length=256))
     datetime = Column(DateTime, nullable=False)
     description = Column(String(length=4096))
