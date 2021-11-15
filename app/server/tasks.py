@@ -71,17 +71,20 @@ def tweet_puller(tweet_query: str, useless):
     twitter_users = []
     for tweet in tweets:
 
-        tweet_dict = {
-            'author_id': tweet['author_id'],
-            'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-            'text': tweet['text'],
-            'source': tweet['source'],
-            'lang': tweet['lang'],
-            'retweets': tweet['public_metrics']['retweet_count'],
-            'likes': tweet['public_metrics']['like_count'],
-            'replies': tweet['public_metrics']['reply_count'],
-            'quote_count': tweet['public_metrics']['quote_count']
-        }
+        try:
+            tweet_dict = {
+                'author_id': tweet['author_id'],
+                'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                'text': tweet['text'],
+                'source': tweet['source'],
+                'lang': tweet['lang'],
+                'retweets': tweet['public_metrics']['retweet_count'],
+                'likes': tweet['public_metrics']['like_count'],
+                'replies': tweet['public_metrics']['reply_count'],
+                'quote_count': tweet['public_metrics']['quote_count']
+            }
+        except KeyError:
+            pass
         try:
             if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                 tweet_dict['reply'] = True
@@ -111,17 +114,20 @@ def tweet_puller(tweet_query: str, useless):
             tweets = response['data']['data']
             tweet_list = []
             for tweet in tweets:
-                tweet_dict = {
-                    'author_id': tweet['author_id'],
-                    'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-                    'text': tweet['text'],
-                    'source': tweet['source'],
-                    'lang': tweet['lang'],
-                    'retweets': tweet['public_metrics']['retweet_count'],
-                    'likes': tweet['public_metrics']['like_count'],
-                    'replies': tweet['public_metrics']['reply_count'],
-                    'quote_count': tweet['public_metrics']['quote_count']
-                }
+                try:
+                    tweet_dict = {
+                        'author_id': tweet['author_id'],
+                        'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                        'text': tweet['text'],
+                        'source': tweet['source'],
+                        'lang': tweet['lang'],
+                        'retweets': tweet['public_metrics']['retweet_count'],
+                        'likes': tweet['public_metrics']['like_count'],
+                        'replies': tweet['public_metrics']['reply_count'],
+                        'quote_count': tweet['public_metrics']['quote_count']
+                    }
+                except KeyError:
+                    pass
                 try:
                     if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                         tweet_dict['reply'] = True
@@ -180,17 +186,20 @@ def tweet_puller_archive(tweet_query: str, start_time: str, end_time: str, usele
         return '{0} tweets collected'.format(str(tweet_count))
     twitter_users = []
     for tweet in tweets:
-        tweet_dict = {
-            'author_id': tweet['author_id'],
-            'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-            'text': tweet['text'],
-            'source': tweet['source'],
-            'lang': tweet['lang'],
-            'retweets': tweet['public_metrics']['retweet_count'],
-            'likes': tweet['public_metrics']['like_count'],
-            'replies': tweet['public_metrics']['reply_count'],
-            'quote_count': tweet['public_metrics']['quote_count']
-        }
+        try:
+            tweet_dict = {
+                'author_id': tweet['author_id'],
+                'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                'text': tweet['text'],
+                'source': tweet['source'],
+                'lang': tweet['lang'],
+                'retweets': tweet['public_metrics']['retweet_count'],
+                'likes': tweet['public_metrics']['like_count'],
+                'replies': tweet['public_metrics']['reply_count'],
+                'quote_count': tweet['public_metrics']['quote_count']
+            }
+        except KeyError:
+            pass
         try:
             if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                 tweet_dict['reply'] = True
@@ -220,17 +229,20 @@ def tweet_puller_archive(tweet_query: str, start_time: str, end_time: str, usele
             tweets = response['data']['data']
             tweet_list = []
             for tweet in tweets:
-                tweet_dict = {
-                    'author_id': tweet['author_id'],
-                    'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-                    'text': tweet['text'],
-                    'source': tweet['source'],
-                    'lang': tweet['lang'],
-                    'retweets': tweet['public_metrics']['retweet_count'],
-                    'likes': tweet['public_metrics']['like_count'],
-                    'replies': tweet['public_metrics']['reply_count'],
-                    'quote_count': tweet['public_metrics']['quote_count']
-                }
+                try:
+                    tweet_dict = {
+                        'author_id': tweet['author_id'],
+                        'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                        'text': tweet['text'],
+                        'source': tweet['source'],
+                        'lang': tweet['lang'],
+                        'retweets': tweet['public_metrics']['retweet_count'],
+                        'likes': tweet['public_metrics']['like_count'],
+                        'replies': tweet['public_metrics']['reply_count'],
+                        'quote_count': tweet['public_metrics']['quote_count']
+                    }
+                except KeyError:
+                    pass
                 try:
                     if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                         tweet_dict['reply'] = True
