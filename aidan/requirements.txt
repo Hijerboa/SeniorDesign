@@ -1,0 +1,4 @@
+keybert==0.5.0
+scikit_learn==1.0.1
+sentence_transformers==2.1.0
+yake==0.4.8
