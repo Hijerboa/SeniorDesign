@@ -10,6 +10,7 @@ services:
     ports:
       - 5000:5000
     environment:
+      - cred_path=util/cred-user-1.json
       - SECRET_KEY=wowsuchsecret
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
@@ -52,7 +53,7 @@ services:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=bigpassword
 
-  celery_worker_long:
+  celery_worker_long_1:
     build:
       context: .
       dockerfile: Dockerfile
@@ -61,12 +62,28 @@ services:
     - ./app/:/app/
     - ../data/:/app/data
     environment:
+      - cred_path=util/cred-user-1.json
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
     depends_on:
       - rabbit
 
-  celery_worker_short:
+  celery_worker_long_2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q long_task
+    volumes:
+    - ./app/:/app/
+    - ../data/:/app/data
+    environment:
+      - cred_path=util/cred-user-2.json
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
+    depends_on:
+      - rabbit
+
+  celery_worker_short_1:
     build:
       context: .
       dockerfile: Dockerfile
@@ -75,6 +92,22 @@ services:
       - ./app/:/app/
       - ../data/:/app/data
     environment:
+      - cred_path=util/cred-user-1.json
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
+    depends_on:
+      - rabbit
+
+  celery_worker_short_2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q short_task
+    volumes:
+      - ./app/:/app/
+      - ../data/:/app/data
+    environment:
+      - cred_path=util/cred-user-2.json
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
     depends_on:

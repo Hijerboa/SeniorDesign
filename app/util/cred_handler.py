@@ -12,8 +12,11 @@ def get_secret(requested: str):
     if requested in cached:
         return cached[requested]
 
-    cred_file = os.path.dirname(os.path.dirname(__file__))
-    cred_file = os.path.join(cred_file, 'util', 'cred.json')
+    try:
+        cred_file = os.environ['cred_path']
+    except KeyError:
+        cred_file = os.path.dirname(os.path.dirname(__file__))
+        cred_file = os.path.join(cred_file, 'util', 'cred-user-1.json')
     if os.path.isfile(cred_file):
         with open(cred_file) as file:
             secrets = json.load(file)

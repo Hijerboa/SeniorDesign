@@ -1,5 +1,7 @@
 .DS_Store
 app/util/cred.json
+app/util/cred-user-1.json
+app/util/cred-user-2.json
 app/runner.py
 
 .idea
