@@ -18,6 +18,8 @@ def bill_action_collector():
     print("Collected bills")
     num = 0
     for bill in bills:
+        if number >= 4950:
+            break
         number +=1
         print('Congress: {0}. Slug: {1} Number: {2}'.format(str(bill.congress), str(bill.bill_slug), str(number)))
         try:
@@ -37,4 +39,4 @@ def bill_action_collector():
         except PropublicaAPIError:
             time.sleep(600)
             pass
-        time.sleep(17.5)
+        time.sleep(0.3)
