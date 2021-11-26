@@ -12,11 +12,14 @@ def bill_action_collector():
     api: ProPublicaAPI = ProPublicaAPI(get_secret('pro_publica_url'), get_secret('pro_publica_api_key'))
     initialize()
     session = create_session()
-    bills: [Bill] = session.query(Bill).all()
+    offset = 8500
+    number = offset
+    bills: [Bill] = session.query(Bill).order_by(Bill.congress.desc()).offset(offset).all()
     print("Collected bills")
     num = 0
     for bill in bills:
-        print('Congress: {0}. Slug: {1}'.format(str(bill.congress), str(bill.bill_slug)))
+        number +=1
+        print('Congress: {0}. Slug: {1} Number: {2}'.format(str(bill.congress), str(bill.bill_slug), str(number)))
         try:
             result = api.get_bill_activity(bill.bill_slug, bill.congress)
             if result['data']['results'][0]['versions'] is not None:
@@ -31,7 +34,7 @@ def bill_action_collector():
                     action['bill'] = bill.bill_id
                     instance, created = get_or_create(session, BillAction, bill=action['bill'], order=action['order'], defaults=action)
                     session.commit()
-        except ProPublicaAPI:
+        except PropublicaAPIError:
             time.sleep(600)
             pass
         time.sleep(17.5)
