@@ -12,13 +12,13 @@ def bill_action_collector():
     api: ProPublicaAPI = ProPublicaAPI(get_secret('pro_publica_url'), get_secret('pro_publica_api_key'))
     initialize()
     session = create_session()
-    offset = 8500
+    offset = 9500
     number = offset
     bills: [Bill] = session.query(Bill).order_by(Bill.congress.desc()).offset(offset).all()
     print("Collected bills")
     num = 0
     for bill in bills:
-        if number >= 4950:
+        if number >= (offset + 4950):
             break
         number +=1
         print('Congress: {0}. Slug: {1} Number: {2}'.format(str(bill.congress), str(bill.bill_slug), str(number)))
