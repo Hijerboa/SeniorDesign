@@ -1,27 +1,37 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
-
-# This is a sample GitLab CI/CD configuration file that should run without any modifications.
-# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
-# it uses echo commands to simulate the pipeline execution.
-#
-# A pipeline is composed of independent jobs that run scripts, grouped into stages.
-# Stages run in sequential order, but jobs within stages run in parallel.
-#
-# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
-
-image: docker:19.03.12
-
-services:
-  - docker:19.03.12-dind
-
-stages:          # List of stages for jobs, and their order of execution
+stages:
   - build
 
-build-job:       # This job runs in the build stage, which runs first.
+# Build and push the Docker image to the GitLab image
+# registry using Docker-in-Docker.
+dind-build:
   stage: build
+
+  image:
+    # An alpine-based image with the `docker` CLI installed.
+    name: docker:stable
+
+  # This will run a Docker daemon in a container
+  # (Docker-In-Docker), which will be available at
+  # thedockerhost:2375. If you make e.g. port 5000 public in
+  # Docker (`docker run -p 5000:5000 yourimage`) it will be
+  # exposed at thedockerhost:5000.
+  services:
+   - name: docker:dind
+     alias: dockerdaemon
+
+  variables:
+    # Tell docker CLI how to talk to Docker daemon.
+    DOCKER_HOST: tcp://dockerdaemon:2375/
+    # Use the overlayfs driver for improved performance.
+    DOCKER_DRIVER: overlay2
+    # Disable TLS since we're running inside local network.
+    DOCKER_TLS_CERTDIR: ""
+
   script:
-    - docker build -t my-docker-image .
+    # GitLab has a built-in Docker image registry, whose
+    # parameters are set automatically. You can use some
+    # other Docker registry though by changing the login and
+    # image name.
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE:dind" .
+    - docker push "$CI_REGISTRY_IMAGE:dind"
