@@ -1,0 +1,6 @@
+gitops:
+  manifest_projects:
+  # The `id` is the path to the Git repository holding your manifest files
+  - id: ".gitlab/agents/k8s/config.yaml"
+    paths:
+    - glob: '/**/*.{yaml,yml,json}'
