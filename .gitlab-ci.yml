@@ -18,6 +18,8 @@ dind-build:
   services:
    - name: docker:dind
      alias: dockerdaemon
+     entrypoint: ["env", "-u", "DOCKER_HOST"]
+     command: ["dockerd-entrypoint.sh"]
 
   variables:
     # Tell docker CLI how to talk to Docker daemon.
