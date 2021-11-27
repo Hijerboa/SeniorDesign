@@ -103,9 +103,9 @@ def tweet_puller_stream(tweet_query: str, next_token, useless):
     session.close()
     try:
         next_token = response['data']['meta']['next_token']
+        tweet_puller_stream.apply_async((tweet_query, next_token, 0), countdown=3)
     except KeyError:
         pass
-    tweet_puller_stream.apply_async((tweet_query, next_token, 0), countdown=3)
     return '{0} tweets collected'.format(str(tweet_count))
 
 
@@ -163,9 +163,9 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date, use
     session.close()
     try:
         next_token = response['data']['meta']['next_token']
+        tweet_puller_archive.apply_async((tweet_query, next_token, start_date, end_date, 0), countdown=3)
     except KeyError:
         pass
-    tweet_puller_archive.apply_async((tweet_query, next_token, start_date, end_date, 0), countdown=3)
     return '{0} tweets collected'.format(str(tweet_count))
 
 
