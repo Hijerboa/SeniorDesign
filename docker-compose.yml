@@ -53,11 +53,11 @@ services:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=bigpassword
 
-  celery_worker_long_1:
+  celery_worker_tweet_archive:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q long_task
+    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_archive
     volumes:
     - ./app/:/app/
     - ../data/:/app/data
@@ -68,11 +68,11 @@ services:
     depends_on:
       - rabbit
 
-  celery_worker_long_2:
+  celery_worker_twitter_stream:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q long_task
+    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_stream,propublica_tasks
     volumes:
     - ./app/:/app/
     - ../data/:/app/data
@@ -83,11 +83,11 @@ services:
     depends_on:
       - rabbit
 
-  celery_worker_short_1:
+  celery_worker_twitter_user_1:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q short_task
+    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_users,propublica_tasks
     volumes:
       - ./app/:/app/
       - ../data/:/app/data
@@ -98,11 +98,11 @@ services:
     depends_on:
       - rabbit
 
-  celery_worker_short_2:
+  celery_worker_twitter_user_2:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q short_task
+    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_users,propublica_tasks
     volumes:
       - ./app/:/app/
       - ../data/:/app/data

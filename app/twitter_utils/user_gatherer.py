@@ -1,7 +1,7 @@
 import datetime
 from db.db_utils import get_or_create
 from db.models import TwitterUser
-
+from sqlalchemy.exc import IntegrityError
 
 class InvalidTwitterUser(Exception):
     """Raised if a twitter user does not exist"""
@@ -28,6 +28,9 @@ def create_user_object(user_info: dict, session):
     user_info['listed_count'] = user_stats['listed_count']
     user_info['display_name'] = user_info['name']
     user_info.pop('name')
-    user_object, created = get_or_create(session, TwitterUser, id=user_info['id'], defaults=user_info)
-    session.commit()
+    try:
+        user_object, created = get_or_create(session, TwitterUser, id=user_info['id'], defaults=user_info)
+        session.commit()
+    except IntegrityError:
+        pass
     return user_object

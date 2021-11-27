@@ -1,9 +1,9 @@
 from db.database_connection import create_session
 from authorization.auth_utils import get_token, does_user_have_permission, secure_hash
 from util.make_error import make_error
-from server.tasks import tweet_puller, retrieve_user_info_by_id, retrieve_users_info_by_ids, \
-    retrieve_user_info_by_username, tweet_puller_archive
-from db.models import User, Task
+from server.tasks import retrieve_user_info_by_id, retrieve_users_info_by_ids, \
+    retrieve_user_info_by_username, tweet_puller_archive, tweet_puller_stream
+from db.models import User
 from db.db_utils import get_single_object, create_single_object
 from util.task_utils import create_task_db_object
 from util.check_time import check_time
@@ -27,10 +27,9 @@ def stream_search():
     if query_param is None:
         return make_error(405, 1, "No Query", "Add a query parameter")
     task_id = uuid()
-    task_object = create_task_db_object(user.id, 'twitter.tweets.stream.search', 'Task has been queued', task_id, session)
-    user.tasks.append(task_object)
-    session.commit()
-    tweet_puller.apply_async((query_param, 0), task_id=task_id)
+    """task_object = create_task_db_object(user.id, 'twitter.tweets.stream.search', 'Task has been queued', task_id, session)
+    user.tasks.append(task_object)"""
+    tweet_puller_stream.apply_async((query_param, None, 0), task_id=task_id)
     session.close()
     return jsonify("Task ID {0} has been created and queued".format(task_id))
 
@@ -59,10 +58,10 @@ def archive_search():
     if not check_time(start_param):
         return make_error(405, 3, "Malformed end date", "Send parameter in YYYY-MM-DD format")
     task_id = uuid()
-    task_object = create_task_db_object(user.id, 'twitter.tweets.archive.search', 'Task has been queued', task_id, session)
-    user.tasks.append(task_object)
+    """task_object = create_task_db_object(user.id, 'twitter.tweets.archive.search', 'Task has been queued', task_id, session)
+    user.tasks.append(task_object)"""
     session.commit()
-    tweet_puller_archive.apply_async((query_param, start_param, end_param, 0), task_id=task_id)
+    tweet_puller_archive.apply_async((query_param, None, start_param, end_param, 0), task_id=task_id)
     session.close()
     return jsonify('Task ID {0} has been created and queued'.format(task_id))
 
@@ -83,8 +82,8 @@ def single_user_lookup():
         return make_error(405, 1, "No user", "Add a user parameter")
     task_id = uuid()
     retrieve_user_info_by_id.apply_async((user_param, 0), task_id=task_id)
-    task_object = create_task_db_object(user.id, 'twitter.users.by_id.single', 'Task has been queued', task_id, session)
-    user.tasks.append(task_object)
+    """task_object = create_task_db_object(user.id, 'twitter.users.by_id.single', 'Task has been queued', task_id, session)
+    user.tasks.append(task_object)"""
     session.commit()
     session.close()
     return jsonify("Task created")
@@ -127,8 +126,8 @@ def multiple_user_lookup():
         return make_error(405, 1, "No user", "Add a user parameter")
     task_id = uuid()
     retrieve_users_info_by_ids.apply_async((users_param, 0), task_id=task_id)
-    task_object = create_task_db_object(user.id, 'twitter.users.by_id.multiple', 'Task has been queued', task_id, session)
-    user.tasks.append(task_object)
+    #task_object = create_task_db_object(user.id, 'twitter.users.by_id.multiple', 'Task has been queued', task_id, session)
+    #user.tasks.append(task_object)
     session.commit()
     session.close()
     return jsonify("Task created")
