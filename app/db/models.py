@@ -1,6 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Float, UniqueConstraint, LargeBinary, \
     Table, DateTime, Date, Text
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import relationship
 import datetime
 
@@ -229,6 +230,7 @@ class BillVersion(PrimaryKeyBase, Base):
     title = Column(String(length=8))
     url = Column(String(length=512))
     congressdotgov_url = Column(String(length=512), nullable=True)
+    full_text = Column(LONGTEXT())
 
 
 class BillKeyWord(PrimaryKeyBase, Base):

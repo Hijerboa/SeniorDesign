@@ -8,7 +8,7 @@ import time
 pymysql.install_as_MySQLdb()
 
 congress_id = 114
-congress_chamber = 'senate'
+congress_chamber = 'house'
 
 initialize()
 
