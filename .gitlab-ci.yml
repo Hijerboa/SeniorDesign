@@ -6,28 +6,17 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
 - build
-- test
-- deploy
-- review
-- dast
-- staging
-- canary
-- production
-- incremental rollout 10%
-- incremental rollout 25%
-- incremental rollout 50%
-- incremental rollout 100%
-- performance
-- cleanup
-dind-build:
+
+build:
   stage: build
   before_script:
   - docker info
   script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-  - docker build -t "$CI_REGISTRY_IMAGE:dind" .
+  - docker build -t "$CI_REGISTRY_IMAGE" .
+  - docker push "$CI_REGISTRY_IMAGE:latest"
   - docker push "$CI_REGISTRY_IMAGE:dind"
-sast:
-  stage: test
-include:
-- template: Auto-DevOps.gitlab-ci.yml
+#sast:
+#  stage: test
+#include:
+#- template: Auto-DevOps.gitlab-ci.yml
