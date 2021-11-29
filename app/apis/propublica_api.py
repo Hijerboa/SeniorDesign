@@ -1,5 +1,7 @@
 import requests
 import backoff
+import json
+from json.decoder import JSONDecodeError
 
 """
 Basic API client for the Propublica API with a response handler and convenience methods
@@ -22,8 +24,13 @@ def handle_propublica_response(response: requests.Response, raw_out: bool, ignor
     :param ignore_errors: Ignore errors if true
     :return: Processed Response
     """
+    in_data = response.content.decode()
     try:
-        data = response.json()
+        data = json.loads(in_data)
+    except JSONDecodeError:
+        string = in_data
+        result = string.replace("\\ ", "\\\\")
+        data = json.loads(result)
     except Exception:
         data = None
 

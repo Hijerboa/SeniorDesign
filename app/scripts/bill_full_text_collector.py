@@ -33,7 +33,7 @@ def do_things():
 
     initialize()
     session = create_session()
-    bills: [Bill] = session.query(Bill).order_by(Bill.congress.desc()).offset(0).limit(100).all()
+    bills: [Bill] = session.query(Bill).order_by(Bill.congress.desc()).offset(100).limit(1000).all()
     """response = gov_api.get_bill_full_text('BILLS-117hr5985ih')
     string = response['data'].decode()
     parser = MyHTMLParser()
@@ -47,5 +47,6 @@ def do_things():
                 parser = MyHTMLParser()
                 #parser.feed(response['data'].decode())
                 result = parser.run_feeder(response['data'].decode())
-                big_string += result
-    print(len(big_string))
+                version.full_text = result
+                session.commit()
+    session.close()

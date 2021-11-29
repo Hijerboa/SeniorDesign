@@ -95,6 +95,7 @@ services:
       - cred_path=util/cred-user-1.json
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
+      - consumer_timeout=31622400000
     depends_on:
       - rabbit
 
