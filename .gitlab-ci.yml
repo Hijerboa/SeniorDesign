@@ -27,7 +27,7 @@ dind-build:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   - docker build -t "$CI_REGISTRY_IMAGE:dind" .
   - docker push "$CI_REGISTRY_IMAGE:dind"
-#sast:
-#  stage: test
-#include:
-#- template: Auto-DevOps.gitlab-ci.yml
+sast:
+  stage: test
+include:
+- template: Auto-DevOps.gitlab-ci.yml
