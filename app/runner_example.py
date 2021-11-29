@@ -18,19 +18,11 @@ get_tweets('criminal biden')"""
 
 #from scripts.TestBillCollector import do_things
 #do_things()
-
-<<<<<<< HEAD:app/runner.py
-#from scripts.bill_action_collector import bill_action_collector
-#bill_action_collector()
-from scripts.test_script import function
-function()
-=======
-from scripts.bill_action_collector import bill_action_collector
-bill_action_collector()
-
->>>>>>> 2d1cbf60b1fb1587f8469e391d8ca1450c2dc079:app/runner_example.py.py
 #from scripts.congress_info_puller import get_congress_members
 #get_congress_members()
 
 #from scripts.congress_info_puller import get_congress_members
 #get_congress_members()
+
+from scripts.bill_collector import do_things
+do_things()

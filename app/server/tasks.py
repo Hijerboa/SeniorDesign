@@ -211,10 +211,6 @@ def retrieve_user_info_by_username(username: str, useless):
 @CELERY.task()
 def get_bill_data_by_congress(congress_id: int, congress_chamber: str, useless):
     session = create_session()
-    task_object: Task = get_single_object(session, Task, task_id=current_task.request.id)
-    task_object.status = 'STARTED'
-    task_object.message = 'Task has started to be run by the worker. This may take a while.'
-    session.commit()
     num_bills = 0
     current_offset = 0
     valid_results = True

@@ -19,8 +19,11 @@ get_tweets('criminal biden')"""
 #from scripts.TestBillCollector import do_things
 #do_things()
 
-from scripts.bill_action_collector import bill_action_collector
-bill_action_collector()
+#from scripts.bill_action_collector import bill_action_collector
+#bill_action_collector()
+
+from scripts.bill_full_text_collector import do_things
+do_things()
 
 #from scripts.congress_info_puller import get_congress_members
 #get_congress_members()

@@ -182,6 +182,9 @@ class Bill(Base):
     sub_committee_codes = relationship(SubcommitteeCodes, secondary=bill_to_subcommittee_code)
     subjects = relationship(BillSubject, secondary=bill_to_subject)
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
+    actions = relationship('BillAction')
+    versions = relationship('BillVersion')
+    keywords = relationship('BillKeyWord')
 
 
 class Task(PrimaryKeyBase, Base):
