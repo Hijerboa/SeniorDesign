@@ -30,7 +30,7 @@ def handle_propublica_response(response: requests.Response, raw_out: bool, ignor
     except JSONDecodeError:
         string = in_data
         result = string.replace("\\ ", "\\\\")
-        data = json.loads(result)
+        data = json.loads(result, strict=False)
     except Exception:
         data = None
 

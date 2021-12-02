@@ -7,16 +7,11 @@ import pymysql
 import time
 pymysql.install_as_MySQLdb()
 
-congress_id = 113
-congress_chamber = 'house'
-
-initialize()
-
-def do_things():
+def do_things(congress_id, congress_chamber):
 
     session = create_session()
     num_bills = 0
-    current_offset = 4860
+    current_offset = 0
     valid_results = True
     pro_publica_api: ProPublicaAPI = ProPublicaAPI(get_secret('pro_publica_url'), get_secret('pro_publica_api_key'))
 
@@ -41,7 +36,7 @@ def do_things():
             bill['congress'] = congress_id
             object, created = get_or_create(session, Bill, bill_id=bill['bill_id'], defaults=bill)
             num_bills += 1
-            print(num_bills + current_offset)
+            print('#{0} collected. Congress #{1}, Chamber: {2}'.format(str(num_bills), str(congress_id), congress_chamber))
             session.commit()
             for committee_code in committee_codes:
                 committee_object, created = get_or_create(session, CommitteeCodes, committee_code=committee_code)
@@ -55,4 +50,9 @@ def do_things():
         current_offset += 20
         session.commit()
     session.commit()
-    session.close()
+
+def runner():
+    initialize()
+    for i in range(115, 118):
+        do_things(i, 'house')
+        do_things(i, 'senate')
