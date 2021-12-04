@@ -27,5 +27,8 @@ get_tweets('criminal biden')"""
 #from scripts.bill_collector import runner
 #runner()
 
-from scripts.bill_full_text_collector import do_things
+#from scripts.bill_full_text_collector import do_things
+#do_things()
+
+from scripts.govinfo.package_name_collector import do_things
 do_things()

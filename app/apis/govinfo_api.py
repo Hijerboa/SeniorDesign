@@ -23,7 +23,7 @@ def handle_gov_info_response(response: requests.Response, raw_out: bool, ignore_
     :return: Processed Response
     """
     try:
-        data = response.content
+        data = response.json()
     except Exception:
         data = None
 
@@ -70,4 +70,20 @@ class GovInfoAPI:
                           max_tries=10)
     def get_bill_full_text(self, bill_slug: str):
         return self.request_get('/packages/{0}/htm'.format(bill_slug))
+
+    @backoff.on_exception(backoff.expo,
+                          (requests.exceptions.RequestException, GovInfoAPITimeoutError),
+                          max_tries=10)
+    def get_bill_listing(self, start_date: str, end_date: str, offset: int):
+        args = {
+            'offset': offset,
+            'pageSize': 100,
+        }
+        return self.request_get('/collections/BILLS/{0}/{1}'.format(str(start_date), str(end_date)), args=args)
+
+    @backoff.on_exception(backoff.expo,
+                          (requests.exceptions.RequestException, GovInfoAPITimeoutError),
+                          max_tries=10)
+    def get_bill_summary(self, bill_slug: str):
+        return self.request_get('/packages/{0}/summary'.format(bill_slug))
 
