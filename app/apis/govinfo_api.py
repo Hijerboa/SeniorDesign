@@ -14,7 +14,7 @@ class GovInfoAPITimeoutError(Exception):
     """API took too long to respond"""
     pass
 
-def handle_gov_info_response(response: requests.Response, raw_out: bool, ignore_errors=False):
+def handle_gov_info_response(response: requests.Response, raw_out: bool, ignore_errors=False, json=True):
     """
     Handles responses from the Propublica API
     :param response: response from requests
@@ -22,10 +22,16 @@ def handle_gov_info_response(response: requests.Response, raw_out: bool, ignore_
     :param ignore_errors: Ignore errors if true
     :return: Processed Response
     """
-    try:
-        data = response.json()
-    except Exception:
-        data = None
+    if json:
+        try:
+            data = response.json()
+        except Exception:
+            data = None
+    else:
+        try:
+            data = response.content
+        except Exception:
+            data = None
 
     if raw_out:
         return response
@@ -47,6 +53,7 @@ class GovInfoAPI:
             args=None,
             raw_out=False,
             ignore_errors=False,
+            json=True
     ):
         """
         Perform a get request
@@ -63,21 +70,24 @@ class GovInfoAPI:
         url = self.gov_info_url + sub_path
 
         response = requests.get(url, params=args, headers=self.api_headers)
+        if not json:
+            return handle_gov_info_response(response, raw_out, ignore_errors, json=False)
         return handle_gov_info_response(response, raw_out, ignore_errors)
 
     @backoff.on_exception(backoff.expo,
                           (requests.exceptions.RequestException, GovInfoAPITimeoutError),
                           max_tries=10)
     def get_bill_full_text(self, bill_slug: str):
-        return self.request_get('/packages/{0}/htm'.format(bill_slug))
+        return self.request_get('/packages/{0}/htm'.format(bill_slug), json=False)
 
     @backoff.on_exception(backoff.expo,
                           (requests.exceptions.RequestException, GovInfoAPITimeoutError),
                           max_tries=10)
-    def get_bill_listing(self, start_date: str, end_date: str, offset: int):
+    def get_bill_listing(self, start_date: str, end_date: str, offset: int, congress: int):
         args = {
             'offset': offset,
             'pageSize': 100,
+            'congress': congress,
         }
         return self.request_get('/collections/BILLS/{0}/{1}'.format(str(start_date), str(end_date)), args=args)
 
