@@ -40,6 +40,7 @@ def do_things(congress: int, version, doc_class):
     num_bills_created = 0
     num_versions_created = 0
     num_full_text_pulled = 0
+    print('Processing Data for Congress #{0}, Version type {1}, doc class {2}'.format(str(congress), version, doc_class))
     while True:
         response = api.get_bill_listing(start_string, end_date, offset, congress, version, doc_class)
         packages = response['data']['packages']
