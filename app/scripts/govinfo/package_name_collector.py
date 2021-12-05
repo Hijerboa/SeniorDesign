@@ -30,7 +30,7 @@ class MyHTMLParser(HTMLParser):
         return self.important_data
 
 
-def do_things(congress: int):
+def do_things(congress: int, version, doc_class):
     initialize()
     api: GovInfoAPI = GovInfoAPI(get_secret('gov_info_url'), get_secret('gov_info_key'))
     start_string = '1999-01-01T00:00:00Z'
@@ -41,7 +41,7 @@ def do_things(congress: int):
     num_versions_created = 0
     num_full_text_pulled = 0
     while True:
-        response = api.get_bill_listing(start_string, end_date, offset, congress)
+        response = api.get_bill_listing(start_string, end_date, offset, congress, version, doc_class)
         packages = response['data']['packages']
         if len(packages) == 0:
             break
@@ -90,4 +90,11 @@ def do_things(congress: int):
 
 def run_thing():
     for i in range(110, 118):
-        do_things(i)
+        versions = ['as', 'ash', 'ath', 'ats', 'cdh', 'cds', 'cph', 'cps', 'eah', 'eas', 'eh', 'eph', 'enr', 'es',
+                    'fah', 'fph', 'fps', 'hdh', 'hds', 'ih', 'iph', 'ips', 'is', 'lth', 'lts', 'oph', 'ops', 'pav',
+                    'pch', 'pcs', 'pp', 'pap', 'pwah', 'rah', 'ras', 'rch' 'rcs', 'rdh', 'reah', 'res', 'renr', 'rfh',
+                    'rfs', 'rh','rih', 'ris', 'rs', 'rth', 'rts', 'sas', 'sc']
+        doc_classes = ['hconres', 'hjres', 'hr', 'hres', 's', 'sconres', 'sjres', 'sres']
+        for version in versions:
+            for doc_class in doc_classes:
+                do_things(i, version, doc_class)

@@ -83,11 +83,13 @@ class GovInfoAPI:
     @backoff.on_exception(backoff.expo,
                           (requests.exceptions.RequestException, GovInfoAPITimeoutError),
                           max_tries=10)
-    def get_bill_listing(self, start_date: str, end_date: str, offset: int, congress: int):
+    def get_bill_listing(self, start_date: str, end_date: str, offset: int, congress: int, version: str, doc_class: str):
         args = {
             'offset': offset,
             'pageSize': 100,
             'congress': congress,
+            'billVersion': version,
+            'docClass': doc_class
         }
         return self.request_get('/collections/BILLS/{0}/{1}'.format(str(start_date), str(end_date)), args=args)
 
@@ -96,4 +98,14 @@ class GovInfoAPI:
                           max_tries=10)
     def get_bill_summary(self, bill_slug: str):
         return self.request_get('/packages/{0}/summary'.format(bill_slug))
+
+    @backoff.on_exception(backoff.expo,
+                          (requests.exceptions.RequestException, GovInfoAPITimeoutError),
+                          max_tries=10)
+    def get_bill_granules(self, bill_slug: str):
+        args = {
+            'offset': 0,
+            'pageSize': 10
+        }
+        return self.request_get('/packages/{0}/granules'.format(bill_slug), args=args)
 
