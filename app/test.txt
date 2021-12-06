@@ -1,1 +1,284 @@
-Collected bills
+Processing Data for Congress #110, Version type ats, doc class sres
+Found bill for item #1
+Found version for item #1
+Found bill for item #2
+Found version for item #2
+Found bill for item #3
+Found version for item #3
+Found bill for item #4
+Found version for item #4
+Found bill for item #5
+Found version for item #5
+Found bill for item #6
+Found version for item #6
+Found bill for item #7
+Found version for item #7
+Found bill for item #8
+Found version for item #8
+Found bill for item #9
+Found version for item #9
+Found bill for item #10
+Found version for item #10
+Found bill for item #11
+Found version for item #11
+Found bill for item #12
+Found version for item #12
+Found bill for item #13
+Found version for item #13
+Found bill for item #14
+Found version for item #14
+Found bill for item #15
+Found version for item #15
+Found bill for item #16
+Found version for item #16
+Found bill for item #17
+Found version for item #17
+Found bill for item #18
+Found version for item #18
+Found bill for item #19
+Found version for item #19
+Found bill for item #20
+Found version for item #20
+Found bill for item #21
+Found version for item #21
+Found bill for item #22
+Found version for item #22
+Found bill for item #23
+Found version for item #23
+Found bill for item #24
+Found version for item #24
+Found bill for item #25
+Found version for item #25
+Found bill for item #26
+Found version for item #26
+Found bill for item #27
+Found version for item #27
+Found bill for item #28
+Found version for item #28
+Found bill for item #29
+Found version for item #29
+Found bill for item #30
+Found version for item #30
+Found bill for item #31
+Found version for item #31
+Found bill for item #32
+Found version for item #32
+Found bill for item #33
+Found version for item #33
+Found bill for item #34
+Found version for item #34
+Found bill for item #35
+Found version for item #35
+Found bill for item #36
+Found version for item #36
+Found bill for item #37
+Found version for item #37
+Found bill for item #38
+Found version for item #38
+Found bill for item #39
+Found version for item #39
+Found bill for item #40
+Found version for item #40
+Found bill for item #41
+Found version for item #41
+Found bill for item #42
+Found version for item #42
+Found bill for item #43
+Found version for item #43
+Found bill for item #44
+Found version for item #44
+Found bill for item #45
+Found version for item #45
+Found bill for item #46
+Found version for item #46
+Found bill for item #47
+Found version for item #47
+Found bill for item #48
+Found version for item #48
+Found bill for item #49
+Found version for item #49
+Found bill for item #50
+Found version for item #50
+Found bill for item #51
+Found version for item #51
+Found bill for item #52
+Found version for item #52
+Found bill for item #53
+Found version for item #53
+Found bill for item #54
+Found version for item #54
+Found bill for item #55
+Found version for item #55
+Found bill for item #56
+Found version for item #56
+Found bill for item #57
+Found version for item #57
+Found bill for item #58
+Found version for item #58
+Found bill for item #59
+Found version for item #59
+Found bill for item #60
+Found version for item #60
+Found bill for item #61
+Found version for item #61
+Found bill for item #62
+Found version for item #62
+Found bill for item #63
+Found version for item #63
+Found bill for item #64
+Found version for item #64
+Found bill for item #65
+Found version for item #65
+Found bill for item #66
+Found version for item #66
+Found bill for item #67
+Found version for item #67
+Found bill for item #68
+Found version for item #68
+Found bill for item #69
+Found version for item #69
+Found bill for item #70
+Found version for item #70
+Found bill for item #71
+Found version for item #71
+Found bill for item #72
+Found version for item #72
+Found bill for item #73
+Found version for item #73
+Found bill for item #74
+Found version for item #74
+Found bill for item #75
+Found version for item #75
+Found bill for item #76
+Found version for item #76
+Found bill for item #77
+Found version for item #77
+Found bill for item #78
+Found version for item #78
+Found bill for item #79
+Found version for item #79
+Found bill for item #80
+Found version for item #80
+Found bill for item #81
+Found version for item #81
+Found bill for item #82
+Found version for item #82
+Found bill for item #83
+Found version for item #83
+Found bill for item #84
+Found version for item #84
+Found bill for item #85
+Found version for item #85
+Found bill for item #86
+Found version for item #86
+Found bill for item #87
+Found version for item #87
+Found bill for item #88
+Found version for item #88
+Found bill for item #89
+Found version for item #89
+Found bill for item #90
+Found version for item #90
+Found bill for item #91
+Found version for item #91
+Found bill for item #92
+Found version for item #92
+Found bill for item #93
+Found version for item #93
+Found bill for item #94
+Found version for item #94
+Found bill for item #95
+Found version for item #95
+Found bill for item #96
+Found version for item #96
+Found bill for item #97
+Found version for item #97
+Found bill for item #98
+Found version for item #98
+Found bill for item #99
+Found version for item #99
+Found bill for item #100
+Found version for item #100
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
