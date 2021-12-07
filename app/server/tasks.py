@@ -51,6 +51,7 @@ def get_job(job_id):
 
 @CELERY.task
 def tweet_puller_stream(tweet_query: str, next_token, useless):
+    time.sleep(3.1)
     session = create_session()
     twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
@@ -103,7 +104,7 @@ def tweet_puller_stream(tweet_query: str, next_token, useless):
     session.close()
     try:
         next_token = response['data']['meta']['next_token']
-        tweet_puller_stream.apply_async((tweet_query, next_token, 0), countdown=3)
+        tweet_puller_stream.apply_async((tweet_query, next_token, 0))
     except KeyError:
         pass
     return '{0} tweets collected'.format(str(tweet_count))
@@ -111,6 +112,7 @@ def tweet_puller_stream(tweet_query: str, next_token, useless):
 
 @CELERY.task
 def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date, useless):
+    time.sleep(3.1)
     session = create_session()
     twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
@@ -163,7 +165,7 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date, use
     session.close()
     try:
         next_token = response['data']['meta']['next_token']
-        tweet_puller_archive.apply_async((tweet_query, next_token, start_date, end_date, 0), countdown=3)
+        tweet_puller_archive.apply_async((tweet_query, next_token, start_date, end_date, 0))
     except KeyError:
         pass
     return '{0} tweets collected'.format(str(tweet_count))
@@ -249,7 +251,5 @@ def get_bill_data_by_congress(congress_id: int, congress_chamber: str, useless):
                 object.sub_committee_codes.append(subcommittee_object)
         current_offset += 20
         session.commit()
-    task_object.status = 'SUCCESS'
-    task_object.message = 'Task has successfully been completed. {0} bills collected'.format(str(num_bills))
     session.commit()
     return '{0} bills collected'.format(str(num_bills))
