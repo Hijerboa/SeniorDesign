@@ -30,7 +30,4 @@ deploy:
   tags: ["kubectl"]
   script:
   - kubectl config get-contexts
-#sast:
-#  stage: test
-#include:
-#- template: Auto-DevOps.gitlab-ci.yml
+
