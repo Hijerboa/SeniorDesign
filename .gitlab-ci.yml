@@ -28,7 +28,7 @@ build:
 deploy:
   stage: stage
   tags: ["kubectl"]
-  before_script:
+  script:
   - kubectl get namespaces
 #sast:
 #  stage: test
