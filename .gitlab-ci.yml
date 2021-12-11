@@ -29,13 +29,12 @@ deploy:
   stage: deploy
   tags: ["docker-build"]
   image:
-    name: aliartiza75/kubectl:0.0.2
-  before_script:
+    name: aliartiza75/kubectl:0.0.2    
+  
+  script:
     - mkdir ~/.kube/
     - echo $KUBE_CONFIG | base64 -d > config
     - mv config ~/.kube/
-  
-  script:
     - kubectl get namespaces
 
 
