@@ -6,9 +6,11 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
 - build
+- deploy
 
 build:
   stage: build
+  tags: ["docker-build"]
   before_script:
   - docker info
   script:
@@ -22,6 +24,12 @@ build:
   - docker image push "$CI_REGISTRY_IMAGE/images:$CI_PIPELINE_IID"
   #- docker push "$CI_REGISTRY_IMAGE:latest"
   #- docker push "$CI_REGISTRY_IMAGE:lmao"
+
+deploy:
+  stage: stage
+  tags: ["kubectl"]
+  before_script:
+  - kubectl get namespaces
 #sast:
 #  stage: test
 #include:
