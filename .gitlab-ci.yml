@@ -28,6 +28,12 @@ build:
 deploy:
   stage: deploy
   tags: ["kubectl"]
+  before_script:
+    - mkdir ~/.kube/
+    - echo $KUBE_CONFIG | base64 -d > config
+    - mv config ~/.kube/
+  
   script:
-  - kubectl config get-contexts
+    - kubectl get namespaces
+
 
