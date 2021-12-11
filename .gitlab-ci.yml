@@ -36,6 +36,6 @@ deploy:
     - echo $KUBE_CONFIG | base64 -d > config
     - mv config ~/.kube/
     - cat ~/.kube/config
-    - kubectl get namespaces
+    - kubectl config get-contexts
 
 
