@@ -30,7 +30,7 @@ deploy:
   tags: ["kubectl"]    
   
   script:
-    - mkdir ~/.kube/
+    #- mkdir ~/.kube/
     - echo $KUBE_CONFIG | base64 -d > config
     - mv config ~/.kube/
     - cat ~/.kube/config
