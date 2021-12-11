@@ -27,7 +27,9 @@ build:
 
 deploy:
   stage: deploy
-  tags: ["kubectl"]
+  tags: ["docker-build"]
+  image:
+    name: aliartiza75/kubectl:0.0.2
   before_script:
     - mkdir ~/.kube/
     - echo $KUBE_CONFIG | base64 -d > config
