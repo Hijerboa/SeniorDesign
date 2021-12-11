@@ -27,10 +27,13 @@ build:
 
 deploy:
   stage: deploy
-  tags: ["kubectl"]    
-  
+  tags: ["docker-build"]    
+  image: alpine:3.7
   script:
-    #- mkdir ~/.kube/
+    - apk update  && apk add --no-cache curl
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
+    - mkdir ~/.kube/
     - echo $KUBE_CONFIG | base64 -d > config
     - mv config ~/.kube/
     - cat ~/.kube/config
