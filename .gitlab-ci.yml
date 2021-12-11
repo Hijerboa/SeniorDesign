@@ -29,7 +29,7 @@ deploy:
   stage: deploy
   tags: ["kubectl"]
   script:
-  - kubectl get namespaces
+  - kubectl config view
 #sast:
 #  stage: test
 #include:
