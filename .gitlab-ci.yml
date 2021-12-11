@@ -27,9 +27,7 @@ build:
 
 deploy:
   stage: deploy
-  tags: ["docker-build"]
-  image:
-    name: aliartiza75/kubectl:0.0.2    
+  tags: ["kubectl"]    
   
   script:
     - mkdir ~/.kube/
