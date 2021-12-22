@@ -90,8 +90,8 @@ def yake_extraction(summary: str, full_text: str):
 
 if __name__ == "__main__":
     data = load_json_from_file(bill_data)
-    summary = data["3"]["summary"].replace("\n", '')
+    summary = data["1"]["summary"].replace("\n", '')
     full_text = data["3"]["full_text"].replace("\n", '')
     # string = remove_stopwords(string)
 
-    yake_exploration(summary, full_text)
+    print(yake_exploration(full_text))

@@ -1,22 +1,35 @@
 # imports
 from functools import reduce
+from numpy.core.numeric import full
 import yake
 from keybert import KeyBERT
+
+# list of keywords to exclude - WIP
+bad_keywords = ["united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "senate", "america", "state", "agency", "federal agency", ]
+
+def cleanup(my_list: list):
+    # remove confidence scores
+    my_list = list(map(lambda x: x[0], my_list))
+    
+    # remove unuseful keywords
+    my_list = [word for word in my_list if word not in bad_keywords]
+
+    return my_list[:10] if len(my_list) > 9 else my_list
 
 
 def remove_dups(my_list: list):
     """ Returns a set of tuples with unique first values (keyword) """
-
-    # return reduce(lambda unique_list, word: unique_list if word in unique_list.map(lambda x: x[0]) else unique_list.append(word), list)
-
+    
     unique_results = []
     for element in my_list:
-        if element[0] not in map(lambda word: word[0], unique_results):
+        unique_words = list(map(lambda word: word[0], unique_results))
+        if element[0] not in unique_words:
             unique_results.append(element)
     return unique_results
 
 
 def yake_extraction(summary: str, full_text: str):
+    # YAKE keyword extraction parameters
     language = "en"
     max_ngram_size = 3
     deduplication_thresold = 0.9
@@ -37,10 +50,9 @@ def yake_extraction(summary: str, full_text: str):
     keywords.extend(full_text_keywords)
     # sort to preserve keywords with higher relevance
     keywords.sort(key = lambda x: x[1])
-    keywords = remove_dups(keywords).sort(key = lambda x: x[1])
+    keywords = remove_dups(keywords)
 
-    # return top 10
-    return keywords[:10]
+    return cleanup(keywords)
 
 
 def keybert_extraction(summary: str, full_text: str):
@@ -71,28 +83,34 @@ def keybert_extraction(summary: str, full_text: str):
         diversity=diversity)
 
     # For keyBERT, we do 1 - x[1] in the sort method since highest confidence value is best
-    summary_keywords.extend(full_text_keywords)
-    summary_keywords.sort(key = lambda x: 1 - x[1])
-    return remove_dups(summary_keywords)
+    keywords = summary_keywords
+    keywords.extend(full_text_keywords)
+    keywords.sort(key = lambda x: 1 - x[1])
+    keywords = remove_dups(keywords)
+    keywords = cleanup(keywords)
+    return keywords
 
 
-def cherry_pick(keyword_lists: list):
+def filter(keyword_lists: list):
     print()
 
 
 def get_keywords(summary: str, full_text: str):
-    summary = summary.tolower()
-    full_text = full_text.tolowwer()
+    summary = summary.lower()
+    full_text = full_text.lower()
+
+    print("YAKE")
+    for i in yake_extraction(summary, full_text):
+        print(i)
+
+    print("KEYBERT")
+    for i in keybert_extraction(summary, full_text):
+        print(i)
 
 
-def wrapper(bill_id: str):
-    summary = "" # GET SUMMARY WITH BILL ID
-    full_text = "" # GET FULL TEXT WITH BILL ID
-    return get_keywords(summary, full_text)
-
-test_one = [(1, 999), (3, 999), (4, 999), (2, 999)]
-test_two = [(3, 0), (4, 0), (5, 999), (6, 999), (1, 0)]
-test_one.extend(test_two)
-test_one.sort(key = lambda x: x[1])
-
-print(remove_dups(test_one))
+import json
+if __name__ == "__main__":
+    data = json.load(open("./ian/tests/Sample_Bill_Data.txt"), strict=False)
+    summary = data["3"]["summary"].replace("\n", '')
+    full_text = data["3"]["full_text"].replace("\n", '')
+    get_keywords(summary, full_text)
