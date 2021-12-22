@@ -60,10 +60,38 @@ def gensim_exploration(string):
 
 # Can find keywords with BERT. A lot of work :(
 
+def yake_extraction(summary: str, full_text: str):
+    language = "en"
+    max_ngram_size = 3
+    deduplication_thresold = 0.9
+    deduplication_algo = 'seqm'
+    windowSize = 1
+    numOfKeywords = 10
+    
+    # get keywords from summary
+    summary_extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
+    summary_keywords = summary_extractor.extract_keywords(summary)
+    print("SUMMARY")
+    for word in summary_keywords:
+        print(word)
+
+    # get keywords from full text
+    full_text_extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
+    full_text_keywords = full_text_extractor.extract_keywords(full_text)
+    print("FULL TEXT")
+    for word in full_text_keywords:
+        print(word)
+    
+    # combine lists and sort by relevance score
+    keywords = summary_keywords.extend(full_text_keywords).sort(key = lambda x: x[1])
+
+    # return top 10
+    return keywords[:10]
 
 if __name__ == "__main__":
     data = load_json_from_file(bill_data)
-    string = data["3"]["full_text"].replace("\n", '')
-    string = remove_stopwords(string)
+    summary = data["3"]["summary"].replace("\n", '')
+    full_text = data["3"]["full_text"].replace("\n", '')
+    # string = remove_stopwords(string)
 
-    spacy_exploration(string)
+    yake_exploration(summary, full_text)
