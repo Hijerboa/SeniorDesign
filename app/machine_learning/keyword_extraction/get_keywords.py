@@ -46,8 +46,7 @@ def yake_extraction(summary: str, full_text: str):
     full_text_keywords = full_text_extractor.extract_keywords(full_text)
     
     # combine lists and sort by relevance score
-    keywords = summary_keywords
-    keywords.extend(full_text_keywords)
+    keywords = summary_keywords + full_text_keywords
     # sort to preserve keywords with higher relevance
     keywords.sort(key = lambda x: x[1])
     keywords = remove_dups(keywords)
@@ -83,29 +82,21 @@ def keybert_extraction(summary: str, full_text: str):
         diversity=diversity)
 
     # For keyBERT, we do 1 - x[1] in the sort method since highest confidence value is best
-    keywords = summary_keywords
-    keywords.extend(full_text_keywords)
+    keywords = summary_keywords + full_text_keywords
     keywords.sort(key = lambda x: 1 - x[1])
     keywords = remove_dups(keywords)
-    keywords = cleanup(keywords)
-    return keywords
-
-
-def filter(keyword_lists: list):
-    print()
+    
+    return cleanup(keywords)
 
 
 def get_keywords(summary: str, full_text: str):
     summary = summary.lower()
     full_text = full_text.lower()
 
-    print("YAKE")
-    for i in yake_extraction(summary, full_text):
-        print(i)
+    yake_keywords = yake_extraction(summary, full_text)
+    keybert_keywords = keybert_extraction(summary, full_text)
 
-    print("KEYBERT")
-    for i in keybert_extraction(summary, full_text):
-        print(i)
+    return list(set(yake_keywords + keybert_keywords))
 
 
 import json
@@ -113,4 +104,4 @@ if __name__ == "__main__":
     data = json.load(open("./ian/tests/Sample_Bill_Data.txt"), strict=False)
     summary = data["3"]["summary"].replace("\n", '')
     full_text = data["3"]["full_text"].replace("\n", '')
-    get_keywords(summary, full_text)
+    print(get_keywords(summary, full_text))
