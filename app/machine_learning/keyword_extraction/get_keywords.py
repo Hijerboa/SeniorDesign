@@ -5,7 +5,7 @@ import yake
 from keybert import KeyBERT
 
 # list of keywords to exclude - WIP
-bad_keywords = ["united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "senate", "america", "state", "agency", "federal agency", ]
+bad_keywords = ["united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "senate", "america", "state", "agency", "federal agency", "military", "spending", "healthcare"]
 
 def cleanup(my_list: list):
     # remove confidence scores
