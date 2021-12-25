@@ -97,7 +97,19 @@ def keybert_extraction(summary: str, full_text: str):
     return cleanup(keywords)
 
 
-def get_keywords(summary: str, full_text: str):
+def get_keywords(bill_id: str):
+    # GET BILL INFO HERE - IDK HOW TO DO THIS
+    title = title
+    summary = summary.lower()
+    full_text = full_text.lower()
+
+    yake_keywords = yake_extraction(summary, full_text)
+    keybert_keywords = keybert_extraction(summary, full_text)
+
+    return list(set(yake_keywords + keybert_keywords)).append(title)
+
+
+def test_get_keywords(summary: str, full_text: str):
     summary = summary.lower()
     full_text = full_text.lower()
 
@@ -116,7 +128,7 @@ if __name__ == "__main__":
         summary = data[f"{i}"]["summary"].replace("\n", '')
         full_text = data[f"{i}"]["full_text"].replace("\n", '')
         print(f'Bill #{i}\n---------------\n')
-        for word in get_keywords(summary, full_text):
+        for word in test_get_keywords(summary, full_text):
             print(f"          {word}")
 
 # SHOULD INCLUDE BILL TITLE AS KEYWORD
