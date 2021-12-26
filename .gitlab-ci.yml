@@ -6,22 +6,35 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
 - build
+- deploy
 
 build:
   stage: build
+  tags: ["docker-build"]
   before_script:
   - docker info
   script:
   - echo "$CI_REGISTRY_IMAGE"
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-  - docker build -t "$CI_REGISTRY_IMAGE" .
-  - docker image tag "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE/images:lmao"
-  - docker image tag "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE/images:latest"
-  - docker image push "$CI_REGISTRY_IMAGE/images:latest"
-  - docker image push "$CI_REGISTRY_IMAGE/images:lmao"
+  #- echo "$CI_PIPELINE_IID"
+  #- docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  #- docker build -t "$CI_REGISTRY_IMAGE" .
+  #- docker image tag "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE/images:$CI_PIPELINE_IID"
+  #- docker image tag "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE/images:latest"
+  #- docker image push "$CI_REGISTRY_IMAGE/images:latest"
+  #- docker image push "$CI_REGISTRY_IMAGE/images:$CI_PIPELINE_IID"
   #- docker push "$CI_REGISTRY_IMAGE:latest"
   #- docker push "$CI_REGISTRY_IMAGE:lmao"
-#sast:
-#  stage: test
-#include:
-#- template: Auto-DevOps.gitlab-ci.yml
+
+deploy:
+  stage: deploy
+  tags: ["docker-build"]    
+  image: dtzar/helm-kubectl
+  script:
+    - kubectl config set-cluster k8s --server="${KUBE_SERVER}"
+    - kubectl config set clusters.k8s.certificate-authority-data ${KUBE_CERTIFICATE_AUTHORITY_DATA}
+    - kubectl config set-credentials gitlab --token="${KUBE_USER_TOKEN}"
+    - kubectl config set-context default --cluster=k8s --user=gitlab
+    - kubectl config use-context default
+    - kubectl get namespaces
+
+
