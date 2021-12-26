@@ -94,7 +94,7 @@ def get_keywords(summary: str, full_text: str):
 
 import json
 if __name__ == "__main__":
-    data = json.load(open("/Users/ianwu/Desktop/Senior Design/SeniorDesign/app/machine_learning/keyword_extraction/ian/tests/Sample_Bill_Data.txt"), strict=False)
+    data = json.load(open("/Users/nicleary/Documents/Repos/Senior Design/SeniorDesign/app/machine_learning/keyword_extraction/ian/tests/Sample_Bill_Data.txt"), strict=False)
 
     for i in [1, 3]:
         summary = data[f"{i}"]["summary"].replace("\n", '')
