@@ -22,6 +22,8 @@ services:
 
   initializer:
     platform: linux/x86_64
+    volumes:
+      - ./app/:/app/
     build:
       context: .
       dockerfile: Dockerfile
@@ -30,33 +32,47 @@ services:
       - db
 
   db:
-    image: library/mysql:8.0.26
+    image: mariadb:10.7
     platform: linux/x86_64
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       db_url: mysql://mysql:mysql@db:3306/mysql
-      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
-      MYSQL_USER: mysql
-      MYSQL_PASSWORD: mysql
-      MYSQL_DATABASE: mysql
-    cap_add:
-      - SYS_NICE  # CAP_SYS_NICE
+      MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+      MARIADB_USER: maria
+      MARIADB_PASSWORD: maria
+      MARIADB_DATABASE: maria
     ports:
       - 3306:3306
 
   redis:
     image: redis:latest
 
-  rabbit:
-    image: rabbitmq:3.8
+  flower:
+    image: mher/flower:0.9.5
     environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=bigpassword
+      - CELERY_BROKER_URL=amqp://admin:bigpassword@rabbit:5672//
+      - CELERY_BACKEND_URL=redis://redis:6379/0
+      - FLOWER_PORT=5555
+      - FLOWER_PURGE_OFFLINE_WORKERS=10
+    ports:
+      - 5555:5555
+    links:
+      - rabbit
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  rabbit:
+    build:
+      context: rabbit
+      dockerfile: Dockerfile.rabbit
 
   celery_worker_tweet_archive:
     platform: linux/x86_64
+    volumes:
     build:
       context: .
       dockerfile: Dockerfile
@@ -121,4 +137,4 @@ services:
       - rabbit
 
 volumes:
-  mysql_data:
+  mariadb_data:
