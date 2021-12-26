@@ -22,8 +22,7 @@ build:
   - docker image tag "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE/images:latest"
   - docker image push "$CI_REGISTRY_IMAGE/images:latest"
   - docker image push "$CI_REGISTRY_IMAGE/images:$CI_PIPELINE_IID"
-  - docker push "$CI_REGISTRY_IMAGE:latest"
-  - docker push "$CI_REGISTRY_IMAGE:lmao"
+  - docker push "$CI_REGISTRY_IMAGE:latest"x
 
 deploy:
   stage: deploy
