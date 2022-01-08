@@ -1,12 +1,7 @@
 # Celery Initialization
-from celery import Celery, current_task, uuid
-from celery.exceptions import CeleryError
-from celery.result import AsyncResult
+from celery import Celery
 from util.cred_handler import get_secret
 from db.database_connection import initialize
-from db.db_utils import get_or_create, get_single_object
-from db.models import Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, User
-from twitter_utils.user_gatherer import create_user_object
 
 BROKER_URL = 'amqp://{0}:{1}@rabbit//'.format(get_secret("RABBITMQ_USER"), get_secret("RABBITMQ_PASS"))
 

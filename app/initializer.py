@@ -17,6 +17,6 @@ alembic.config.main(
 )
 
 perform_initial_tasks()
-time.sleep(5)
+"""time.sleep(5)
 for i in range(0, 1):
-    keyword_extraction_by_version.apply_async((i,))
+    keyword_extraction_by_version.apply_async((i,))"""

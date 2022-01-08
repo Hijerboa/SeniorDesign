@@ -2,7 +2,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Float, UniqueConstraint, LargeBinary, \
     Table, DateTime, Date, Text
 from sqlalchemy.dialects.mysql import LONGTEXT
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relation, relationship
 import datetime
 
 Base = declarative_base()
@@ -183,9 +183,9 @@ class Bill(Base):
     sub_committee_codes = relationship(SubcommitteeCodes, secondary=bill_to_subcommittee_code)
     subjects = relationship(BillSubject, secondary=bill_to_subject)
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
-    actions = relationship('BillAction')
-    versions = relationship('BillVersion')
-    keywords = relationship('BillKeyWord')
+    actions = relationship('BillAction', backref='bill_object')
+    versions = relationship('BillVersion', backref='bill_object')
+    keywords = relationship('BillKeyWord', backref='bill_object')
 
 
 class Task(PrimaryKeyBase, Base):

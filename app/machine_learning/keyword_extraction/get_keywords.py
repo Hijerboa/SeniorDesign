@@ -9,6 +9,18 @@ bad_keywords = ["united states", "act", "section", "united", "states", "united s
 stopwords = ['', 'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any', 'are', 'aren', "aren't", 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'couldn', "couldn't", 'd', 'did', 'didn', "didn't", 'do', 'does', 'doesn', "doesn't", 'doing', 'don', "don't", 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn', "hadn't", 'has', 'hasn', "hasn't", 'have', 'haven', "haven't", 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'isn', "isn't", 'it', "it's", 'its', 'itself', 'just', 'll', 'm', 'ma', 'me', 'mightn', "mightn't", 'more', 'most', 'mustn', "mustn't", 'my', 'myself', 'needn', "needn't", 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 're', 's', 'same', 'shan', "shan't", 'she', "she's", 'should', "should've", 'shouldn', "shouldn't", 'so', 'some', 'such', 't', 'than', 'that', "that'll", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 've', 'very', 'was', 'wasn', "wasn't", 'we', 'were', 'weren', "weren't", 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'won', "won't", 'wouldn', "wouldn't", 'y', 'you', "you'd", "you'll", "you're", "you've", 'your', 'yours', 'yourself', 'yourselves']
 
 
+# YAKE keyword extraction parameters
+language = "en"
+max_ngram_size = 3
+deduplication_thresold = 0.45
+deduplication_algo = 'seqm'
+windowSize = 3
+numOfKeywords = 20
+
+extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
+
+kw_model = KeyBERT()
+
 def remove_stopwords(in_string):
     out_string = ""
     split_string = in_string.split(' ')
@@ -46,23 +58,12 @@ def remove_dups(my_list: list):
 
 
 def yake_extraction(summary: str, full_text: str):
-    # YAKE keyword extraction parameters
-    language = "en"
-    max_ngram_size = 3
-    deduplication_thresold = 0.45
-    deduplication_algo = 'seqm'
-    windowSize = 3
-    numOfKeywords = 20
-    
-    # get keywords
-    extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
-    keywords = extractor.extract_keywords(summary + " " + full_text)
+    keywords = extractor.extract_keywords(summary)
 
     return cleanup(keywords)
 
 
 def keybert_extraction(summary: str, full_text: str):
-    kw_model = KeyBERT()
 
     n_gram_range = (2, 4)
     stop_words = None # 'english'
@@ -81,16 +82,16 @@ def keybert_extraction(summary: str, full_text: str):
         use_mmr=use_mmr,
         diversity=summary_diversity)
 
-    full_text_keywords = kw_model.extract_keywords(
-        docs=full_text, 
-        keyphrase_ngram_range=n_gram_range, 
-        stop_words=stop_words, 
-        top_n=top_n,
-        use_mmr=use_mmr,
-        diversity=fulltext_diversity)
+    # full_text_keywords = kw_model.extract_keywords(
+    #     docs=full_text, 
+    #     keyphrase_ngram_range=n_gram_range, 
+    #     stop_words=stop_words, 
+    #     top_n=top_n,
+    #     use_mmr=use_mmr,
+    #     diversity=fulltext_diversity)
 
     # For keyBERT, we do 1 - x[1] in the sort method since highest confidence value is best
-    keywords = summary_keywords + full_text_keywords
+    keywords = summary_keywords #+ full_text_keywords
     keywords.sort(key = lambda x: 1 - x[1])
     keywords = remove_dups(keywords)
     
