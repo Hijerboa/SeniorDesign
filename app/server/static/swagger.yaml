@@ -39,6 +39,20 @@ paths:
           schema:
             type: "string"
           description: The query to search for in recent tweets
+        - in: query
+          name: start
+          required: true
+          schema:
+            type: "string"
+          description: Start date to search
+          example: "2020-08-31"
+        - in: query
+          name: end
+          required: true
+          schema:
+            type: "string"
+          description: Start date to search
+          example: "2020-08-31"
         
       tags:
         - "Twitter"

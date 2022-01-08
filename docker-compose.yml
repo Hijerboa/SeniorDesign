@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     volumes:
     - ./app/:/app/
-    - ../data/:/app/data
     ports:
       - 5000:5000
     environment:
@@ -27,6 +26,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
     command: ['python3', 'initializer.py']
     depends_on:
       - db
@@ -46,14 +48,10 @@ services:
     ports:
       - 3306:3306
 
-  redis:
-    image: redis:latest
-
   flower:
     image: mher/flower:0.9.5
     environment:
       - CELERY_BROKER_URL=amqp://admin:bigpassword@rabbit:5672//
-      - CELERY_BACKEND_URL=redis://redis:6379/0
       - FLOWER_PORT=5555
       - FLOWER_PURGE_OFFLINE_WORKERS=10
     ports:
@@ -69,6 +67,8 @@ services:
     build:
       context: rabbit
       dockerfile: Dockerfile.rabbit
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
 
   celery_worker_tweet_archive:
     platform: linux/x86_64
@@ -76,10 +76,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_archive
+    command: celery -A tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_archive
     volumes:
     - ./app/:/app/
-    - ../data/:/app/data
     environment:
       - cred_path=util/cred-user-1.json
       - RABBITMQ_USER=admin
@@ -92,10 +91,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_stream,propublica_tasks
+    command: celery -A tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_stream,propublica_tasks
     volumes:
     - ./app/:/app/
-    - ../data/:/app/data
     environment:
       - cred_path=util/cred-user-2.json
       - RABBITMQ_USER=admin
@@ -108,10 +106,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_users,propublica_tasks
+    command: celery -A tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_users,propublica_tasks
     volumes:
       - ./app/:/app/
-      - ../data/:/app/data
     environment:
       - cred_path=util/cred-user-1.json
       - RABBITMQ_USER=admin
@@ -125,10 +122,24 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A server.tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_users,propublica_tasks
+    command: celery -A tasks worker -l INFO --uid 1 --concurrency 1 -Q twitter_users,propublica_tasks
     volumes:
       - ./app/:/app/
-      - ../data/:/app/data
+    environment:
+      - cred_path=util/cred-user-2.json
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
+    depends_on:
+      - rabbit
+
+  celery_worker_ml:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A tasks worker -l INFO -Q ml_tasks --concurrency 2
+    volumes:
+      - ./app/:/app/
     environment:
       - cred_path=util/cred-user-2.json
       - RABBITMQ_USER=admin
@@ -138,3 +149,4 @@ services:
 
 volumes:
   mariadb_data:
+  rabbitmq:

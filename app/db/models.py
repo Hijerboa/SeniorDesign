@@ -237,6 +237,4 @@ class BillKeyWord(PrimaryKeyBase, Base):
     __tablename__ = 'bill_key_words'
 
     bill = Column(String(length=16), ForeignKey('bills.bill_id'))
-    training_model = Column(String(length=16))
     phrase = Column(String(length=128), nullable=False)
-    value = Column(Float(), nullable=False)

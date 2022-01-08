@@ -8,8 +8,6 @@ COPY app/requirements.txt .
 
 RUN pip install --upgrade pip setuptools wheel
 
-RUN ls
-
 RUN pip install -r requirements.txt
 
 RUN apt-get update \

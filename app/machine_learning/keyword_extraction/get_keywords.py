@@ -97,19 +97,7 @@ def keybert_extraction(summary: str, full_text: str):
     return cleanup(keywords)
 
 
-def get_keywords(bill_id: str):
-    # GET BILL INFO HERE - IDK HOW TO DO THIS
-    title = title
-    summary = summary.lower()
-    full_text = full_text.lower()
-
-    yake_keywords = yake_extraction(summary, full_text)
-    keybert_keywords = keybert_extraction(summary, full_text)
-
-    return list(set(yake_keywords + keybert_keywords)).append(title)
-
-
-def test_get_keywords(summary: str, full_text: str):
+def get_keywords(summary: str, full_text: str):
     summary = summary.lower()
     full_text = full_text.lower()
 
@@ -122,7 +110,7 @@ def test_get_keywords(summary: str, full_text: str):
 # TESTING
 import json
 if __name__ == "__main__":
-    data = json.load(open("/Users/nicleary/Documents/Repos/Senior Design/SeniorDesign/app/machine_learning/keyword_extraction/ian/tests/Sample_Bill_Data.txt"), strict=False)
+    data = json.load(open("/home/nicleary/Documents/Repos/SeniorDesign/app/machine_learning/keyword_extraction/ian/tests/Sample_Bill_Data.txt"), strict=False)
 
     for i in [1, 3]:
         summary = data[f"{i}"]["summary"].replace("\n", '')
