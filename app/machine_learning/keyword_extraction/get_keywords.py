@@ -57,13 +57,13 @@ def remove_dups(my_list: list):
     return unique_results
 
 
-def yake_extraction(summary: str, full_text: str):
+def yake_extraction(summary: str):
     keywords = extractor.extract_keywords(summary)
 
     return cleanup(keywords)
 
 
-def keybert_extraction(summary: str, full_text: str):
+def keybert_extraction(summary: str):
 
     n_gram_range = (2, 4)
     stop_words = None # 'english'
@@ -82,28 +82,19 @@ def keybert_extraction(summary: str, full_text: str):
         use_mmr=use_mmr,
         diversity=summary_diversity)
 
-    # full_text_keywords = kw_model.extract_keywords(
-    #     docs=full_text, 
-    #     keyphrase_ngram_range=n_gram_range, 
-    #     stop_words=stop_words, 
-    #     top_n=top_n,
-    #     use_mmr=use_mmr,
-    #     diversity=fulltext_diversity)
-
     # For keyBERT, we do 1 - x[1] in the sort method since highest confidence value is best
-    keywords = summary_keywords #+ full_text_keywords
+    keywords = summary_keywords
     keywords.sort(key = lambda x: 1 - x[1])
     keywords = remove_dups(keywords)
     
     return cleanup(keywords)
 
 
-def get_keywords(summary: str, full_text: str):
+def get_keywords(summary: str):
     summary = summary.lower()
-    full_text = full_text.lower()
 
-    yake_keywords = yake_extraction(summary, full_text)
-    keybert_keywords = keybert_extraction(summary, full_text)
+    yake_keywords = yake_extraction(summary)
+    keybert_keywords = keybert_extraction(summary)
 
     return list(set(yake_keywords + keybert_keywords))
 
