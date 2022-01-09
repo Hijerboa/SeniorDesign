@@ -3,7 +3,7 @@ import pymysql
 pymysql.install_as_MySQLdb()
 from db.models import Bill
 
-def fuck_you_nick():
+def db_conn_test():
     initialize()
     session = create_session()
     bills = session.query(Bill).limit(50).all()
