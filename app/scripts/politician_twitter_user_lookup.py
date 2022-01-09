@@ -3,7 +3,7 @@ from db.database_connection import initialize, create_session
 import requests
 from util.cred_handler import get_secret
 
-def do_things():
+def politician_user_lookup():
     initialize()
     session = create_session()
 

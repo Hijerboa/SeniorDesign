@@ -10,7 +10,7 @@ def divide_chunks(l, n):
         yield l[i:i + n]
 
 
-def do_things():
+def delete_old_users():
     initialize()
     session = create_session()
     author_ids = []

@@ -12,7 +12,7 @@ def divide_chunks(l, n):
         yield l[i:i + n]
 
 
-def do_things():
+def gather_twitter_user_info():
     initialize()
     session = create_session()
 

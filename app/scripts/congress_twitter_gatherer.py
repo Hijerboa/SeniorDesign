@@ -4,7 +4,7 @@ from util.cred_handler import get_secret
 import requests
 
 
-def do_things():
+def gather_congress_twitter():
     initialize()
     session = create_session()
     all_congress = session.query(CongressMemberData).all()

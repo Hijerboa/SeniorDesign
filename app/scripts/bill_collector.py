@@ -7,7 +7,7 @@ import pymysql
 import time
 pymysql.install_as_MySQLdb()
 
-def do_things(congress_id, congress_chamber):
+def collect_bills(congress_id, congress_chamber):
 
     session = create_session()
     num_bills = 0

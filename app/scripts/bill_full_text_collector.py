@@ -27,7 +27,7 @@ class MyHTMLParser(HTMLParser):
         return self.important_data
 
 
-def do_things():
+def collect_full_text():
     num_bill = 0
 
     gov_api: GovInfoAPI = GovInfoAPI(get_secret('gov_info_url'), get_secret('gov_info_key'))

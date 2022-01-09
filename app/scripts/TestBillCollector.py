@@ -4,7 +4,7 @@ from db.models import Bill, BillSubject, CommitteeCodes, SubcommitteeCodes
 from db.db_utils import get_or_create, get_single_object
 from db.database_connection import initialize, create_session
 
-def do_things():
+def bill_collector_test():
     initialize()
     session = create_session()
     current_offset = 0

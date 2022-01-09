@@ -9,7 +9,7 @@ import time
 pymysql.install_as_MySQLdb()
 
 
-def do_things():
+def collect_without_version():
     num_bill = 0
 
     gov_api: GovInfoAPI = GovInfoAPI(get_secret('gov_info_url'), get_secret('gov_info_key'))
