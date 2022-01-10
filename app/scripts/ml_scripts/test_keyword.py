@@ -1,8 +1,6 @@
-from typing_extensions import runtime
 from machine_learning.keyword_extraction.get_keywords import get_keywords
 from db.database_connection import initialize, create_session
 from db.models import Bill, BillVersion
-from db.db_utils import get_single_object
 from datetime import datetime
 
 def test_keyword_extraction():
