@@ -11,14 +11,3 @@ In terms of what needs to be done with these:
     
     from summaries. This and variations upon it appear in a large number 
     of bills--we probably want to not be getting key words from this.
-
-5. I'd look to see if there's way to remove "duplicate-ish" 
-    keywords from the process. For instance, theres a result like this:
-
-    ['goals ideals ', 'national suffragists day ', 'promote awareness ', 
-    'right women ', 'national suffragists ', 'ideals national suffragists ', 
-    'suffragists day promote ', 'women suffragists ', 'women suffragists worked ', 
-    'suffragists worked ', 'women vote ', 'day promote ', 'awareness women ', 
-    'supports goals '] 
-
-    where we see the idea of national suffragists several times

@@ -8,14 +8,14 @@ from db.models import Bill, BillVersion
 
 # Prefixes for title-based keywords
 prefixes = {
-    "hr" : ["HB", "HB-", "H.B. ", "House Bill ", "H Bill"],
-    "hres" : ["hres", "House Res ", "House Resolution ", "H Res ", "HR ", "H.R. ", ],
-    "hconres" : ["hconres", "House Concurrent Res ", "House Con Res ", "House ConRes ", "House Concurrent Resolution ", "House Con Resolution ", "H Con Res ", "H Concurrent Res ", "H Concurrent Resolution ", "H Con Resolution ", "HR Con Res ", "HR Concurrent Res ", "HR Concurrent Resolution ", "HR Con Resolution ", "H.C.R. ", ],
-    "hjres" : ["hjres", "House Joint Res ", "House Joint Resolution ", "H J Res ", "H Joint Res ", "H J Res ", "HR J Res ", "HR Joint Res ", "HR J Res ", "HJR ", "H.J.R. ", ],
-    "s" : ["SB", "SB-", "S.B. ", "Senate Bill ", "S Bill"],
-    "sres" : ["sres", "Senate Res ", "Senate Resolution ", "S Res ", "S Resolution ", "SR ", "S.R. ", ],
-    "sconres" : ["sconres", "Senate Concurrent Res ", "Senate Con Res ", "Senate ConRes ", "Senate Concurrent Resolution ", "Senate Con Resolution ", "S Con Res ", "S Concurrent Res ", "S Concurrent Resolution ", "S Con Resolution ",  "S.C.R. ", ],
-    "sjres" : ["sjres", "Senate Joint Res ", "Senate Joint Resolution ", "S J Res ", "S Joint Res ", "S Joint Resolution ", "S J Resolution ", "SJR ", "S.J.R. ", ],
+    "hr" : ["HB ", "HB-", "H.B. ", "House Bill ", "H Bill "],
+    "hres" : ["hres ", "House Res ", "House Resolution ", "H Res ", "HR ", "H.R. ", ],
+    "hconres" : ["hconres ", "House Concurrent Res ", "House Con Res ", "House ConRes ", "House Concurrent Resolution ", "House Con Resolution ", "H Con Res ", "H Concurrent Res ", "H Concurrent Resolution ", "H Con Resolution ", "HR Con Res ", "HR Concurrent Res ", "HR Concurrent Resolution ", "HR Con Resolution ", "H.C.R. ", ],
+    "hjres" : ["hjres ", "House Joint Res ", "House Joint Resolution ", "H J Res ", "H Joint Res ", "H J Res ", "HR J Res ", "HR Joint Res ", "HR J Res ", "HJR ", "H.J.R. ", ],
+    "s" : ["SB ", "SB-", "S.B. ", "Senate Bill ", "S Bill "],
+    "sres" : ["sres ", "Senate Res ", "Senate Resolution ", "S Res ", "S Resolution ", "SR ", "S.R. ", ],
+    "sconres" : ["sconres ", "Senate Concurrent Res ", "Senate Con Res ", "Senate ConRes ", "Senate Concurrent Resolution ", "Senate Con Resolution ", "S Con Res ", "S Concurrent Res ", "S Concurrent Resolution ", "S Con Resolution ",  "S.C.R. ", ],
+    "sjres" : ["sjres ", "Senate Joint Res ", "Senate Joint Resolution ", "S J Res ", "S Joint Res ", "S Joint Resolution ", "S J Resolution ", "SJR ", "S.J.R. ", ],
 }
 
 # list of keywords to exclude
@@ -32,6 +32,13 @@ numOfKeywords = 20
 extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
 
 # KeyBERT keyword extraction model object
+n_gram_range = (2, 4)
+stop_words = None # 'english'
+top_n = 10
+# MMR (Maximal Marginal Relevance) | if set to true, diversity specifies how related the keywords are
+# For example, diversity of 0.8 may result in lower confidence but much more diverse words
+use_mmr = True
+kb_diversity = 0.4
 kw_model = KeyBERT()
 
 
@@ -98,23 +105,13 @@ def yake_extraction(summary: str):
 
 
 def keybert_extraction(summary: str):
-
-    n_gram_range = (2, 4)
-    stop_words = None # 'english'
-    top_n = 10
-    # MMR (Maximal Marginal Relevance) | if set to true, diversity specifies how related the keywords are
-    # For example, diversity of 0.8 may result in lower confidence but much more diverse words
-    use_mmr = True
-    summary_diversity = 0.4
-    fulltext_diversity = 0.4
-    
     summary_keywords = kw_model.extract_keywords(
         docs=summary, 
         keyphrase_ngram_range=n_gram_range, 
         stop_words=stop_words, 
         top_n=top_n,
         use_mmr=use_mmr,
-        diversity=summary_diversity)
+        diversity=kb_diversity)
 
     # For keyBERT, we do 1 - x[1] in the sort method since highest confidence value is best
     keywords = summary_keywords
