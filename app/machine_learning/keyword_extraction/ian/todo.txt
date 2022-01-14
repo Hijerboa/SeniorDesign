@@ -12,9 +12,6 @@ In terms of what needs to be done with these:
     from summaries. This and variations upon it appear in a large number 
     of bills--we probably want to not be getting key words from this.
 
-4. Include the bill title, and variations upon it 
-    (such as House Res 57, H Res 57, HR 57, H.R. 57, etc) as keywords
-
 5. I'd look to see if there's way to remove "duplicate-ish" 
     keywords from the process. For instance, theres a result like this:
 

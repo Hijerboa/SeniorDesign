@@ -7,16 +7,17 @@ def test_keyword_extraction():
     initialize()
     session = create_session()
     num = 10
-    bills = session.query(Bill).offset(1010).limit(num).all()
+    bills = session.query(Bill).offset(10100).limit(num).all()
     total_runtime = 0
     for bill in bills:
         # A handful of bills are screwy and don't have summaries
         if bill.summary == '':
             continue
         start = datetime.now()
+
         print(f"\n{bill.title}")
-        print(bill.number)
         print(get_keywords(bill))
+
         end = datetime.now()
         total_runtime += (end-start).total_seconds()
     average = total_runtime/num

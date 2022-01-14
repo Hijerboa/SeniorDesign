@@ -6,21 +6,44 @@ import yake
 from keybert import KeyBERT
 from db.models import Bill, BillVersion
 
-# list of keywords to exclude - WIP
-bad_keywords = ["united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "senate", "america", "state", "agency", "federal agency", "military", "spending", "healthcare"]
+# Prefixes for title-based keywords
+prefixes = {
+    "hr" : ["HB", "HB-", "H.B. ", "House Bill ", "H Bill"],
+    "hres" : ["hres", "House Res ", "House Resolution ", "H Res ", "HR ", "H.R. ", ],
+    "hconres" : ["hconres", "House Concurrent Res ", "House Con Res ", "House ConRes ", "House Concurrent Resolution ", "House Con Resolution ", "H Con Res ", "H Concurrent Res ", "H Concurrent Resolution ", "H Con Resolution ", "HR Con Res ", "HR Concurrent Res ", "HR Concurrent Resolution ", "HR Con Resolution ", "H.C.R. ", ],
+    "hjres" : ["hjres", "House Joint Res ", "House Joint Resolution ", "H J Res ", "H Joint Res ", "H J Res ", "HR J Res ", "HR Joint Res ", "HR J Res ", "HJR ", "H.J.R. ", ],
+    "s" : ["SB", "SB-", "S.B. ", "Senate Bill ", "S Bill"],
+    "sres" : ["sres", "Senate Res ", "Senate Resolution ", "S Res ", "S Resolution ", "SR ", "S.R. ", ],
+    "sconres" : ["sconres", "Senate Concurrent Res ", "Senate Con Res ", "Senate ConRes ", "Senate Concurrent Resolution ", "Senate Con Resolution ", "S Con Res ", "S Concurrent Res ", "S Concurrent Resolution ", "S Con Resolution ",  "S.C.R. ", ],
+    "sjres" : ["sjres", "Senate Joint Res ", "Senate Joint Resolution ", "S J Res ", "S Joint Res ", "S Joint Resolution ", "S J Resolution ", "SJR ", "S.J.R. ", ],
+}
+
+# list of keywords to exclude
+bad_keywords = ["united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "senate", "america", "state", "agency", "federal agency", "military", "spending", "healthcare", "prohibits federal", "good conscience"]
 stopwords = ['', 'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any', 'are', 'aren', "aren't", 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'couldn', "couldn't", 'd', 'did', 'didn', "didn't", 'do', 'does', 'doesn', "doesn't", 'doing', 'don', "don't", 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn', "hadn't", 'has', 'hasn', "hasn't", 'have', 'haven', "haven't", 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'isn', "isn't", 'it', "it's", 'its', 'itself', 'just', 'll', 'm', 'ma', 'me', 'mightn', "mightn't", 'more', 'most', 'mustn', "mustn't", 'my', 'myself', 'needn', "needn't", 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 're', 's', 'same', 'shan', "shan't", 'she', "she's", 'should', "should've", 'shouldn', "shouldn't", 'so', 'some', 'such', 't', 'than', 'that', "that'll", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 've', 'very', 'was', 'wasn', "wasn't", 'we', 'were', 'weren', "weren't", 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'won', "won't", 'wouldn', "wouldn't", 'y', 'you', "you'd", "you'll", "you're", "you've", 'your', 'yours', 'yourself', 'yourselves']
 
-# YAKE keyword extraction parameters
+# YAKE extractor object
 language = "en"
 max_ngram_size = 3
 deduplication_thresold = 0.45
 deduplication_algo = 'seqm'
 windowSize = 3
 numOfKeywords = 20
-
 extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
 
+# KeyBERT keyword extraction model object
 kw_model = KeyBERT()
+
+
+def get_base_keywords(bill: Bill):
+    if bill.bill_type not in prefixes.keys():
+        return []
+
+    prefix_list = prefixes[bill.bill_type]
+    number = bill.number.split(".")[-1]
+
+    return [bill.bill_id, bill.number] + list(map(lambda x: x + number, prefix_list))
+
 
 def remove_stopwords(in_string):
     out_string = ""
@@ -109,9 +132,10 @@ def derive_keywords(summary: str):
 
     return list(set(yake_keywords + keybert_keywords))
 
+
 def get_keywords(bill: Bill):
     # get list of obvious keywords
-    known_keywords = []
+    known_keywords = get_base_keywords(bill)
     # use NLP to generate other keywords
     generated_keywords = derive_keywords(bill.summary.replace('\n', ''))
     
