@@ -4,6 +4,7 @@ from string import punctuation
 from numpy.core.numeric import full
 import yake
 from keybert import KeyBERT
+from db.models import Bill, BillVersion
 
 # list of keywords to exclude - WIP
 bad_keywords = ["united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "senate", "america", "state", "agency", "federal agency", "military", "spending", "healthcare"]
@@ -41,17 +42,17 @@ def cleanup(my_list: list):
     # remove confidence scores
     my_list = list(map(lambda x: x[0], my_list))
 
-    # remove any monograms
-    my_list = filter(lambda x: len(x.split(" ")) > 1, my_list)
-    
-    # remove unuseful keywords
-    my_list = [word for word in my_list if word not in bad_keywords]
-
     # remove stopwords from selected keywords/phrases
     my_list = list(map(lambda x: remove_stopwords(x), my_list))
 
     # remove punctuation from keywords
     my_list = list(map(lambda x: remove_punc(x), my_list))
+
+    # remove any monograms
+    my_list = filter(lambda x: len(x.split(" ")) > 1, my_list)
+    
+    # remove unuseful keywords
+    my_list = [word for word in my_list if word not in bad_keywords]
 
     return my_list[:10] if len(my_list) > 9 else my_list
 
@@ -81,7 +82,7 @@ def keybert_extraction(summary: str):
     # MMR (Maximal Marginal Relevance) | if set to true, diversity specifies how related the keywords are
     # For example, diversity of 0.8 may result in lower confidence but much more diverse words
     use_mmr = True
-    summary_diversity = 0.3
+    summary_diversity = 0.4
     fulltext_diversity = 0.4
     
     summary_keywords = kw_model.extract_keywords(
@@ -100,7 +101,7 @@ def keybert_extraction(summary: str):
     return cleanup(keywords)
 
 
-def get_keywords(summary: str):
+def derive_keywords(summary: str):
     summary = summary.lower()
 
     yake_keywords = yake_extraction(summary)
@@ -108,17 +109,10 @@ def get_keywords(summary: str):
 
     return list(set(yake_keywords + keybert_keywords))
 
-
-# TESTING
-import json
-if __name__ == "__main__":
-    data = json.load(open("/home/nicleary/Documents/Repos/SeniorDesign/app/machine_learning/keyword_extraction/ian/tests/Sample_Bill_Data.txt"), strict=False)
-
-    for i in [1, 3]:
-        summary = data[f"{i}"]["summary"].replace("\n", '')
-        full_text = data[f"{i}"]["full_text"].replace("\n", '')
-        print(f'Bill #{i}\n---------------\n')
-        for word in test_get_keywords(summary, full_text):
-            print(f"          {word}")
-
-# SHOULD INCLUDE BILL TITLE AS KEYWORD
+def get_keywords(bill: Bill):
+    # get list of obvious keywords
+    known_keywords = []
+    # use NLP to generate other keywords
+    generated_keywords = derive_keywords(bill.summary.replace('\n', ''))
+    
+    return list(set(known_keywords + generated_keywords))
