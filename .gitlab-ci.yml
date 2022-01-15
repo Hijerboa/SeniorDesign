@@ -11,7 +11,8 @@ stages:
 image: docker:19.03.12
 
 services:
-  - command: ["--insecure-registry=$CI_REGISTRY"]
+  - name: "Test"
+    command: ["--insecure-registry=$CI_REGISTRY"]
 
 build:
   stage: build
