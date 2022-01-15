@@ -10,11 +10,6 @@ stages:
 
 image: docker:19.03.12
 
-services:
-  - name: docker:dind
-    docker: 19.03.12-dind
-    command: ["--insecure-registry=$CI_REGISTRY"]
-
 build:
   stage: build
   tags: ["docker-build"]
