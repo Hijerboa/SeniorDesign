@@ -39,9 +39,10 @@ def create_app(test_config=None):
     
     app.logger.info("Registering blueprints")
 
-    from . import user, twitter, propublica
+    from . import user, twitter, propublica, ml
     app.register_blueprint(user.bp, url_prefix='/user')
     app.register_blueprint(twitter.bp, url_prefix='/twitter')
     app.register_blueprint(propublica.bp, url_prefix='/propublica')
+    app.register_blueprint(ml.bp, url_prefix='/ml_tasks')
 
     return app

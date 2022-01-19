@@ -19,3 +19,4 @@ keybert==0.5.0
 yake==0.4.8
 numpy
 vaderSentiment==3.3.2
+mysql-connector

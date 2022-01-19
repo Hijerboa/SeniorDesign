@@ -1,7 +1,5 @@
-from tasks import CELERY
+from tasks.task_initializer import CELERY
 
-import time
-import datetime
 from util.cred_handler import get_secret
 from apis.twitter_api import TwitterAPI
 from apis.propublica_api import ProPublicaAPI
@@ -9,6 +7,10 @@ from db.database_connection import create_session
 from db.db_utils import get_or_create, get_single_object
 from db.models import Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, User
 from twitter_utils.user_gatherer import create_user_object
+
+from datetime import datetime, timedelta
+from pytz import timezone
+my_tz = timezone('US/Eastern')
 
 @CELERY.task
 def tweet_puller_stream(tweet_query: str, next_token, start_date, end_date):
@@ -28,7 +30,7 @@ def tweet_puller_stream(tweet_query: str, next_token, start_date, end_date):
         try:
             tweet_dict = {
                 'author_id': tweet['author_id'],
-                'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                'created_at': datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                 'text': tweet['text'],
                 'source': tweet['source'],
                 'lang': tweet['lang'],
@@ -50,7 +52,7 @@ def tweet_puller_stream(tweet_query: str, next_token, start_date, end_date):
             twitter_users.append(str(tweet['author_id']))
             if len(twitter_users) == 100:
                 string = ','.join(twitter_users)
-                retrieve_users_info_by_ids.apply_async((string,), countdown=3)
+                retrieve_users_info_by_ids.apply_async((string,), countdown=4)
                 twitter_users = []
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
         tweet_object.search_phrases.append(db_search_phrase)
@@ -58,11 +60,11 @@ def tweet_puller_stream(tweet_query: str, next_token, start_date, end_date):
         tweet_count += 1
     if not len(twitter_users) == 0:
         string = ','.join(twitter_users)
-        retrieve_users_info_by_ids.apply_async((string,), countdown=3)
+        retrieve_users_info_by_ids.apply_async((string,), countdown=4)
     session.close()
     try:
         next_token = response['data']['meta']['next_token']
-        tweet_puller_stream.apply_async((tweet_query, next_token, start_date, end_date,), countdown=3.5)
+        tweet_puller_stream.apply_async((tweet_query, next_token, start_date, end_date,), countdown=4)
     except KeyError:
         pass
     return '{0} tweets collected'.format(str(tweet_count))
@@ -70,7 +72,6 @@ def tweet_puller_stream(tweet_query: str, next_token, start_date, end_date):
 
 @CELERY.task
 def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
-    time.sleep(3.1)
     session = create_session()
     twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
     db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
@@ -87,7 +88,7 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
         try:
             tweet_dict = {
                 'author_id': tweet['author_id'],
-                'created_at': datetime.datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                'created_at': datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                 'text': tweet['text'],
                 'source': tweet['source'],
                 'lang': tweet['lang'],
@@ -109,7 +110,7 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
             twitter_users.append(str(tweet['author_id']))
             if len(twitter_users) == 100:
                 string = ','.join(twitter_users)
-                retrieve_users_info_by_ids.apply_async((string,), countdown=3)
+                retrieve_users_info_by_ids.apply_async((string,), countdown=4)
                 twitter_users = []
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
         tweet_object.search_phrases.append(db_search_phrase)
@@ -117,11 +118,11 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
         tweet_count += 1
     if not len(twitter_users) == 0:
         string = ','.join(twitter_users)
-        retrieve_users_info_by_ids.apply_async((string,), countdown=3)
+        retrieve_users_info_by_ids.apply_async((string,), countdown=4)
     session.close()
     try:
         next_token = response['data']['meta']['next_token']
-        tweet_puller_archive.apply_async((tweet_query, next_token, start_date, end_date,), countdown=3.5)
+        tweet_puller_archive.apply_async((tweet_query, next_token, start_date, end_date,), countdown=4)
     except KeyError:
         pass
     return '{0} tweets collected'.format(str(tweet_count))

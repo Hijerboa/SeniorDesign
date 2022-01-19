@@ -1,7 +1,7 @@
 from db.database_connection import create_session
 from authorization.auth_utils import get_token, does_user_have_permission, secure_hash
 from util.make_error import make_error
-from server.tasks import get_bill_data_by_congress
+from tasks.propublica_tasks import get_bill_data_by_congress
 from db.models import User
 from db.db_utils import get_single_object
 from util.task_utils import create_task_db_object

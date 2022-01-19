@@ -105,6 +105,8 @@ def yake_extraction(summary: str):
 
 
 def keybert_extraction(summary: str):
+    
+    
     summary_keywords = kw_model.extract_keywords(
         docs=summary, 
         keyphrase_ngram_range=n_gram_range, 
@@ -126,7 +128,7 @@ def derive_keywords(summary: str):
 
     yake_keywords = yake_extraction(summary)
     keybert_keywords = keybert_extraction(summary)
-
+    
     return list(set(yake_keywords + keybert_keywords))
 
 
