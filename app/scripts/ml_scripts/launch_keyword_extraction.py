@@ -8,7 +8,7 @@ import sys, time, requests
 def launch_keyword_extraction():
     initialize()
     session = create_session()
-    bills = session.query(Bill).offset(2500+4470 + 4000).all()
+    bills = session.query(Bill).limit(2500+4470 + 4000).all()
     num = 0
     for bill in bills:
         num += 1

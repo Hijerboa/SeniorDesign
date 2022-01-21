@@ -60,6 +60,7 @@ class Tweet(Base):
     likes = Column(Integer, nullable=False)
     replies = Column(Integer, nullable=False)
     quote_count = Column(Integer, nullable=False)
+    seniment= Column(Float, nullable=True)
     search_phrases = relationship(SearchPhrase, secondary=tweet_to_search)
 
 
@@ -183,6 +184,7 @@ class Bill(Base):
     sub_committee_codes = relationship(SubcommitteeCodes, secondary=bill_to_subcommittee_code)
     subjects = relationship(BillSubject, secondary=bill_to_subject)
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
+    sentiment = Column(Float(), nullable=True)
     actions = relationship('BillAction', backref='bill_object')
     versions = relationship('BillVersion', backref='bill_object')
     keywords = relationship('BillKeyWord', backref='bill_object')
