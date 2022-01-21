@@ -13,4 +13,5 @@ def keyword_extraction_by_bill(id: str):
         objects, created = get_or_create(session, BillKeyWord, bill=id, phrase=word)
     session.commit()
     session.close()
+    return None
     

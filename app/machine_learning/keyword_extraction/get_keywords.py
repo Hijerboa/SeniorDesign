@@ -130,12 +130,13 @@ def derive_keywords(summary: str):
     keybert_keywords = keybert_extraction(summary)
     
     return list(set(yake_keywords + keybert_keywords))
+    #return yake_keywords
 
 
 def get_keywords(bill: Bill):
     # get list of obvious keywords
     known_keywords = get_base_keywords(bill)
     # use NLP to generate other keywords
-    generated_keywords = derive_keywords(bill.summary.replace('\n', ''))
+    generated_keywords = derive_keywords(bill.summary_short.replace('\n', ''))
     
     return list(set(known_keywords + generated_keywords))
