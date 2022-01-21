@@ -136,9 +136,11 @@ def get_keywords(bill: Bill):
     # get list of obvious keywords
     known_keywords = get_base_keywords(bill)
     # use NLP to generate other keywords
-    if len(bill.summary) > 100000:
+    if bill.summary is None or len(bill.summary) > 100000:
         generated_keywords = derive_keywords(bill.summary_short.replace('\n', ''))
-    else:
+    elif bill.summary_short is not None and len(bill.summary) < 100000:
         generated_keywords = derive_keywords(bill.summary.replace('\n', ''))
+    else:
+        return []
     
     return list(set(known_keywords + generated_keywords))
