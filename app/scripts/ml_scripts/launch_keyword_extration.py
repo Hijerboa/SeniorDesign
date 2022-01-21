@@ -12,7 +12,7 @@ def launch_keyword_extraction():
     num = 0
     for bill in bills:
         num += 1
-        requests.get(f'http://localhost:5000/ml_tasks/bill_keywords?bill_id={bill.bill_id}', headers={
+        requests.get(f'http://bunny.nicleary.com:5000/ml_tasks/bill_keywords?bill_id={bill.bill_id}', headers={
                 'Authorization': 'Bearer {0}'.format(get_secret("bunny_server_api_key"))
             })
         sys.stdout.write(f'\r{num} bills requested')
