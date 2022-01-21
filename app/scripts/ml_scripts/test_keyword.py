@@ -7,7 +7,8 @@ def test_keyword_extraction():
     initialize()
     session = create_session()
     num = 10
-    bills = session.query(Bill).offset(10100).limit(num).all()
+    bills = session.query(Bill).filter(Bill.bill_id=='hr1960-113').all()
+    print('gotten bill')
     total_runtime = 0
     for bill in bills:
         # A handful of bills are screwy and don't have summaries

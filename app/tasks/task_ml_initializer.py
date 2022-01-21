@@ -22,5 +22,7 @@ CELERY_ML.conf.task_routes = task_routes
 CELERY_ML.conf.task_track_started = True
 CELERY_ML.conf.task_acks_late = True
 CELERY_ML.conf.worker_prefetch_multiplier = 1
+CELERY_ML.conf.worker_max_tasks_per_child = 1
+CELERY_ML.conf.worker_max_memory_per_child = 120000
 
 initialize()
