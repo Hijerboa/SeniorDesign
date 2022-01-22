@@ -8,6 +8,8 @@ stages:
 - build
 - deploy
 
+image: docker:19.03.12
+
 build:
   stage: build
   tags: ["docker-build"]
