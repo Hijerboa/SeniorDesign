@@ -178,7 +178,7 @@ class Bill(Base):
     primary_subject = Column(String(length=1024))
     summary = Column(Text(16000000))
     summary_short = Column(String(length=4096))
-    latest_major_action_date = Column(String(length=32))
+    latest_major_action_date = Column(Date)
     latest_major_action = Column(String(length=2048))
     committee_codes = relationship(CommitteeCodes, secondary=bill_to_committee_code)
     sub_committee_codes = relationship(SubcommitteeCodes, secondary=bill_to_subcommittee_code)
