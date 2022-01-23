@@ -24,7 +24,18 @@ build:
   - docker image tag "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE/images:latest"
   - docker image push "$CI_REGISTRY_IMAGE/images:latest"
   - docker image push "$CI_REGISTRY_IMAGE/images:$CI_PIPELINE_IID"
-  - docker push "$CI_REGISTRY_IMAGE:latest"
+
+build_rabbit:
+  stage: build
+  tags: ["docker-build"]
+  scripts:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE/rabbit" .
+    - docker image tag "$CI_REGISTRY_IMAGE/rabbit:latest" "$CI_REGISTRY_IMAGE/images:$CI_PIPELINE_IID"
+    - docker image tag "$CI_REGISTRY_IMAGE/rabbit:latest" "$CI_REGISTRY_IMAGE/images:latest"
+    - docker image push "$CI_REGISTRY_IMAGE/images/rabbit:latest"
+    - docker image push "$CI_REGISTRY_IMAGE/images/rabbit:$CI_PIPELINE_IID"
+
 
 deploy:
   stage: deploy
