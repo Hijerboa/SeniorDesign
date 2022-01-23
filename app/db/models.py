@@ -193,7 +193,7 @@ class Bill(Base):
     sentiment = Column(Float(), nullable=True)
     actions = relationship('BillAction', backref='bill_object')
     versions = relationship('BillVersion', backref='bill_object')
-    keywords = relationship('BillKeyWord', secondary=bill_to_search)
+    keywords = relationship(SearchPhrase, secondary=bill_to_search)
 
 
 class Task(PrimaryKeyBase, Base):
