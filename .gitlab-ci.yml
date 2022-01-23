@@ -30,7 +30,7 @@ build_rabbit:
   tags: ["docker-build"]
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker build -t "$CI_REGISTRY_IMAGE/rabbit" -f rabbit/Dockerfile.rabbit .
+    - docker build -t "$CI_REGISTRY_IMAGE/rabbit" -f rabbit/Dockerfile.rabbit rabbit
     - docker image tag "$CI_REGISTRY_IMAGE/rabbit:latest" "$CI_REGISTRY_IMAGE/images:$CI_PIPELINE_IID"
     - docker image tag "$CI_REGISTRY_IMAGE/rabbit:latest" "$CI_REGISTRY_IMAGE/images:latest"
     - docker image push "$CI_REGISTRY_IMAGE/images/rabbit:latest"
