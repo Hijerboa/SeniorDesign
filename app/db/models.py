@@ -18,6 +18,12 @@ tweet_to_search = Table(
     Column('phrase_id', ForeignKey('search_phrases.id'))
 )
 
+bill_to_search = Table(
+    'bill_to_search', Base.metadata,
+    Column('bill_id', ForeignKey('bills.bill_id')),
+    Column('phrase_id', ForeignKey('search_phrases.id'))
+)
+
 bill_to_committee_code = Table(
     'bill_to_committee_code', Base.metadata,
     Column('bill_id', ForeignKey('bills.bill_id')),
@@ -187,7 +193,7 @@ class Bill(Base):
     sentiment = Column(Float(), nullable=True)
     actions = relationship('BillAction', backref='bill_object')
     versions = relationship('BillVersion', backref='bill_object')
-    keywords = relationship('BillKeyWord', backref='bill_object')
+    keywords = relationship('BillKeyWord', secondary=bill_to_search)
 
 
 class Task(PrimaryKeyBase, Base):
