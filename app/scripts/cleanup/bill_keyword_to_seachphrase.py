@@ -7,7 +7,7 @@ from db.db_utils import get_or_create
 def migrate_keyword_to_search_phrase():
     initialize()
     session = create_session()
-    bills = session.query(Bill).offset(10).all()
+    bills = session.query(Bill).offset(33000).all()
     for bill in bills:
         print(bill.bill_id)
         keywords = session.query(BillKeyWord).filter(BillKeyWord.bill == bill.bill_id).all()

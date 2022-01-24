@@ -46,7 +46,7 @@ bill_to_subject = Table(
 class SearchPhrase(PrimaryKeyBase, Base):
     __tablename__ = 'search_phrases'
 
-    search_phrase = Column(String(length=64), nullable=False)
+    search_phrase = Column(String(length=128), nullable=False)
 
 
 # Tweet class does not have it's own ID field. Instead the twitter ID is used as the primary key
