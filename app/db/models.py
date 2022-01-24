@@ -239,10 +239,3 @@ class BillVersion(PrimaryKeyBase, Base):
     url = Column(String(length=512))
     congressdotgov_url = Column(String(length=512), nullable=True)
     full_text = Column(LONGTEXT())
-
-
-class BillKeyWord(PrimaryKeyBase, Base):
-    __tablename__ = 'bill_key_words'
-
-    bill = Column(String(length=16), ForeignKey('bills.bill_id'))
-    phrase = Column(String(length=128), nullable=False)

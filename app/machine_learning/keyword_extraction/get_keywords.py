@@ -27,10 +27,10 @@ stopwords = ['', 'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all
 # YAKE extractor object
 language = "en"
 max_ngram_size = 3
-deduplication_thresold = 0.3
+deduplication_thresold = 0.5
 deduplication_algo = 'seqm'
 windowSize = 3
-numOfKeywords = 3
+numOfKeywords = 10
 extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
 
 # KeyBERT keyword extraction model object
@@ -40,7 +40,7 @@ top_n = 5
 # MMR (Maximal Marginal Relevance) | if set to true, diversity specifies how related the keywords are
 # For example, diversity of 0.8 may result in lower confidence but much more diverse words
 use_mmr = True
-kb_diversity = 0.2
+kb_diversity = 0.45
 kw_model = KeyBERT()
 
 
@@ -145,6 +145,5 @@ def get_keywords(bill: Bill):
     else:
         generated_keywords = []
 
-    keywords = list(process.dedupe(generated_keywords, threshold=70))
-    #return list(set(keywords + known_keywords))
-    return keywords
+    #keywords = list(process.dedupe(generated_keywords, threshold=70))
+    return list(set(generated_keywords))
