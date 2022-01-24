@@ -33,5 +33,8 @@ get_tweets('criminal biden')"""
 #from scripts.govinfo.package_name_collector import run_thing, do_things
 #run_thing()
 #do_things(110, 'ats', 'sres')
-from scripts.twitter.member_twitter_collector import do_things
-do_things()
+#from scripts.twitter.member_twitter_collector import do_things
+#do_things()
+
+from scripts.ml_scripts.launch_keyword_extraction import launch_keyword_extraction
+launch_keyword_extraction()

@@ -20,6 +20,10 @@
     {
       "name": "Propublica",
       "description": "Propublica API Tasks"
+    },
+    {
+      "name": "ML Tasks",
+      "description": "A bunch of ML Tasks (mainly open via api for testing)"
     }
   ],
   "paths": {
@@ -303,6 +307,43 @@
             "description": "senate or house"
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInitiated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/ml_tasks/bill_keywords": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bill_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The Bill ID to get keywords for"
+          }
+        ],
+        "tags": [
+          "ML Tasks"
+        ],
+        "summary": "Extract keywords of a bill",
+        "description": "Gather keywords for a bill and then store them",
         "responses": {
           "200": {
             "description": "Successful response",

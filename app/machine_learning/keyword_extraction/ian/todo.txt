@@ -1,0 +1,13 @@
+For keyword extraction, everything has been changed to work off of just the summary, and full text is no longer required. There's an example script under app/scripts/ml_scripts/test_keywords.py. This includes the keyword extraction for 1000 bills, as well as an example of connecting to the database and grabbing bill objects
+In terms of what needs to be done with these:
+
+1. Wider testing, just test with more bills and figure out if the 
+    keywords are sufficient 
+
+2. Remove text like 
+
+    (This measure has not been amended since it was introduced. 
+    The summary of that version is repeated here.) 
+    
+    from summaries. This and variations upon it appear in a large number 
+    of bills--we probably want to not be getting key words from this.

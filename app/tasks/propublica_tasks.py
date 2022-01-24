@@ -1,4 +1,4 @@
-from tasks import CELERY
+from tasks.task_initializer import CELERY
 
 import time
 import datetime

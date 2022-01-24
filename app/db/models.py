@@ -18,6 +18,12 @@ tweet_to_search = Table(
     Column('phrase_id', ForeignKey('search_phrases.id'))
 )
 
+bill_to_search = Table(
+    'bill_to_search', Base.metadata,
+    Column('bill_id', ForeignKey('bills.bill_id')),
+    Column('phrase_id', ForeignKey('search_phrases.id'))
+)
+
 bill_to_committee_code = Table(
     'bill_to_committee_code', Base.metadata,
     Column('bill_id', ForeignKey('bills.bill_id')),
@@ -40,7 +46,7 @@ bill_to_subject = Table(
 class SearchPhrase(PrimaryKeyBase, Base):
     __tablename__ = 'search_phrases'
 
-    search_phrase = Column(String(length=64), nullable=False)
+    search_phrase = Column(String(length=128), nullable=False)
 
 
 # Tweet class does not have it's own ID field. Instead the twitter ID is used as the primary key
@@ -60,6 +66,7 @@ class Tweet(Base):
     likes = Column(Integer, nullable=False)
     replies = Column(Integer, nullable=False)
     quote_count = Column(Integer, nullable=False)
+    seniment= Column(Float, nullable=True)
     search_phrases = relationship(SearchPhrase, secondary=tweet_to_search)
 
 
@@ -177,15 +184,16 @@ class Bill(Base):
     primary_subject = Column(String(length=1024))
     summary = Column(Text(16000000))
     summary_short = Column(String(length=4096))
-    latest_major_action_date = Column(String(length=32))
+    latest_major_action_date = Column(Date)
     latest_major_action = Column(String(length=2048))
     committee_codes = relationship(CommitteeCodes, secondary=bill_to_committee_code)
     sub_committee_codes = relationship(SubcommitteeCodes, secondary=bill_to_subcommittee_code)
     subjects = relationship(BillSubject, secondary=bill_to_subject)
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
+    sentiment = Column(Float(), nullable=True)
     actions = relationship('BillAction', backref='bill_object')
     versions = relationship('BillVersion', backref='bill_object')
-    keywords = relationship('BillKeyWord', backref='bill_object')
+    keywords = relationship(SearchPhrase, secondary=bill_to_search)
 
 
 class Task(PrimaryKeyBase, Base):
