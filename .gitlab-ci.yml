@@ -30,7 +30,7 @@ build_rabbit:
     - docker login -u "$HUB_USER" -p "$HUB_PASSWORD"
     - docker build -t "nicklesbread/rabbitmq-seniordesign" -f rabbit/Dockerfile.rabbit rabbit
     - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
-    - docker image tag "$nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:latest"
+    - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:latest"
     - docker image push "nicklesbread/rabbitmq-seniordesign:latest"
     - docker image push "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
 
