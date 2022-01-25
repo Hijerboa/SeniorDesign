@@ -1,3 +1,5 @@
 FROM rabbitmq:3.9.11
 
-COPY rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+COPY start.sh /start.sh
+RUN chmod 755 ./start.sh
+CMD ["/start.sh"]
