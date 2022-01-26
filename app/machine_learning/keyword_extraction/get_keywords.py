@@ -1,12 +1,18 @@
 # imports
 from ast import keyword
 from functools import reduce
-from string import punctuation
+import string
 from numpy.core.numeric import full
 import yake
 from keybert import KeyBERT
 from db.models import Bill, BillVersion
 from fuzzywuzzy import fuzz, process
+import nltk
+from nltk.stem import WordNetLemmatizer
+
+nltk.download('wordnet')
+nltk.download('universal_tagset')
+nltk.download('omw-1.4')
 
 # Prefixes for title-based keywords
 prefixes = {
@@ -21,8 +27,8 @@ prefixes = {
 }
 
 # list of keywords to exclude
-bad_keywords = ["united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "senate", "america", "state", "agency", "federal agency", "military", "spending", "healthcare", "prohibits federal", "good conscience"]
-stopwords = ['', 'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any', 'are', 'aren', "aren't", 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'couldn', "couldn't", 'd', 'did', 'didn', "didn't", 'do', 'does', 'doesn', "doesn't", 'doing', 'don', "don't", 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn', "hadn't", 'has', 'hasn', "hasn't", 'have', 'haven', "haven't", 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'isn', "isn't", 'it', "it's", 'its', 'itself', 'just', 'll', 'm', 'ma', 'me', 'mightn', "mightn't", 'more', 'most', 'mustn', "mustn't", 'my', 'myself', 'needn', "needn't", 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 're', 's', 'same', 'shan', "shan't", 'she', "she's", 'should', "should've", 'shouldn', "shouldn't", 'so', 'some', 'such', 't', 'than', 'that', "that'll", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 've', 'very', 'was', 'wasn', "wasn't", 'we', 'were', 'weren', "weren't", 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'won', "won't", 'wouldn', "wouldn't", 'y', 'you', "you'd", "you'll", "you're", "you've", 'your', 'yours', 'yourself', 'yourselves']
+bad_keywords = set(["nullifies", "whereas", "representatives", "con", "res", "increases", "considering", "amended", "resolution", "commends", "proposes", "continuing", "directs", "regarding", "eliminates", "exempting", "amends", "requires", "united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "america", "state", "agency", "federal agency", "prohibits federal", "good conscience"])
+stopwords = set(['', 'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any', 'are', 'aren', "aren't", 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'couldn', "couldn't", 'd', 'did', 'didn', "didn't", 'do', 'does', 'doesn', "doesn't", 'doing', 'don', "don't", 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn', "hadn't", 'has', 'hasn', "hasn't", 'have', 'haven', "haven't", 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'isn', "isn't", 'it', "it's", 'its', 'itself', 'just', 'll', 'm', 'ma', 'me', 'mightn', "mightn't", 'more', 'most', 'mustn', "mustn't", 'my', 'myself', 'needn', "needn't", 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 're', 's', 'same', 'shan', "shan't", 'she', "she's", 'should', "should've", 'shouldn', "shouldn't", 'so', 'some', 'such', 't', 'than', 'that', "that'll", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 've', 'very', 'was', 'wasn', "wasn't", 'we', 'were', 'weren', "weren't", 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'won', "won't", 'wouldn', "wouldn't", 'y', 'you', "you'd", "you'll", "you're", "you've", 'your', 'yours', 'yourself', 'yourselves'])
 
 # YAKE extractor object
 language = "en"
@@ -34,15 +40,14 @@ numOfKeywords = 3
 extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
 
 # KeyBERT keyword extraction model object
-n_gram_range = (3, 4)
+n_gram_range = (2, 4)
 stop_words = stopwords # 'english'
 top_n = 5
 # MMR (Maximal Marginal Relevance) | if set to true, diversity specifies how related the keywords are
 # For example, diversity of 0.8 may result in lower confidence but much more diverse words
 use_mmr = True
-kb_diversity = 0.2
+kb_diversity = 0.3
 kw_model = KeyBERT()
-
 
 def get_base_keywords(bill: Bill):
     if bill.bill_type not in prefixes.keys():
@@ -54,61 +59,35 @@ def get_base_keywords(bill: Bill):
     return [bill.bill_id, bill.number] + list(map(lambda x: x + number, prefix_list))
 
 
-def remove_stopwords(in_string):
-    out_string = ""
-    split_string = in_string.split(' ')
-    for word in split_string:
-        if word not in stopwords:
-            out_string += word + " "
-    return out_string[:-1]
+def kw_cleanup(text):
+    # Test print uncleaned summary
+    print()
+    print(text)
+    print()
+    # Remove Punctuation (Unneeded)
+    # text = remove_punc(text)
+    # Tokenize
+    tokens = text.split(" ")
+    # Remove Stopwords
+    tokens = [tok for tok in tokens if tok not in stop_words]
+    # Stem
+    ls = WordNetLemmatizer()
+    tokens = [ls.lemmatize(tok) for tok in tokens]
+    # Remove bad words
+    tokens = [tok for tok in tokens if tok not in bad_keywords]
+    # Test print cleaned summary
+    print(' '.join(tokens))
+    print()
 
-
-def remove_punc(in_string):
-    out_string = in_string
-    for punc_mark in punctuation:
-        out_string = in_string.replace(punc_mark, "")
-    return out_string
-
-
-def cleanup(my_list: list):
-    # remove confidence scores
-    my_list = list(map(lambda x: x[0], my_list))
-
-    # remove stopwords from selected keywords/phrases
-    my_list = list(map(lambda x: remove_stopwords(x), my_list))
-
-    # remove punctuation from keywords
-    my_list = list(map(lambda x: remove_punc(x), my_list))
-
-    # remove any monograms
-    my_list = filter(lambda x: len(x.split(" ")) > 1, my_list)
-    
-    # remove unuseful keywords
-    my_list = [word for word in my_list if word not in bad_keywords]
-
-    return my_list[:10] if len(my_list) > 9 else my_list
-
-
-def remove_dups(my_list: list):
-    """ Returns a set of tuples with unique first values (keyword) """
-    
-    unique_results = []
-    for element in my_list:
-        unique_words = list(map(lambda word: word[0], unique_results))
-        if element[0] not in unique_words:
-            unique_results.append(element)
-    return unique_results
-
+    return ' '.join(tokens)
 
 def yake_extraction(summary: str):
     keywords = extractor.extract_keywords(summary)
 
-    return cleanup(keywords)
-
+    return keywords
 
 def keybert_extraction(summary: str):
-    
-    
+
     summary_keywords = kw_model.extract_keywords(
         docs=summary, 
         keyphrase_ngram_range=n_gram_range, 
@@ -120,18 +99,19 @@ def keybert_extraction(summary: str):
     # For keyBERT, we do 1 - x[1] in the sort method since highest confidence value is best
     keywords = summary_keywords
     keywords.sort(key = lambda x: 1 - x[1])
-    keywords = remove_dups(keywords)
+    #keywords = remove_dups(keywords)
     
-    return cleanup(keywords)
+    return keywords
 
 
 def derive_keywords(summary: str):
     summary = summary.lower()
+    summary = kw_cleanup(summary)
 
-    yake_keywords = yake_extraction(summary)
+    #yake_keywords = yake_extraction(summary)
     keybert_keywords = keybert_extraction(summary)
     
-    return list(set(yake_keywords + keybert_keywords))
+    return list(set(keybert_keywords))
 
 
 def get_keywords(bill: Bill):
@@ -145,6 +125,43 @@ def get_keywords(bill: Bill):
     else:
         generated_keywords = []
 
-    keywords = list(process.dedupe(generated_keywords, threshold=70))
+    
+    #keywords = list(process.dedupe([_[0] for _ in generated_keywords], threshold=99))
     #return list(set(keywords + known_keywords))
-    return keywords
+    return [word[0] for word in generated_keywords]
+
+
+def derive_subjects(summary: str):
+    print(summary)
+    print()
+
+    summary = summary.lower()
+
+    for p in string.punctuation:
+        summary = summary.replace(p, '')
+    
+    #print(summary)
+    #print()
+
+    tokens = nltk.word_tokenize(summary)
+
+    tokens = [tok for tok in tokens if tok not in stopwords]
+
+    tokens = [tok for tok in tokens if tok not in bad_keywords]
+
+    #print(tokens)
+
+    fdist = nltk.FreqDist(tokens)
+
+    most_freq_nouns = [w for w, c in fdist.most_common(10)
+                   if nltk.pos_tag([w], tagset = 'universal')[0][1] == 'NOUN']
+
+    print(most_freq_nouns)
+    return []
+
+def get_subjects(bill: Bill):
+
+    generated_keywords = derive_subjects(bill.versions[0].full_text)
+    return [word[0] for word in generated_keywords]
+
+
