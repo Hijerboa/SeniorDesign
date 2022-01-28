@@ -7,12 +7,12 @@ from random import randint
 def test_keyword_extraction():
     initialize()
     session = create_session()
-    num = 50
-    batches = 20
+    num = 10
+    batches = 1
     total_runtime = 0
 
     for c_batch in range(batches):
-        bills = session.query(Bill).offset(num * c_batch).limit(num).all()
+        bills = session.query(Bill).offset(100).limit(10).all()
         print(f'retreived bills {num * c_batch} - {num * (c_batch + 1) - 1}')
         sec_runtime = 0
         for bill in bills:
