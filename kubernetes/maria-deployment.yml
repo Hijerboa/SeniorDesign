@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sd-maria
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sd-maria
+  template:
+    metadata:
+      labels:
+        app: sd-maria
+    spec:
+      containers:
+        - name: sd-maria
+          image: mariadb:10.7
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MARIADB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: maria
+                  key: user
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: maria
+                  key: password
+            - name: MARIADB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: maria
+                  key: database
+            - name: MARIADB_RANDOM_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: maria
+                  key: random_root
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mariadb
+              subPath: maria
+      volumes:
+        - name: mariadb
+          persistentVolumeClaim:
+            claimName: sd-maria-pv-claim

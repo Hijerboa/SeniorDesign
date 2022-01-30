@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sd-rabbit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sd-rabbit
+  template:
+    metadata:
+      labels:
+        app: sd-rabbit
+    spec:
+      containers:
+      - name: sd-rabbit
+        image: nicklesbread/seniordesign:test
+        imagePullPolicy: Always
+        command: ['python3', 'runner.py']
+      imagePullSecrets:
+        - name: docker-hub

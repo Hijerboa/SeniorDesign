@@ -1,11 +1,17 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Float, UniqueConstraint, LargeBinary, \
-    Table, DateTime, Date, Text
+    Table, DateTime, Date, Text, Enum
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import relation, relationship
 import datetime
+import enum
 
 Base = declarative_base()
+
+class phrase_types(enum.Enum):
+    title = 1
+    summary = 2
+    manual = 3
 
 
 class PrimaryKeyBase:
@@ -47,6 +53,7 @@ class SearchPhrase(PrimaryKeyBase, Base):
     __tablename__ = 'search_phrases'
 
     search_phrase = Column(String(length=128), nullable=False)
+    type = Column(Enum(phrase_types), nullable=True, default=phrase_types.manual)
 
 
 # Tweet class does not have it's own ID field. Instead the twitter ID is used as the primary key
@@ -170,13 +177,13 @@ class Bill(Base):
     gpo_pdf_uri = Column(String(length=1024))
     congressdotgov_url = Column(String(length=1024))
     govtrack_url = Column(String(length=1024))
-    introduced_date = Column(String(length=32))
+    introduced_date = Column(Date)
     active = Column(Boolean())
-    last_vote = Column(String(length=32))
-    house_passage = Column(String(length=32))
-    senate_passage = Column(String(length=32))
-    enacted = Column(String(length=32))
-    vetoed = Column(String(length=32))
+    last_vote = Column(Date)
+    house_passage = Column(Date)
+    senate_passage = Column(Date)
+    enacted = Column(Date)
+    vetoed = Column(Date)
     cosponsors = Column(Integer())
     dem_cosponsors = Column(Integer())
     rep_cosponsors = Column(Integer())

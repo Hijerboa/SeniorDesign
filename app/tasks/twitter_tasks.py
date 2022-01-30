@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 my_tz = timezone('US/Eastern')
 
+
 @CELERY.task
 def tweet_puller_stream(tweet_query: str, next_token, start_date, end_date):
     session = create_session()
