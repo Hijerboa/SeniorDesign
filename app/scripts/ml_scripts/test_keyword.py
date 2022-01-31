@@ -10,9 +10,9 @@ def test_keyword_extraction():
     num = 10
     batches = 1
     total_runtime = 0
-
+    rand_start = randint(0,10000)
     for c_batch in range(batches):
-        bills = session.query(Bill).offset(100).limit(10).all()
+        bills = session.query(Bill).offset(rand_start + c_batch * num).limit(num).all()
         print(f'retreived bills {num * c_batch} - {num * (c_batch + 1) - 1}')
         sec_runtime = 0
         for bill in bills:
