@@ -27,12 +27,12 @@ build_rabbit:
   stage: build
   tags: ["docker-build"]
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker build -t "$CI_REGISTRY_IMAGE/rabbit" -f rabbit/Dockerfile.rabbit rabbit
-    - docker image tag "$CI_REGISTRY_IMAGE/rabbit:latest" "$CI_REGISTRY_IMAGE/images/rabbit:$CI_PIPELINE_IID"
-    - docker image tag "$CI_REGISTRY_IMAGE/rabbit:latest" "$CI_REGISTRY_IMAGE/images/rabbit:latest"
-    - docker image push "$CI_REGISTRY_IMAGE/images/rabbit:latest"
-    - docker image push "$CI_REGISTRY_IMAGE/images/rabbit:$CI_PIPELINE_IID"
+    - docker login -u "$HUB_USER" -p "$HUB_PASSWORD"
+    - docker build -t "nicklesbread/rabbitmq-seniordesign" -f rabbit/Dockerfile.rabbit rabbit
+    - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
+    - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:latest"
+    - docker image push "nicklesbread/rabbitmq-seniordesign:latest"
+    - docker image push "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
 
 
 deploy:
