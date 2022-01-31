@@ -5,9 +5,23 @@ metadata:
   labels:
     app: sd-maria
 spec:
-  storageClassName: local-storage
+  storageClassName: microk8s-hostpath
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 10Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sd-rabbit-pv-claim
+  labels:
+    app: sd-rabbit
+spec:
+  storageClassName: microk8s-hostpath
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

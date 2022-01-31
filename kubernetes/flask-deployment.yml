@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sd-flask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sd-flask
+  template:
+    metadata:
+      labels:
+        app: sd-flask
+    spec:
+      initContainers:
+        - name: initializer
+          image: nicklesbread/seniordesign:latest
+          imagePullPolicy: "IfNotPresent"
+          command: ['python3', 'initializer.py']
+          env:
+            - name: connection_string
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: connection_string
+            - name: hash_salt
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: hash_salt
+            - name: initial_admin_email
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: initial_admin_email
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: SECRET_KEY
+      containers:
+        - name: sd-flask
+          image: nicklesbread/seniordesign:latest
+          imagePullPolicy: "IfNotPresent"
+          command: ['gunicorn', 'server:create_app()', '-b', '0.0.0.0:5000', '--reload']
+          ports:
+            - containerPort: 5000
+          env:
+            - name: connection_string
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: connection_string
+            - name: hash_salt
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: hash_salt
+            - name: initial_admin_email
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: initial_admin_email
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: SECRET_KEY
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: user
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: password
+      imagePullSecrets:
+        - name: docker-hub-auth

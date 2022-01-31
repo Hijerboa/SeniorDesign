@@ -12,3 +12,33 @@ spec:
       targetPort: 3306
   selector:
     app: sd-maria
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbit
+  labels:
+    app: rabbit
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5672
+      protocol: TCP
+      targetPort: 5672
+  selector:
+    app: sd-rabbit
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sd-flower
+  labels:
+    app: sd-flower
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5555
+      protocol: TCP
+      targetPort: 5555
+  selector:
+    app: sd-flower

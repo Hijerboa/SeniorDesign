@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sd-flower
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sd-flower
+  template:
+    metadata:
+      labels:
+        app: sd-flower
+    spec:
+      containers:
+        - name: sd-flower
+          image: mher/flower:0.9.5
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5555
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: broker_url
+            - name: FLOWER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: port
+            - name: FLOWER_PURGE_OFFLINE_WORKERS
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: purge_offline
