@@ -86,21 +86,6 @@ services:
     depends_on:
       - rabbit
 
-  celery_worker_twitter_stream:
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_stream --uid 1 --without-gossip --without-mingle
-    volumes:
-    - ./app/:/app/
-    environment:
-      - cred_path=util/cred-user-2.json
-      - RABBITMQ_USER=admin
-      - RABBITMQ_PASS=bigpassword
-    depends_on:
-      - rabbit
-
   celery_worker_twitter_user_1:
     platform: linux/x86_64
     build:
@@ -114,21 +99,6 @@ services:
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
       - consumer_timeout=31622400000
-    depends_on:
-      - rabbit
-
-  celery_worker_twitter_user_2:
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_users --uid 1 --without-gossip --without-mingle
-    volumes:
-      - ./app/:/app/
-    environment:
-      - cred_path=util/cred-user-2.json
-      - RABBITMQ_USER=admin
-      - RABBITMQ_PASS=bigpassword
     depends_on:
       - rabbit
 

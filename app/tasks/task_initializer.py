@@ -7,7 +7,6 @@ from util.cred_handler import get_secret
 BROKER_URL = 'amqp://{0}:{1}@rabbit//'.format(get_secret("RABBITMQ_USER"), get_secret("RABBITMQ_PASS"))
 
 task_routes = {
-    'tasks.twitter_tasks.tweet_puller_stream': {'queue': 'twitter_stream'},
     'tasks.twitter_tasks.tweet_puller_archive': {'queue': 'twitter_archive'},
     'tasks.twitter_tasks.retrieve_user_info_by_id': {'queue': 'twitter_users'},
     'tasks.twitter_tasks.retrieve_user_info_by_username': {'queue': 'twitter_users'},

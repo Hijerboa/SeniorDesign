@@ -53,7 +53,7 @@ def get_bill_data_by_congress(congress_id: int, congress_chamber: str):
             bill['congress'] = congress_id
             object, created = get_or_create(session, Bill, bill_id=bill['bill_id'], defaults=bill)
             if created:
-                get_and_update_bill.apply_asyc((object.bill_id,))
+                get_and_update_bill.apply_async((object.bill_id,))
             num_bills += 1
             session.commit()
             for committee_code in committee_codes:
