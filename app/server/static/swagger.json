@@ -53,63 +53,6 @@
         ]
       }
     },
-    "/twitter/tweets/stream/search": {
-      "get": {
-        "parameters": [
-          {
-            "in": "query",
-            "name": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "The query to search for in recent tweets"
-          },
-          {
-            "in": "query",
-            "name": "start",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Start date to search",
-            "example": "2020-08-31"
-          },
-          {
-            "in": "query",
-            "name": "end",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Start date to search",
-            "example": "2020-08-31"
-          }
-        ],
-        "tags": [
-          "Twitter"
-        ],
-        "summary": "Launch a search on the twitter API",
-        "description": "Launch a search on the twitter API with the specified query for the past week of tweets",
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaskInitiated"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
     "/twitter/tweets/archive/search": {
       "get": {
         "parameters": [
