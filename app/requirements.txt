@@ -21,3 +21,4 @@ numpy
 vaderSentiment==3.3.2
 mysql-connector
 fuzzywuzzy==0.18.0
+python-Levenshtein==0.12.2
