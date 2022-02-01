@@ -16,7 +16,7 @@ my_tz = timezone('US/Eastern')
 @CELERY.task
 def tweet_puller_stream(tweet_query: str, next_token, start_date, end_date):
     session = create_session()
-    twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
+    twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token_1'))
     db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
     tweet_count = 0
     twitter_users = []
@@ -74,7 +74,7 @@ def tweet_puller_stream(tweet_query: str, next_token, start_date, end_date):
 @CELERY.task
 def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
     session = create_session()
-    twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
+    twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token_1'))
     db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
     tweet_count = 0
     twitter_users = []
@@ -132,7 +132,7 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
 @CELERY.task()
 def retrieve_user_info_by_id(user_id: int):
     session = create_session()
-    twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
+    twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token_1'))
     user_data = twitter_api.get_user_by_id(user_id)['data']['data']
     create_user_object(user_data, session)
     session.commit()
@@ -143,7 +143,7 @@ def retrieve_user_info_by_id(user_id: int):
 @CELERY.task()
 def retrieve_users_info_by_ids(user_ids: str):
     session = create_session()
-    twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token'))
+    twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret('twitter_bearer_token_1'))
     user_response = twitter_api.get_users_by_ids(user_ids)['data']['data']
     user_num = 0
     for user_data in user_response:

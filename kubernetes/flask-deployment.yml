@@ -14,7 +14,7 @@ spec:
     spec:
       initContainers:
         - name: initializer
-          image: nicklesbread/seniordesign:latest
+          image: nicklesbread/seniordesign:31
           imagePullPolicy: "IfNotPresent"
           command: ['python3', 'initializer.py']
           env:
@@ -40,7 +40,7 @@ spec:
                   key: SECRET_KEY
       containers:
         - name: sd-flask
-          image: nicklesbread/seniordesign:latest
+          image: nicklesbread/seniordesign:31
           imagePullPolicy: "IfNotPresent"
           command: ['gunicorn', 'server:create_app()', '-b', '0.0.0.0:5000', '--reload']
           ports:
@@ -71,10 +71,15 @@ spec:
                 secretKeyRef:
                   name: rabbit
                   key: user
-            - name: RABBITMQ_PASSWORD
+            - name: RABBITMQ_PASS
               valueFrom:
                 secretKeyRef:
                   name: rabbit
                   key: password
+            - name: celery_connection_string
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: celery_connection_string
       imagePullSecrets:
         - name: docker-hub-auth
