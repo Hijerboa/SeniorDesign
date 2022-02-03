@@ -14,12 +14,12 @@ def setup_periodic_tasks(sender, **kwargs):
     # Launch tasks once a day
     sender.add_periodic_task(86400.0, launch_bill_update.s(117), name='Periodic action and version collection')
     sender.add_periodic_task(86400.0, get_bill_data_by_congress.s(117, 'both'), name='Periodic bill collection')
-    
+
 
 @CELERY.task()
 def launch_bill_update(congress_number: int):
     session = create_session()
-    bills = session.query(Bill).filter(Bill.active==True, Bill.congress==congress_number)
+    bills = session.query(Bill).filter(Bill.active == True, Bill.congress == congress_number)
     for bill in bills:
         get_and_update_bill.apply_async((bill.bill_id,))
 
@@ -88,19 +88,20 @@ def get_and_update_bill(bill_id: str):
     bill.summary = bill_instance['summary']
     bill.summary_short = bill_instance['summary_short']
     session.commit()
-    
+
     if bill_instance['versions'] is not None:
         for version in bill_instance['versions']:
             version['bill'] = bill.bill_id
-            instance, created = get_or_create(session, BillVersion, bill=version['bill'], congressdotgov_url=version['congressdotgov_url'], defaults=version)
+            instance, created = get_or_create(session, BillVersion, bill=version['bill'],
+                                              congressdotgov_url=version['congressdotgov_url'], defaults=version)
             session.commit()
     if bill_instance['actions'] is not None:
         for action in bill_instance['actions']:
             action['order'] = action['id']
             action.pop('id')
             action['bill'] = bill.bill_id
-            instance, created = get_or_create(session, BillAction, bill=action['bill'], order=action['order'], defaults=action)
+            instance, created = get_or_create(session, BillAction, bill=action['bill'], order=action['order'],
+                                              defaults=action)
             session.commit()
     session.close()
     return None
-    
