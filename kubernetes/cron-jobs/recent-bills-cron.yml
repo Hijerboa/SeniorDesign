@@ -11,7 +11,7 @@ spec:
           restartPolicy: "OnFailure"
           containers:
             - name: sd-recent-bills-cron
-              image: nicklesbread/seniordesign:36
+              image: nicklesbread/seniordesign:@DOCKER_TAG
               imagePullPolicy: "IfNotPresent"
               command: ['python3', 'cron_runner.py', 'get_recent_bills']
               env:
