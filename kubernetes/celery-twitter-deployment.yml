@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sd-celery-twitter-user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sd-celery-twitter-user
+  template:
+    metadata:
+      labels:
+        app: sd-celery-twitter-user
+    spec:
+      containers:
+        - name: sd-celery-twitter-user
+          image: nicklesbread/seniordesign:35
+          imagePullPolicy: "IfNotPresent"
+          command: ['celery', '-A', 'tasks.task_initializer', 'worker', '-l', 'INFO', '--concurrency', '1', '-Q', 'twitter_users', '--uid', '1', '--without-gossip', '--without-mingle']
+          env:
+            - name: connection_string
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: connection_string
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: user
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: password
+            - name: celery_connection_string
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: celery_connection_string
+            - name: twitter_api_url
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key: twitter_api_url
+            - name: twitter_bearer_token_1
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key: twitter_bearer_token_1
+            - name: twitter_bearer_token_2
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key: twitter_bearer_token_2
+      imagePullSecrets:
+        - name: docker-hub-auth

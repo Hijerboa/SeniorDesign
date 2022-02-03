@@ -15,6 +15,17 @@ spec:
             name: sd-flower
             port:
               number: 5555
+  - host: sd.nicleary.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sd-flask
+            port:
+              number: 5000
   tls:
   - hosts:
     - flower.nicleary.com
+    - sd.nicleary.com

@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sd-recent-bills-cron
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: "OnFailure"
+          containers:
+            - name: sd-recent-bills-cron
+              image: nicklesbread/seniordesign:35
+              imagePullPolicy: "IfNotPresent"
+              command: ['python3', 'cron_runner.py', 'get_recent_bills']
+              env:
+                - name: connection_string
+                  valueFrom:
+                    secretKeyRef:
+                      name: system
+                      key: connection_string
+                - name: RABBITMQ_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: rabbit
+                      key: user
+                - name: RABBITMQ_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: rabbit
+                      key: password
+                - name: celery_connection_string
+                  valueFrom:
+                    secretKeyRef:
+                      name: system
+                      key: celery_connection_string
+          imagePullSecrets:
+            - name: docker-hub-auth
