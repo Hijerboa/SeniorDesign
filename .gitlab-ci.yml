@@ -46,7 +46,7 @@ deploy:
     - kubectl config set-context default --cluster=k8s --user=gitlab
     - kubectl config use-context default
     - kubectl get namespaces
-    - find ./kubernetes -type f -exec sed -i -e 's/@DOCKER_TAG/${CI_PIPELINE_IID}/g' {} \;
+    - find ./kubernetes -type f -exec sed -i -e 's/@DOCKER_TAG/$CI_PIPELINE_IID/g' {} \;
     - kubectl apply -f kubernetes -n prod-senior-design
     - kubectl apply -f kubernetes/cron-jobs
 
