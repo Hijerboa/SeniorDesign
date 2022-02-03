@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: sd-celery-ml
-          image: nicklesbread/seniordesign:35
+          image: nicklesbread/seniordesign:36
           imagePullPolicy: "IfNotPresent"
           command: ['celery', '-A', 'tasks.task_initializer', 'worker', '-l', 'INFO', '--concurrency', '2', '-Q', 'ml_tasks', '--pool', 'threads', '--without-gossip', '--without-mingle']
           env:

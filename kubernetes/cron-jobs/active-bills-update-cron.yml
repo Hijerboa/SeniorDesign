@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: sd-recent-bills-cron
+  name: sd-update-congress-bills-cron
 spec:
   schedule: "0 0 * * *"
   jobTemplate:
@@ -10,10 +10,10 @@ spec:
         spec:
           restartPolicy: "OnFailure"
           containers:
-            - name: sd-recent-bills-cron
+            - name: sd-update-congress-bills-cron
               image: nicklesbread/seniordesign:36
               imagePullPolicy: "IfNotPresent"
-              command: ['python3', 'cron_runner.py', 'get_recent_bills']
+              command: ['python3', 'cron_runner.py', 'update_congress_bills']
               env:
                 - name: connection_string
                   valueFrom:
