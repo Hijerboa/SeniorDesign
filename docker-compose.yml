@@ -10,7 +10,6 @@ services:
     ports:
       - 5000:5000
     environment:
-      - cred_path=util/cred-user-1.json
       - SECRET_KEY=wowsuchsecret
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
@@ -66,13 +65,12 @@ services:
   rabbit:
     build:
       context: rabbit
-      dockerfile: Dockerfile.rabbit
+      dockerfile: Dockerfile.rabbit.local
     volumes:
       - rabbitmq:/var/lib/rabbitmq
 
   celery_worker_tweet_archive:
     platform: linux/x86_64
-    volumes:
     build:
       context: .
       dockerfile: Dockerfile
@@ -80,22 +78,6 @@ services:
     volumes:
     - ./app/:/app/
     environment:
-      - cred_path=util/cred-user-1.json
-      - RABBITMQ_USER=admin
-      - RABBITMQ_PASS=bigpassword
-    depends_on:
-      - rabbit
-
-  celery_worker_twitter_stream:
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_stream,propublica_tasks --uid 1 --without-gossip --without-mingle
-    volumes:
-    - ./app/:/app/
-    environment:
-      - cred_path=util/cred-user-2.json
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
     depends_on:
@@ -106,27 +88,24 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_users,propublica_tasks --uid 1 --without-gossip --without-mingle
+    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_users --uid 1 --without-gossip --without-mingle
     volumes:
       - ./app/:/app/
     environment:
-      - cred_path=util/cred-user-1.json
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
-      - consumer_timeout=31622400000
     depends_on:
       - rabbit
 
-  celery_worker_twitter_user_2:
+  celery_worker_propublica:
     platform: linux/x86_64
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_users,propublica_tasks --uid 1 --without-gossip --without-mingle
+    command: celery -A tasks.task_initializer worker -l INFO --concurrency 4 -Q propublica --uid 1 --without-gossip --without-mingle
     volumes:
       - ./app/:/app/
     environment:
-      - cred_path=util/cred-user-2.json
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
     depends_on:
@@ -141,7 +120,20 @@ services:
     volumes:
       - ./app/:/app/
     environment:
-      - cred_path=util/cred-user-2.json
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
+    depends_on:
+      - rabbit
+
+  cron_lmao:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ['python3', 'cron_runner.py', 'get_recent_bills']
+    volumes:
+      - ./app/:/app/
+    environment:
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
     depends_on:

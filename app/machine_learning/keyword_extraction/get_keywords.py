@@ -1,10 +1,12 @@
 # imports
+from ast import keyword
 from functools import reduce
 from string import punctuation
 from numpy.core.numeric import full
 import yake
 from keybert import KeyBERT
 from db.models import Bill, BillVersion
+from fuzzywuzzy import fuzz, process
 
 # Prefixes for title-based keywords
 prefixes = {
@@ -25,20 +27,20 @@ stopwords = ['', 'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all
 # YAKE extractor object
 language = "en"
 max_ngram_size = 3
-deduplication_thresold = 0.45
+deduplication_thresold = 0.5
 deduplication_algo = 'seqm'
 windowSize = 3
-numOfKeywords = 20
+numOfKeywords = 10
 extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
 
 # KeyBERT keyword extraction model object
-n_gram_range = (2, 4)
-stop_words = None # 'english'
-top_n = 10
+n_gram_range = (3, 4)
+stop_words = stopwords # 'english'
+top_n = 5
 # MMR (Maximal Marginal Relevance) | if set to true, diversity specifies how related the keywords are
 # For example, diversity of 0.8 may result in lower confidence but much more diverse words
 use_mmr = True
-kb_diversity = 0.4
+kb_diversity = 0.45
 kw_model = KeyBERT()
 
 
@@ -141,6 +143,7 @@ def get_keywords(bill: Bill):
     elif bill.summary_short is not None and len(bill.summary) < 100000:
         generated_keywords = derive_keywords(bill.summary.replace('\n', ''))
     else:
-        return []
-    
-    return list(set(known_keywords + generated_keywords))
+        generated_keywords = []
+
+    #keywords = list(process.dedupe(generated_keywords, threshold=70))
+    return list(set(generated_keywords))

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sd-celery-propublica-govinfo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sd-celery-propublica-govinfo
+  template:
+    metadata:
+      labels:
+        app: sd-celery-propublica-govinfo
+    spec:
+      containers:
+        - name: sd-celery-propublica-govinfo
+          image: nicklesbread/seniordesign:@DOCKER_TAG
+          imagePullPolicy: "IfNotPresent"
+          command: ['celery', '-A', 'tasks.task_initializer', 'worker', '-l', 'INFO', '--concurrency', '4', '-Q', 'propublica', '--uid', '1', '--without-gossip', '--without-mingle']
+          env:
+            - name: connection_string
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: connection_string
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: user
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: password
+            - name: celery_connection_string
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: celery_connection_string
+            - name: pro_publica_url
+              valueFrom:
+                secretKeyRef:
+                  name: propublica
+                  key: pro_publica_url
+            - name: pro_publica_api_key
+              valueFrom:
+                secretKeyRef:
+                  name: propublica
+                  key: pro_publica_api_key
+            - name: gov_info_url
+              valueFrom:
+                secretKeyRef:
+                  name: govinfo
+                  key: gov_info_url
+            - name: gov_info_key
+              valueFrom:
+                secretKeyRef:
+                  name: govinfo
+                  key: gov_info_key
+      imagePullSecrets:
+        - name: docker-hub-auth

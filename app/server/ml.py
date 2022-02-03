@@ -2,6 +2,7 @@ from db.database_connection import create_session
 from authorization.auth_utils import get_token, does_user_have_permission, secure_hash
 from util.make_error import make_error
 from tasks.machine_learning_tasks import keyword_extraction_by_bill
+from tasks.propublica_tasks import get_and_update_bill
 from db.db_utils import get_single_object
 from db.models import User, Bill
 from flask import Blueprint, request, jsonify

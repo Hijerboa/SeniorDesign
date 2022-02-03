@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sd-rabbit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sd-rabbit
+  template:
+    metadata:
+      labels:
+        app: sd-rabbit
+    spec:
+      containers:
+      - name: sd-rabbit
+        image: nicklesbread/rabbitmq-seniordesign:latest
+        imagePullPolicy: "IfNotPresent"
+        ports:
+          - containerPort: 5672
+        volumeMounts:
+          - name: config
+            mountPath: "/etc/rabbitmq"
+            readOnly: true
+          - name: persistent-queue
+            mountPath: /var/lib/rabbitmq
+            readOnly: false
+      hostname: rabbit
+      volumes:
+        - name: config
+          projected:
+            sources:
+              - configMap:
+                  name: rabbitconfig
+        - name: persistent-queue
+          persistentVolumeClaim:
+            claimName: sd-rabbit-pv-claim
+      imagePullSecrets:
+        - name: docker-hub
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitconfig
+  labels:
+    app: sd-rabbit
+data:
+  rabbitmq.conf: |
+    default_pass=bigpassword
+    default_user=admin

@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sd-update-congress-bills-cron
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: "OnFailure"
+          containers:
+            - name: sd-update-congress-bills-cron
+              image: nicklesbread/seniordesign:@DOCKER_TAG
+              imagePullPolicy: "IfNotPresent"
+              command: ['python3', 'cron_runner.py', 'update_congress_bills']
+              env:
+                - name: connection_string
+                  valueFrom:
+                    secretKeyRef:
+                      name: system
+                      key: connection_string
+                - name: RABBITMQ_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: rabbit
+                      key: user
+                - name: RABBITMQ_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: rabbit
+                      key: password
+                - name: celery_connection_string
+                  valueFrom:
+                    secretKeyRef:
+                      name: system
+                      key: celery_connection_string
+          imagePullSecrets:
+            - name: docker-hub-auth

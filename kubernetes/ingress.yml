@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sd-backend
+  namespace: prod-senior-design
+spec:
+  rules:
+  - host: flower.nicleary.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sd-flower
+            port:
+              number: 5555
+  - host: sd.nicleary.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sd-flask
+            port:
+              number: 5000
+  tls:
+  - hosts:
+    - flower.nicleary.com
+    - sd.nicleary.com
