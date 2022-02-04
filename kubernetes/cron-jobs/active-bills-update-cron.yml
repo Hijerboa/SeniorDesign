@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: sd-update-congress-bills-cron
 spec:
-  schedule: "0 0 * * *"
+  schedule: "*/2 * * * *"
   jobTemplate:
     spec:
       template:
