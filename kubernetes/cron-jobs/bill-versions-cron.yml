@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: sd-collect-bill-versions-cron
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "0 0 * * *"
   jobTemplate:
     spec:
       template:
