@@ -52,7 +52,7 @@ def get_versions(congress: int, version: str, doc_class, offset: int):
             result = parser.run_feeder(full_text_response['data'].decode())
             version.full_text = result
             session.commit()
-    session.close()
+        session.close()
     if len(packages) == 100:
         get_versions.apply_async((congress, version, doc_class, offset+100,), countdown=1)
     return f'{len(packages)} collected'
