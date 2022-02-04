@@ -130,7 +130,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ['python3', 'cron_runner.py', 'get_recent_bills']
+    command: ['python3', 'cron_runner.py', 'collect_bill_versions']
     volumes:
       - ./app/:/app/
     environment:

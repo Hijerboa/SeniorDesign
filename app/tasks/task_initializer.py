@@ -13,7 +13,8 @@ task_routes = {
     'tasks.twitter_tasks.retrieve_users_info_by_ids': {'queue': 'twitter_users'},
     'tasks.propublica_tasks.get_bill_data_by_congress': {'queue': 'propublica'},
     'tasks.propublica_tasks.get_and_update_bill': {'queue': 'propublica'},
-    'tasks.propublica_tasks.launch_bill_update': {'queue': 'propublica'}
+    'tasks.propublica_tasks.launch_bill_update': {'queue': 'propublica'},
+    'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'}
 }
 
 CELERY = Celery('tasks',
