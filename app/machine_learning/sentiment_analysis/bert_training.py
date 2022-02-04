@@ -1,7 +1,9 @@
 import os
 import re
+from tkinter import Y
 import numpy as np
 import pandas as pd
+from torch import cuda
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
@@ -14,22 +16,31 @@ from transformers import InputExample, InputFeatures
 
 # SequenceClassification - BERT with extra layers at the end for sentiment scoring
 model = TFBertForSequenceClassification.from_pretrained("bert-base-uncased")
+tf.debugging.set_log_device_placement(True)
 # Tokenizer - preprocessing, prepares inputs for the model
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
 DATASET_COLUMNS = ["polarity", "ids", "date", "query", "user", "text"]
 DATASET_ENCODING = "ISO-8859-1"
 # DATASET_FILENAME = "training.1600000.processed.noemoticon.csv"
-DATASET_FILENAME = "poop.csv"
+DATASET_FILENAME = "poop2.csv"
+VALIDATE_DATASET = "testdata.manual.2009.06.14.csv"
 INPUT_FEATURES_LOGGING = True
+BATCH_SIZE = 8
 
-decode_map = {0: -1, 2: 0, 4: 1}
+# gpus = tf.config.experimental.list_physical_devices('GPU')
+# tf.config.experimental.set_memory_growth(gpus[0], True)
+
+config = tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(allow_growth=True))
+sess = tf.compat.v1.Session(config=config)
+
+decode_map = {0: 0.5, 2: 1, 4: 1.5}
 def decode_sentiment(label):
     return decode_map[int(label)]
 
-def get_csv_as_df():
+def get_csv_as_df(dataset_name):
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    dataset_path = os.path.join(__location__, DATASET_FILENAME)
+    dataset_path = os.path.join(__location__, dataset_name)
     print("Open file:", dataset_path)
     return pd.read_csv(dataset_path, encoding =DATASET_ENCODING , names=DATASET_COLUMNS)
 
@@ -51,6 +62,7 @@ def get_tf_dataset(input_examples):
             max_length=280,
             return_token_type_ids=True,
             return_attention_mask=True,
+            pad_to_max_length=True,
             truncation=True
         )
 
@@ -69,9 +81,9 @@ def get_tf_dataset(input_examples):
             )
 
     tf_dataset = tf.data.Dataset.from_generator(
-        gen,
-        ({"input_ids": tf.int32, "attention_mask": tf.int32, "token_type_ids": tf.int32}, tf.int64),
-        (
+        generator=gen,
+        output_types=({"input_ids": tf.int32, "attention_mask": tf.int32, "token_type_ids": tf.int32}, tf.int64),
+        output_shapes=(
             {
                 "input_ids": tf.TensorShape([None]),
                 "attention_mask": tf.TensorShape([None]),
@@ -84,7 +96,7 @@ def get_tf_dataset(input_examples):
 
 def TRAIN():
 
-    df = get_csv_as_df()
+    df = get_csv_as_df(DATASET_FILENAME)
 
     # remove unnecessary columns / cleanup text / map to our sentiment scores
     data_df = pd.DataFrame({
@@ -102,16 +114,17 @@ def TRAIN():
     print("TRAIN INPUT EXAMPLES")
     print(test_input_examples)
 
-    tf_train_dataset = get_tf_dataset(train_input_examples)
-    tf_test_dataset = get_tf_dataset(test_input_examples)
+    tf_train_dataset = get_tf_dataset(list(train_input_examples))
+    tf_test_dataset = get_tf_dataset(list(test_input_examples))
     print("TF TRAIN DATA")
     print(tf_train_dataset)
     print("TF TEST DATA")
     print(tf_test_dataset)
 
-    train_data = tf_train_dataset.shuffle(100).batch(32).repeat(2)
-    test_data = tf_test_dataset.batch(32)
+    train_data = tf_train_dataset.shuffle(100).batch(BATCH_SIZE).repeat(2)
+    test_data = tf_test_dataset.batch(BATCH_SIZE)
     print("TRAIN DATA\n")
+    print(train_data)
     print(train_data)
     print("TEST DATA\n")
     print(test_data)
@@ -121,11 +134,46 @@ def TRAIN():
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), 
         metrics=[tf.keras.metrics.SparseCategoricalAccuracy('accuracy')]
     )
-
+    
     model.fit(train_data, epochs=2, validation_data=test_data)
 
-    """
-    1/20: Error with mis-matched shapes. Current suspicion is the tweets are not being fit to the same length
-    Tweets have different numbers of words -> different sized tensors for input.
-    You can notice this by running multiple times. Different shape sizes each time
-    """
+    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    path = os.path.join(location, 'TRAINED_MODEL')
+    model.save(path)
+
+def load_model():
+    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    new_model = tf.keras.models.load_model(os.path.join(location, 'TRAINED_MODEL'))
+    new_model.summary()
+    return new_model
+
+def test_model(model):
+    df = get_csv_as_df(VALIDATE_DATASET)
+    data_df = pd.DataFrame({
+        'label': df['polarity'].apply(lambda x: decode_sentiment(x)),
+        'text': df['text'].replace(r'\n', '', regex=True)
+    })
+    x = data_df.apply(lambda z: tokenizer.encode_plus(
+            z['text'],
+            add_special_tokens=True,
+            max_length=280,
+            return_token_type_ids=True,
+            return_attention_mask=True,
+            pad_to_max_length=True,
+            truncation=True
+        ))
+    x = tf.convert_to_tensor(x)
+
+    y = data_df.apply(lambda z: tokenizer.encode_plus(
+            z['polarity'],
+            add_special_tokens=True,
+            max_length=280,
+            return_token_type_ids=True,
+            return_attention_mask=True,
+            pad_to_max_length=True,
+            truncation=True
+        ))
+    y = tf.convert_to_tensor(y)
+
+    loss, acc = model.evaluate(x, y)
+    print(f"Loss: {loss} | Accuracy: {acc}")
