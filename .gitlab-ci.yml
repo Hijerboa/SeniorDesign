@@ -48,7 +48,7 @@ deploy:
     - kubectl get namespaces
     - find ./kubernetes -type f -exec sed -i -e "s/@DOCKER_TAG/${CI_PIPELINE_IID}/g" {} \;
     - kubectl apply -f kubernetes -n prod-senior-design
-    - kubectl apply -f kubernetes/cron-jobs
+    - kubectl apply -f kubernetes/cron-jobs -n prod-senior-design
 
 
 
