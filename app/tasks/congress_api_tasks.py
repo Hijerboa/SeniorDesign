@@ -34,7 +34,6 @@ def get_versions(congress: int, version: str, doc_class, offset: int):
     response = api.get_bill_listing(start_string, end_date, offset, congress, version, doc_class)
     packages = response['data']['packages']
     for package in packages:
-        session = create_session()
         summary_response = api.get_bill_summary(package['packageId'])['data']
         bill_slug = str(summary_response['billType']) + str(summary_response['billNumber'])
         bill_id = '{0}-{1}'.format(bill_slug, str(summary_response['congress']))
