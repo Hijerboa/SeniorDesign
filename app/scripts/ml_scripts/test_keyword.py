@@ -1,4 +1,4 @@
-from machine_learning.keyword_extraction.get_keywords import get_keywords, get_subjects
+from machine_learning.keyword_extraction.get_keywords import get_keywords
 from db.database_connection import initialize, create_session
 from db.models import Bill, BillVersion
 from datetime import datetime
@@ -34,7 +34,6 @@ def test_keyword_extraction():
             print(kw)
             sec_runtime += (end-start).total_seconds()
             total_runtime += (end-start).total_seconds()
-            input()
         print(f'{(c_batch + 1) * num} / {batches * num} done (avg: {sec_runtime / num} s.)')
     average = total_runtime/(num * batches)
     print(f"\nAverage Time: {average}")

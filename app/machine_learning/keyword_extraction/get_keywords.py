@@ -1,12 +1,6 @@
 # imports
-from ast import keyword
-from functools import reduce
-import string
-from numpy.core.numeric import full
-import yake
 from keybert import KeyBERT
 from db.models import Bill, BillVersion
-from fuzzywuzzy import fuzz, process
 import nltk
 from nltk.stem import WordNetLemmatizer
 
@@ -35,6 +29,8 @@ top_n = 5
 use_mmr = True
 kb_diversity = 0.3
 kw_model = KeyBERT()
+nltk.download('wordnet')
+nltk.download('omw-1.4')
 
 def get_base_keywords(bill: Bill):
     if bill.bill_type not in prefixes.keys():
