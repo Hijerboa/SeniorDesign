@@ -30,15 +30,6 @@ prefixes = {
 nono_words = set(["denies", "establishes", "reauthorizes", "regard", "applicable","shall", "nullifies", "whereas", "representatives", "con", "res", "increases", "considering", "amended", "resolution", "commends", "proposes", "continuing", "directs", "regarding", "eliminates", "exempting", "amends", "requires", "united states", "act", "section", "united", "states", "united states of america", "secretary", "federal", "federal government", "government", "congressional", "congress", "bill", "bills", "congress", "america", "state", "agency", "federal agency", "prohibits federal", "good conscience"])
 stopwords = set(['', 'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any', 'are', 'aren', "aren't", 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'couldn', "couldn't", 'd', 'did', 'didn', "didn't", 'do', 'does', 'doesn', "doesn't", 'doing', 'don', "don't", 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn', "hadn't", 'has', 'hasn', "hasn't", 'have', 'haven', "haven't", 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'isn', "isn't", 'it', "it's", 'its', 'itself', 'just', 'll', 'm', 'ma', 'me', 'mightn', "mightn't", 'more', 'most', 'mustn', "mustn't", 'my', 'myself', 'needn', "needn't", 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 're', 's', 'same', 'shan', "shan't", 'she', "she's", 'should', "should've", 'shouldn', "shouldn't", 'so', 'some', 'such', 't', 'than', 'that', "that'll", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 've', 'very', 'was', 'wasn', "wasn't", 'we', 'were', 'weren', "weren't", 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'won', "won't", 'wouldn', "wouldn't", 'y', 'you', "you'd", "you'll", "you're", "you've", 'your', 'yours', 'yourself', 'yourselves'])
 
-# YAKE extractor object
-language = "en"
-max_ngram_size = 3
-deduplication_thresold = 0.3
-deduplication_algo = 'seqm'
-windowSize = 3
-numOfKeywords = 3
-extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_thresold, dedupFunc=deduplication_algo, windowsSize=windowSize, top=numOfKeywords, features=None)
-
 # KeyBERT keyword extraction model object
 n_gram_range = (2, 4)
 stop_words = stopwords # 'english'
@@ -60,10 +51,6 @@ def get_base_keywords(bill: Bill):
 
 
 def kw_cleanup(text):
-    # Test print uncleaned summary
-    #print()
-    #print(text)
-    #print()
     # Remove Punctuation (Unneeded)
     # text = remove_punc(text)
     # Tokenize
@@ -75,16 +62,7 @@ def kw_cleanup(text):
     tokens = [ls.lemmatize(tok) for tok in tokens]
     # Remove bad words
     tokens = [tok for tok in tokens if tok not in nono_words]
-    # Test print cleaned summary
-    #print(' '.join(tokens))
-    #print()
-
     return ' '.join(tokens)
-
-def yake_extraction(summary: str):
-    keywords = extractor.extract_keywords(summary)
-
-    return keywords
 
 def keybert_extraction(summary: str):
 
@@ -124,44 +102,36 @@ def get_keywords(bill: Bill):
         generated_keywords = derive_keywords(bill.summary.replace('\n', ''))
     else:
         generated_keywords = []
-
     
     #keywords = list(process.dedupe([_[0] for _ in generated_keywords], threshold=99))
     #return list(set(keywords + known_keywords))
-    return [word[0] for word in generated_keywords]
+    return [word[0] for word in generated_keywords] + known_keywords
 
-
+#UNUSED
+'''
 def derive_subjects(summary: str):
-    print(summary)
-    print()
-
     summary = summary.lower()
 
     for p in string.punctuation:
         summary = summary.replace(p, '')
-    
-    #print(summary)
-    #print()
 
     tokens = nltk.word_tokenize(summary)
 
     tokens = [tok for tok in tokens if tok not in stopwords]
 
     tokens = [tok for tok in tokens if tok not in nono_words]
-
-    #print(tokens)
-
     fdist = nltk.FreqDist(tokens)
 
     most_freq_nouns = [w for w, c in fdist.most_common(10)
                    if nltk.pos_tag([w], tagset = 'universal')[0][1] == 'NOUN']
-
-    print(most_freq_nouns)
     return []
+'''
 
+#UNUSED
+'''
 def get_subjects(bill: Bill):
 
     generated_keywords = derive_subjects(bill.versions[0].full_text)
     return [word[0] for word in generated_keywords]
 
-
+'''
