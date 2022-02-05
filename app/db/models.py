@@ -12,6 +12,11 @@ class phrase_types(enum.Enum):
     title = 1
     summary = 2
     manual = 3
+    
+
+class twitter_api_token_type(enum.Enum):
+    archive = 1
+    non_archive = 2
 
 
 class PrimaryKeyBase:
@@ -246,3 +251,21 @@ class BillVersion(PrimaryKeyBase, Base):
     url = Column(String(length=512))
     congressdotgov_url = Column(String(length=512), nullable=True)
     full_text = Column(LONGTEXT())
+
+
+class KeyRateLimit(PrimaryKeyBase, Base):
+    __tablename__ = 'key_rate_limit'
+    
+    last_query = Column(DateTime(), nullable=False, default=datetime.datetime.utcnow(),)
+    type = Column(Enum(twitter_api_token_type), nullable=False)
+    tweets_pulled = Column(Integer(), nullable=False, default=0)
+
+
+
+class SearchPhraseDates(PrimaryKeyBase, Base):
+    __tablename__ = 'search_phrase_date'
+    
+    search_phrase_id = Column(ForeignKey(SearchPhrase.id))
+    search_phrase = relationship(SearchPhrase)
+    start_date = Column(DateTime(), nullable=False)
+    end_date = Column(DateTime(), nullable=False)
