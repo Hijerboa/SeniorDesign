@@ -26,12 +26,12 @@ class MyHTMLParser(HTMLParser):
 
 
 @CELERY.task()
-def get_versions(congress: int, version: str, doc_class, offset: int):
+def get_versions(congress: int, bill_version: str, doc_class, offset: int):
     api: GovInfoAPI = GovInfoAPI(get_secret('gov_info_url'), get_secret('gov_info_key'))
     session = create_session()
     start_string = '1999-01-01T00:00:00Z'
     end_date = '2023-01-01T00:00:00Z'
-    response = api.get_bill_listing(start_string, end_date, offset, congress, version, doc_class)
+    response = api.get_bill_listing(start_string, end_date, offset, congress, bill_version, doc_class)
     packages = response['data']['packages']
     for package in packages:
         summary_response = api.get_bill_summary(package['packageId'])['data']
@@ -53,6 +53,6 @@ def get_versions(congress: int, version: str, doc_class, offset: int):
             session.commit()
     session.close()
     if len(packages) == 100:
-        get_versions.apply_async((congress, version, doc_class, offset+100,), countdown=1)
+        get_versions.apply_async((congress, bill_version, doc_class, offset+100,), countdown=1)
     return f'{len(packages)} collected'
         
