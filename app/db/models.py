@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Float, UniqueConstraint, LargeBinary, \
-    Table, DateTime, Date, Text, Enum
+    Table, DateTime, Date, Text, Enum, null
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import relation, relationship
 import datetime
@@ -60,6 +60,9 @@ class SearchPhrase(PrimaryKeyBase, Base):
     search_phrase = Column(String(length=128), nullable=False)
     type = Column(Enum(phrase_types), nullable=True, default=phrase_types.manual)
 
+    def __repr__(self):
+        return f'{self.search_phrase} (TYPE: {self.type})'
+
 
 # Tweet class does not have it's own ID field. Instead the twitter ID is used as the primary key
 class Tweet(Base):
@@ -81,6 +84,9 @@ class Tweet(Base):
     seniment= Column(Float, nullable=True)
     search_phrases = relationship(SearchPhrase, secondary=tweet_to_search)
 
+    def __repr__(self):
+        return f'{self.text[:50]}'
+
 
 class TwitterUser(Base):
     __tablename__ = 'twitter_users'
@@ -100,6 +106,9 @@ class TwitterUser(Base):
     profile_image_url = Column(String(length=256), nullable=True)
     username = Column(String(length=128), nullable=False)
     location = Column(String(length=512), nullable=True)
+
+    def __repr__(self):
+        return f'{self.display_name} (ID: {self.id})'
 
 
 class CongressMemberData(Base, PrimaryKeyBase):
@@ -125,6 +134,15 @@ class CongressMemberData(Base, PrimaryKeyBase):
     fec_canidate_id = Column(String(length=32))
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
 
+    def __repr__(self):
+        name = [self.first_name]
+        if not self.middle_name is None:
+            name.append(self.middle_name)
+        name.append(self.last_name)
+        if not self.suffix is None:
+            name.append(self.suffix)
+        return ' '.join(name)
+
 
 class CongressMemberInstance(Base, PrimaryKeyBase):
     __tablename__ = 'congress_member_instance'
@@ -147,11 +165,17 @@ class CongressMemberInstance(Base, PrimaryKeyBase):
     votes_against_party_pct = Column(Float())
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
 
+    def __repr__(self):
+        return f'{self.title}'
+
 
 class CommitteeCodes(PrimaryKeyBase, Base):
     __tablename__ = 'committee_codes'
 
     committee_code = Column(String(length=32))
+
+    def __repr__(self):
+        return f'Code: {self.committee_code}'
 
 
 class SubcommitteeCodes(PrimaryKeyBase, Base):
@@ -159,12 +183,17 @@ class SubcommitteeCodes(PrimaryKeyBase, Base):
 
     subcommittee_code = Column(String(length=32))
 
+    def __repr__(self):
+        return f'Code: {self.subcommittee_code}'
 
 class BillSubject(PrimaryKeyBase, Base):
     __tablename__ = 'bill_subjects'
 
     name = Column(String(length=128))
     url_name = Column(String(length=128))
+
+    def __repr__(self):
+        return f'Subject: {self.name}'
 
 
 class Bill(Base):
@@ -207,6 +236,9 @@ class Bill(Base):
     versions = relationship('BillVersion', backref='bill_object')
     keywords = relationship(SearchPhrase, secondary=bill_to_search)
 
+    def __repr__(self):
+        return f'{self.title} ({self.bill_slug})'
+
 
 class Task(PrimaryKeyBase, Base):
     __tablename__ = 'tasks'
@@ -217,6 +249,9 @@ class Task(PrimaryKeyBase, Base):
     task_type = Column(String(length=64), nullable=False)
     status = Column(String(length=16))
     message = Column(String(length=512))
+
+    def __repr__(self):
+        return f'Task ID: {self.task_id}\tUser ID: {self.user_id}\tType: {self.task_type}\tStatus: {self.status}\tMessage: {self.message[:50]}'
 
 
 class User(PrimaryKeyBase, Base):
@@ -230,6 +265,9 @@ class User(PrimaryKeyBase, Base):
     role = Column(String(length=32), name='role', nullable=False)
     tasks = relationship('Task', back_populates='launched_by')
 
+    def __repr__(self):
+        return f'name: {self.name}\trole: {self.role}'
+
 
 class BillAction(PrimaryKeyBase, Base):
     __tablename__ = 'bill_actions'
@@ -240,6 +278,9 @@ class BillAction(PrimaryKeyBase, Base):
     action_type = Column(String(length=256))
     datetime = Column(DateTime, nullable=False)
     description = Column(String(length=4096))
+
+    def __repr__(self):
+        return f'id: {self.bill})\tdate: {self.datetime}\tdesc: {self.description[:50]}'
 
 
 class BillVersion(PrimaryKeyBase, Base):
@@ -252,6 +293,9 @@ class BillVersion(PrimaryKeyBase, Base):
     congressdotgov_url = Column(String(length=512), nullable=True)
     full_text = Column(LONGTEXT())
 
+    def __repr__(self):
+        return f'{self.title} (id: {self.bill})\tstatus: {self.status}'
+
 
 class KeyRateLimit(PrimaryKeyBase, Base):
     __tablename__ = 'key_rate_limit'
@@ -259,6 +303,9 @@ class KeyRateLimit(PrimaryKeyBase, Base):
     last_query = Column(DateTime(), nullable=False, default=datetime.datetime.utcnow(),)
     type = Column(Enum(twitter_api_token_type), nullable=False)
     tweets_pulled = Column(Integer(), nullable=False, default=0)
+
+    def __repr__(self):
+        return f'key id: {self.id}\tkey type: {self.type}\tlast query: {self.last_query}\ttotal usage: {self.tweets_pulled}'
 
 
 
@@ -269,3 +316,6 @@ class SearchPhraseDates(PrimaryKeyBase, Base):
     search_phrase = relationship(SearchPhrase)
     start_date = Column(DateTime(), nullable=False)
     end_date = Column(DateTime(), nullable=False)
+
+    def __repr__(self):
+        return f'phrase id: {self.search_phrase_id}\tphrase: {self.search_phrase}\trange: {self.start_date}-{self.end_date}'
