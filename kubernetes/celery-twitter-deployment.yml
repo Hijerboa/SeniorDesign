@@ -16,7 +16,7 @@ spec:
         - name: sd-celery-twitter-user
           image: nicklesbread/seniordesign:@DOCKER_TAG
           imagePullPolicy: "IfNotPresent"
-          command: ['celery', '-A', 'tasks.task_initializer', 'worker', '-l', 'INFO', '--concurrency', '1', '-Q', 'twitter_users', '--uid', '1', '--without-gossip', '--without-mingle']
+          command: ['celery', '-A', 'tasks.task_initializer', 'worker', '-l', 'INFO', '--concurrency', '4', '-Q', 'twitter_users', '--uid', '1', '--without-gossip', '--without-mingle']
           env:
             - name: connection_string
               valueFrom:
@@ -53,5 +53,20 @@ spec:
                 secretKeyRef:
                   name: twitter
                   key: twitter_bearer_token_2
+            - name: twitter_bearer_token_3
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key: twitter_bearer_token_3
+            - name: twitter_bearer_token_4
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key: twitter_bearer_token_4
+            - name: twitter_bearer_token_5
+              valueFrom:
+                secretKeyRef:
+                  name: twitter
+                  key: twitter_bearer_token_5
       imagePullSecrets:
         - name: docker-hub-auth

@@ -2,6 +2,8 @@ from util import cred_handler
 from db.models import KeyRateLimit, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
 from db.database_connection import create_session, initialize
 
+initialize()
+
 def update_key_refs():
     session = create_session()
     i = 0
@@ -20,7 +22,10 @@ def update_key_refs():
         if len(key) == 0:
             #key does not exist, create one
             print('adding key')
-            new_key = KeyRateLimit(type = twitter_api_token_type.archive, id = i)
+            if i < 4:
+                new_key = KeyRateLimit(type = twitter_api_token_type.archive, id = i)
+            else:
+                new_key = KeyRateLimit(type = twitter_api_token_type.non_archive, id = i)
             print('created key')
             session.add(new_key)
             print('inserted')
