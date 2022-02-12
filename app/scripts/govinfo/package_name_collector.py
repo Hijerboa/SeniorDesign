@@ -50,23 +50,9 @@ def do_things(congress: int, version, doc_class, offset, num_items_processed, nu
         item, created = get_or_create(session, Bill, bill_slug=bill_slug, bill_id=bill_id,
                                         congress=int(summary_response['congress']),
                                         defaults={'title': summary_response['title']})
-        """if created:
-            num_bills_created += 1
-            print('Processed bill creation for item #{0}. {1} bills created'.format(str(num_items_processed),
-                                                                                    str(num_bills_created)))
-        else:
-            print('Found bill for item #{0}'.format(str(num_items_processed)))"""
         session.commit()
         version, created = get_or_create(session, BillVersion, bill=item.bill_id,
                                             title=str(summary_response['billVersion']).upper())
-        """if created:
-            num_versions_created += 1
-            print(
-                'Processed version creation for item #{0}. {1} versions created'.format(str(num_items_processed),
-                                                                                        str(num_versions_created))
-            )
-        else:
-            print('Found version for item #{0}'.format(str(num_items_processed)))"""
         session.commit()
         if version.full_text is None:
             num_full_text_pulled += 1
@@ -75,10 +61,6 @@ def do_things(congress: int, version, doc_class, offset, num_items_processed, nu
             result = parser.run_feeder(full_text_response['data'].decode())
             result = parser.run_feeder(full_text_response['data'].decode())
             version.full_text = result
-            """print(
-                'Processed full text addition for item #{0}. {1} full texts added'.format(str(num_items_processed),
-                                                                                            str(num_full_text_pulled))
-            )"""
             session.commit()
         session.close()
     return need_next
