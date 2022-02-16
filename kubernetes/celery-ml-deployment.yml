@@ -16,7 +16,7 @@ spec:
         - name: sd-celery-ml
           image: nicklesbread/seniordesign:@DOCKER_TAG
           imagePullPolicy: "IfNotPresent"
-          command: ['celery', '-A', 'tasks.task_initializer', 'worker', '-l', 'INFO', '--concurrency', '2', '-Q', 'ml_tasks', '--pool', 'threads', '--without-gossip', '--without-mingle']
+          command: ['celery', '-A', 'tasks.task_ml_initializer', 'worker', '-l', 'INFO', '--concurrency', '2', '-Q', 'ml_tasks', '--pool', 'threads', '--without-gossip', '--without-mingle']
           env:
             - name: connection_string
               valueFrom:

@@ -1,39 +1,34 @@
 from tasks.task_initializer import CELERY
-
-import time
-import datetime
 from util.cred_handler import get_secret
-from apis.propublica_api import ProPublicaAPI
+from apis.propublica_api import ProPublicaAPI, PropublicaAPIError
 from db.database_connection import create_session
-from db.db_utils import get_or_create, get_single_object
-from db.models import Bill, CommitteeCodes, SubcommitteeCodes, BillAction, BillVersion
-
-
-@CELERY.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs):
-    # Launch tasks once a day
-    sender.add_periodic_task(86400.0, launch_bill_update.s(117), name='Periodic action and version collection')
-    sender.add_periodic_task(86400.0, get_bill_data_by_congress.s(117, 'both'), name='Periodic bill collection')
+from db.db_utils import create_single_object, get_or_create, get_single_object
+from db.models import Bill, CommitteeCodes, SubcommitteeCodes, BillAction, BillVersion, Task, TaskError
 
 
 @CELERY.task()
-def launch_bill_update(congress_number: int):
-    session = create_session()
-    bills = session.query(Bill).filter(Bill.active == True, Bill.congress == congress_number)
-    for bill in bills:
-        get_and_update_bill.apply_async((bill.bill_id,))
+def get_bill_data_by_congress(task_id: int):
+    """Gets bill data for all bills in a specified congress and chamber
 
-
-@CELERY.task()
-def get_bill_data_by_congress(congress_id: int, congress_chamber: str):
+    Args:
+        task_id (int): Integer ID of a task object. This is pulled to get info about task parameters
+    """
     session = create_session()
+    task_object: Task = get_single_object(session, Task, id=task_id)
     num_bills = 0
     current_offset = 0
     valid_results = True
     pro_publica_api: ProPublicaAPI = ProPublicaAPI(get_secret('pro_publica_url'), get_secret('pro_publica_api_key'))
-
+    # Run through this for every single bill for the specified congress and chamber, potentially thousands
     while valid_results:
-        results = pro_publica_api.get_recent_bills(congress_id, congress_chamber, current_offset)
+        try:
+            results = pro_publica_api.get_recent_bills(task_object.parameters['congress'], task_object.parameters['chamber'], current_offset)
+        except PropublicaAPIError as e:
+            create_single_object(session, TaskError, task_id=task_object.id, description=e)
+            task_object.error = True
+            session.commit()
+            session.close()
+            return
         if results['data']['results'][0]['num_results'] == 0:
             valid_results = False
             break
@@ -44,18 +39,24 @@ def get_bill_data_by_congress(congress_id: int, congress_chamber: str):
             subcommittee_codes = bill['subcommittee_codes']
             bad_items = ['sponsor_title', 'sponsor_name', 'sponsor_state', 'sponsor_uri', 'cosponsors_by_party',
                          'committee_codes', 'subcommittee_codes', 'bill_uri']
+            # Items we don't store in the DB. Remove them from the dict
             for item in bad_items:
                 bill.pop(item)
             if 'R' in co_sponsor_parties.keys():
                 bill['rep_cosponsors'] = co_sponsor_parties['R']
             if 'D' in co_sponsor_parties.keys():
                 bill['dem_cosponsors'] = co_sponsor_parties['D']
-            bill['congress'] = congress_id
+            bill['congress'] = task_object.parameters['congress']
             object, created = get_or_create(session, Bill, bill_id=bill['bill_id'], defaults=bill)
-            if created:
-                get_and_update_bill.apply_async((object.bill_id,))
-            num_bills += 1
             session.commit()
+            # If created, then pull versions and actions
+            if created:
+                new_task: Task = create_single_object(session, Task, defaults={'launched_by_id': task_object.launched_by_id, 'type': 'propublica_update_bill', 'parameters': {
+                    'bill_id': object.bill_id
+                }})
+                session.commit()
+                get_and_update_bill.apply_async((new_task.id,))
+            num_bills += 1
             for committee_code in committee_codes:
                 committee_object, created = get_or_create(session, CommitteeCodes, committee_code=committee_code)
                 session.commit()
@@ -67,17 +68,34 @@ def get_bill_data_by_congress(congress_id: int, congress_chamber: str):
                 object.sub_committee_codes.append(subcommittee_object)
         current_offset += 20
         session.commit()
+    task_object.complete = True
     session.commit()
+    session.close()
     return '{0} bills collected'.format(str(num_bills))
 
 
 @CELERY.task()
-def get_and_update_bill(bill_id: str):
+def get_and_update_bill(task_id):
+    """ Retrieves updated bill information about a bill, including new actions and versions
+
+    Args:
+        task_id ([type]): Integer representation of a task object
+    """
     session = create_session()
     pro_publica_api: ProPublicaAPI = ProPublicaAPI(get_secret('pro_publica_url'), get_secret('pro_publica_api_key'))
+    task_object: Task = get_single_object(session, Task, id=task_id)
+    bill_id = task_object.parameters['bill_id']
     bill: Bill = get_single_object(session, Bill, bill_id=bill_id)
-    bill_response = pro_publica_api.get_bill_activity(bill.bill_slug, bill.congress)
+    try:
+        bill_response = pro_publica_api.get_bill_activity(bill.bill_slug, bill.congress)
+    except PropublicaAPIError as e:
+            create_single_object(session, TaskError, task_id=task_object.id, description=e)
+            task_object.error = True
+            session.commit()
+            session.close()
+            return
     bill_instance = bill_response['data']['results'][0]
+    
     # Update bill attributes
     bill.active = bill_instance['active']
     bill.last_vote = bill_instance['last_vote']
@@ -89,12 +107,15 @@ def get_and_update_bill(bill_id: str):
     bill.summary_short = bill_instance['summary_short']
     session.commit()
 
+    # Add any new versions to the database
     if bill_instance['versions'] is not None:
         for version in bill_instance['versions']:
             version['bill'] = bill.bill_id
             instance, created = get_or_create(session, BillVersion, bill=version['bill'],
                                               congressdotgov_url=version['congressdotgov_url'], defaults=version)
             session.commit()
+    
+    # Add any new actions to the database
     if bill_instance['actions'] is not None:
         for action in bill_instance['actions']:
             action['order'] = action['id']
@@ -103,5 +124,7 @@ def get_and_update_bill(bill_id: str):
             instance, created = get_or_create(session, BillAction, bill=action['bill'], order=action['order'],
                                               defaults=action)
             session.commit()
+    task_object.complete = True
+    session.commit()
     session.close()
     return None
