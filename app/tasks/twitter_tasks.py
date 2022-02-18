@@ -62,9 +62,7 @@ def tweet_puller_archive(task_id: int):
         session.commit()
         session.close()
         return
-    outside_time = datetime.now()
     for tweet in tweets:
-        start_time = datetime.now()
         try:
             # Extract the information we care about from the API here
             tweet_dict = {
@@ -87,42 +85,20 @@ def tweet_puller_archive(task_id: int):
                 tweet_dict['reply_to_id'] = tweet['referenced_tweets'][0]['id']
         except KeyError:
             pass
-        tweet_extraction_time = (datetime.now() - start_time).total_seconds()
-        
-        start_time = datetime.now()
         # Check if we've gathered that user's info, if not queue it for collection
         twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
-        user_from_db_time = (datetime.now() - start_time).total_seconds()
         
-        start_time = datetime.now()
         if twitter_user is None:
             twitter_users.append(str(tweet['author_id']))
             if len(twitter_users) == 100:
                 string = ','.join(twitter_users)
                 retrieve_users_info_by_ids.apply_async((string,))
                 twitter_users = []
-        twitter_user_logic = (datetime.now() - start_time).total_seconds()
         
-        start_time = datetime.now()
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
-        tweet_creation_time = (datetime.now() - start_time).total_seconds()
-        
-        start_time = datetime.now()
         tweet_object.search_phrases.append(db_search_phrase)
-        db_append_time = (datetime.now() - start_time).total_seconds()
         
-        start_time = datetime.now()
         session.commit()
-        commit_time = (datetime.now() - start_time).total_seconds()
-        
-        logger.error(
-            f'\ntweet_extraction time: {tweet_extraction_time}\nUser time: {user_from_db_time}\nTwitter User Logic Time: {twitter_user_logic}\n Creation Time: {tweet_creation_time}\nDB Search Phrase Append Time: {db_append_time}\nCommit Time: {commit_time}'
-        )
-        
-        full_runtime = (datetime.now() - outside_time).total_seconds()
-        logger.error(f'\nFull Runtime: {full_runtime}')
-        outside_time = datetime.now()
-        
     if not len(twitter_users) == 0:
         string = ','.join(twitter_users)
         retrieve_users_info_by_ids.apply_async((string,))
