@@ -13,7 +13,8 @@ BROKER_URL = f'amqp://{get_secret("RABBITMQ_USER")}:{get_secret("RABBITMQ_PASS")
 task_routes = {
     'tasks.twitter_tasks.tweet_puller_archive': {'queue': 'twitter_archive'},
     'tasks.twitter_tasks.retrieve_user_info_by_id': {'queue': 'twitter_users'},
-    'tasks.twitter_tasks.retrieve_user_info_by_username': {'queue': 'twitter_users'},
+    'tasks.twitter_tasks.run_retrieve_user_info_by_username': {'queue': 'twitter_users'},
+    'tasks.twitter_tasks.rerun_retrieve_user_info_by_username': {'queue': 'twitter_users'},
     'tasks.twitter_tasks.retrieve_users_info_by_ids': {'queue': 'twitter_users'},
     'tasks.propublica_tasks.get_bill_data_by_congress': {'queue': 'propublica'},
     'tasks.propublica_tasks.get_and_update_bill': {'queue': 'propublica'},

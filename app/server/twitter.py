@@ -1,7 +1,7 @@
 from db.database_connection import create_session
 from authorization.auth_utils import get_token, does_user_have_permission, secure_hash
 from util.make_error import make_error
-from tasks.twitter_tasks import retrieve_user_info_by_id, retrieve_user_info_by_username, \
+from tasks.twitter_tasks import retrieve_user_info_by_id, run_retrieve_user_info_by_username, \
     retrieve_users_info_by_ids, tweet_puller_archive
 from db.models import User, Task
 from db.db_utils import get_single_object, create_single_object
@@ -79,7 +79,7 @@ def single_user_lookup_username():
     user_param = request.args.get('username')
     if user_param is None:
         return make_error(405, 1, "No user", "Add a user parameter")
-    retrieve_user_info_by_username.apply_async((user_param,), countdown=3.5)
+    run_retrieve_user_info_by_username.apply_async((user_param, user.id,))
     session.commit()
     session.close()
     return jsonify("Task created")
