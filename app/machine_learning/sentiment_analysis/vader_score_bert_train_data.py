@@ -15,14 +15,14 @@ def vader_score(tweet_text: str):
 
 
 def generate_data():
-    out_file = open(OUTPUT_FILE_PATH, 'w')
+    out_file = open(OUTPUT_FILE_PATH, 'w', encoding='utf-8', errors='replace')
 
     initialize()
     session = create_session()
     tweets = session.query(Tweet).order_by(func.random()).limit(NUM_TWEETS).all()
     start = datetime.now()
     for tweet in tweets:
-        text = tweet.text.encode('utf-8').replace('\n', '').replace(',', '')
+        text = tweet.text.replace('\n', '').replace(',', '')
         score = vader_score(text)
         out_file.write(f'{score["compound"]},{text}\n')
     end = datetime.now()
