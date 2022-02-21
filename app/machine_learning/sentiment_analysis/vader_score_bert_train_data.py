@@ -5,7 +5,7 @@ from db.models import Tweet
 from datetime import datetime
 
 OUTPUT_FILE_PATH = 'app/machine_learning/sentiment_analysis/vader_scored_tweets.csv'
-NUM_TWEETS = 50 #20000
+NUM_TWEETS = 30000
 
 sia_obj = SentimentIntensityAnalyzer()
 
