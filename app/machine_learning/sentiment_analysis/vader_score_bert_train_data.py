@@ -23,7 +23,7 @@ def generate_data():
     start = datetime.now()
     text = [t.text for t in tweets]
     for tweet in tweets:
-        text = tweet.text.replace('\n', '').replace(',', '')
+        text = tweet.text.encode('utf-8').replace('\n', '').replace(',', '')
         score = vader_score(text)
         out_file.write(f'{score["compound"]},{text}\n')
     end = datetime.now()
