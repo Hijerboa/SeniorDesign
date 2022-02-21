@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 my_tz = timezone('US/Eastern')
 API_MANUAL_TIMEOUT = 3 #Manual timeout in seconds. Raise this if we're getting rate limited.
+API_TWEET_LIMIT = 10000000
 
 
 @CELERY.task
@@ -27,7 +28,7 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
     # Get proper API token to use based on usage time and amount
     while len(keys) == 0:
         keys = session.query(KeyRateLimit).\
-            where(and_(KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
+            where(and_(KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_TWEET_LIMIT)).\
             with_for_update(skip_locked=True).\
             order_by(asc(KeyRateLimit.tweets_pulled)).\
             limit(1).\
