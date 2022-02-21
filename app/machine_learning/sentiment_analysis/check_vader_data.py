@@ -13,6 +13,6 @@ def fix_data():
 
     line = f.readline()
     while line != '':
-        fd.write(line)
+        fd.write(line.encode('utf-8').decode())
         line = f.readline()
 
