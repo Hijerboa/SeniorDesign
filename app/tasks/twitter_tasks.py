@@ -185,7 +185,6 @@ class retrieve_user_info_by_username(Task):
     def run(self):
         session = create_session()
         try:
-            logger.error('it getting ot fucky part')
             return self.retrieve_user_info_by_username(self.parameters['username'])
         except Exception as e: 
             self.error = True
@@ -209,10 +208,8 @@ class retrieve_user_info_by_username(Task):
                 pass #Either backoff here or wait, we can figure this out though
         key = keys[0]   
         # Use correct secret ID
-        logger.error('getting api')
         twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         user_data = twitter_api.get_user_by_username(username)['data']['data']
-        logger.error('got user data')
         # Update API usage time to now and commit to db
         key.last_query = datetime.now()
         session.commit()
