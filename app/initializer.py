@@ -4,7 +4,8 @@ from initializer.authentication_setup import perform_initial_tasks
 
 os.chdir(os.path.join(os.path.dirname(__file__), "db"))
 
-time.sleep(3)
+# Wait a second for db to be available, mainly used in a fully dockerized setup with a database in docker
+time.sleep(1)
 
 alembic.config.main(
     argv=[
@@ -14,4 +15,5 @@ alembic.config.main(
     ]
 )
 
+# Perform Auth setup
 perform_initial_tasks()
