@@ -154,14 +154,16 @@ def retrieve_users_info_by_ids(user_ids: str):
     session.close()
     return 'User info collected for {0} users'.format(str(user_num))
 
+#Initial run to retrieve 
 @CELERY.task()
 def run_retrieve_user_info_by_username(username: str, user_id):
     session = create_session()
     task = retrieve_user_info_by_username(username, user_id)
     session.add(task)
     session.commit()
-    task.run()
+    res = task.run()
     session.commit()
+    return res
 
 @CELERY.task()
 def rerun_retrieve_user_info_by_username(task: Task, user_id):
@@ -169,18 +171,21 @@ def rerun_retrieve_user_info_by_username(task: Task, user_id):
     task = retrieve_user_info_by_username(task.parameters['username'], user_id)
     session.add(task)
     session.commit()
-    task.run()
+    res = task.run()
     session.commit()
+    return res
 
 class retrieve_user_info_by_username(Task):
     def __init__(self, username: str, user_id):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='retrieve_user_info_by_username', parameters={'username':username})
 
     def run(self):
+        session = create_session()
         try:
             return retrieve_user_info_by_username(self, self.parameters['username'])
-        except:
+        except Exception as e: 
             self.error = True
+            return e
             #Create error object here + do stuff
 
     def retrieve_user_info_by_username(username: str):
