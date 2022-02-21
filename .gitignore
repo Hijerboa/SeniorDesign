@@ -140,3 +140,4 @@ dmypy.json
 *testdata.manual.2009.06.14.csv
 *training.1600000.processed.noemoticon.csv
 *poop.csv
+*TRAINED_MODEL*
