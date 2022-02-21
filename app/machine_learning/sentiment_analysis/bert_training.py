@@ -21,10 +21,11 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 # Tokenizer - preprocessing, prepares inputs for the model
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
-DATASET_COLUMNS = ["polarity", "ids", "date", "query", "user", "text"]
+#DATASET_COLUMNS = ["polarity", "ids", "date", "query", "user", "text"]
+DATASET_COLUMNS = ["polarity", "text"]
 DATASET_ENCODING = "ISO-8859-1"
 # DATASET_FILENAME = "training.1600000.processed.noemoticon.csv"
-DATASET_FILENAME = "poop2.csv"
+DATASET_FILENAME = "vader_scored_tweets.csv"
 VALIDATE_DATASET = "testdata.manual.2009.06.14.csv"
 INPUT_FEATURES_LOGGING = True
 BATCH_SIZE = 8
@@ -101,33 +102,21 @@ def TRAIN():
 
     # remove unnecessary columns / cleanup text / map to our sentiment scores
     data_df = pd.DataFrame({
-        'label': df['polarity'].apply(lambda x: decode_sentiment(x)),
+        'polarity': df['polarity'].apply(lambda x: x+1),
         'text': df['text'].replace(r'\n', '', regex=True)
     })
     print("HEAD\n")
     print(data_df.head())
 
     # InputExamples are fed to the tokenizer. 
-    input_examples = data_df.apply(lambda x: InputExample(None, text_a=x['text'], text_b=None, label=x['label']), axis=1)
+    input_examples = data_df.apply(lambda x: InputExample(None, text_a=x['text'], text_b=None, label=x['polarity']), axis=1)
     train_input_examples, test_input_examples = train_test_split(input_examples, test_size=0.2)
-    print("TRAIN INPUT EXAMPLES")
-    print(train_input_examples)
-    print("TRAIN INPUT EXAMPLES")
-    print(test_input_examples)
 
     tf_train_dataset = get_tf_dataset(list(train_input_examples))
     tf_test_dataset = get_tf_dataset(list(test_input_examples))
-    print("TF TRAIN DATA")
-    print(tf_train_dataset)
-    print("TF TEST DATA")
-    print(tf_test_dataset)
 
     train_data = tf_train_dataset.shuffle(100).batch(BATCH_SIZE).repeat(2)
-    test_data = tf_test_dataset.batch(BATCH_SIZE)
-    print("TRAIN DATA\n")
-    print(train_data)
-    print("TEST DATA\n")
-    print(test_data)
+    validation_data = tf_test_dataset.batch(BATCH_SIZE)
 
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0), 
@@ -135,11 +124,13 @@ def TRAIN():
         metrics=[tf.keras.metrics.SparseCategoricalAccuracy('accuracy')]
     )
     
-    model.fit(train_data, epochs=2, validation_data=test_data)
+    model.fit(train_data, epochs=2, validation_data=validation_data)
 
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     path = os.path.join(location, 'TRAINED_MODEL')
     model.save_pretrained(path, save_model=True)
+
+### THIS IS FOR TESTING MODEL ###
 
 def load_model():
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
