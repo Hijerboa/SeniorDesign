@@ -180,10 +180,11 @@ def make_prediction(model, tweet: str):
 def test_model(model):
     df = get_csv_as_df(VALIDATE_DATASET)
     start_time = time.time()
-    output_values = set()
+    i = 0
     for index, row in df.iterrows():
         if index % 100 == 0:
             print(f"running {index}")
-        output_values.add(make_prediction(model, row['text']))
+        if row['polarity'] == make_prediction(model, row['text']):
+            i += 1
     print(f"TESTING TOOK {(time.time() - start_time) / 500} per tweet")
-    print(output_values)
+    print(f"Accuracy: {i/500}")
