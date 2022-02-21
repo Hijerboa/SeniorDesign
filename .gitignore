@@ -1,3 +1,5 @@
+app/random_tweets.csv
+
 .DS_Store
 app/util/cred.json
 app/util/cred-user-1.json

@@ -10,7 +10,7 @@ def dump_random_tweets():
     session = create_session()
 
     tweets = session.query(Tweet.text).order_by(func.random()).limit(100000).all()
-    with open('random_tweets.csv', 'wr') as file:
+    with open('random_tweets.csv', 'w') as file:
         csv_writer = csv.writer(file, delimiter=',')   
         for tweet in tweets:
             csv_writer.writerow([tweet[0], ''])

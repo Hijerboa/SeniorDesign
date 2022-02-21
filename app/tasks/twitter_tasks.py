@@ -6,7 +6,7 @@ from apis.twitter_api import TwitterAPI
 from apis.propublica_api import ProPublicaAPI
 from db.database_connection import create_session
 from db.db_utils import create_single_object, get_or_create, get_single_object
-from db.models import KeyRateLimit, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
+from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
 from twitter_utils.user_gatherer import create_user_object
 
 from datetime import datetime, timedelta
@@ -14,6 +14,9 @@ from pytz import timezone
 my_tz = timezone('US/Eastern')
 API_MANUAL_TIMEOUT = 3 #Manual timeout in seconds. Raise this if we're getting rate limited.
 
+
+import logging
+logger = logging.getLogger(__name__)
 
 @CELERY.task
 def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
@@ -182,13 +185,16 @@ class retrieve_user_info_by_username(Task):
     def run(self):
         session = create_session()
         try:
-            return retrieve_user_info_by_username(self, self.parameters['username'])
+            logger.error('it getting ot fucky part')
+            return self.retrieve_user_info_by_username(self.parameters['username'])
         except Exception as e: 
             self.error = True
-            return e
+            error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
+            session.commit()
+            return str(e)
             #Create error object here + do stuff
 
-    def retrieve_user_info_by_username(username: str):
+    def retrieve_user_info_by_username(self, username: str):
         session = create_session()
         # Get proper API token to use based on usage time. Tweets pulled doesn't matter for getting user info.
         keys = []
@@ -203,12 +209,15 @@ class retrieve_user_info_by_username(Task):
                 pass #Either backoff here or wait, we can figure this out though
         key = keys[0]   
         # Use correct secret ID
+        logger.error('getting api')
         twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         user_data = twitter_api.get_user_by_username(username)['data']['data']
+        logger.error('got user data')
         # Update API usage time to now and commit to db
         key.last_query = datetime.now()
         session.commit()
 
+        
         create_user_object(user_data, session)
         session.commit()
         session.close()

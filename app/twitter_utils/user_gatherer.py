@@ -3,6 +3,10 @@ from db.db_utils import get_or_create
 from db.models import TwitterUser
 from sqlalchemy.exc import IntegrityError
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class InvalidTwitterUser(Exception):
     """Raised if a twitter user does not exist"""
     pass
@@ -31,6 +35,7 @@ def create_user_object(user_info: dict, session):
     try:
         user_object, created = get_or_create(session, TwitterUser, id=user_info['id'], defaults=user_info)
         session.commit()
+        logger.error(user_object.id)
     except IntegrityError:
         pass
     return user_object
