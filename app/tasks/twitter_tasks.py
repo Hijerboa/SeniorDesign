@@ -2,26 +2,29 @@ from sqlalchemy import asc, and_
 from tasks.task_initializer import CELERY
 
 from util.cred_handler import get_secret
-from apis.twitter_api import TwitterAPI
-from apis.propublica_api import ProPublicaAPI
+from apis.twitter_api import TwitterAPI, TwitterAPIError
 from db.database_connection import create_session
-from db.db_utils import get_or_create, get_single_object
-from db.models import KeyRateLimit, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
+from db.db_utils import get_or_create, get_single_object, create_single_object
+from db.models import KeyRateLimit, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type, TaskError
 from twitter_utils.user_gatherer import create_user_object
 
 from datetime import datetime, timedelta
 from pytz import timezone
 my_tz = timezone('US/Eastern')
+# TODO: Pull the below from a environment variable for ease of editing because we're good software engineers
 API_MANUAL_TIMEOUT = 3 #Manual timeout in seconds. Raise this if we're getting rate limited.
 API_TWEET_LIMIT = 10000000
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 
 @CELERY.task
-def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
+def tweet_puller_archive(task_id: int):
     session = create_session()
-
-    db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
-    tweet_count = 0
+    task_object: Task = get_single_object(session, Task, id=task_id)
+    db_search_phrase = get_single_object(session, SearchPhrase, search_phrase=task_object.parameters['tweet_query'])
     twitter_users = []
 
     keys = []
@@ -38,7 +41,14 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
     key = keys[0]
     # Use correct secret ID
     twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
-    response = twitter_api.search_tweets_archive(tweet_query, start_date, end_date, next_token)
+    try:
+        response = twitter_api.search_tweets_archive(task_object.parameters['tweet_query'], task_object.parameters['start_date'], task_object.parameters['end_date'], task_object.parameters['next_token'])
+    except TwitterAPIError as e:
+        create_single_object(session, TaskError, task_id=task_object.id, description=e)
+        task_object.error = True
+        session.commit()
+        session.close()
+        return
     # Update API usage time to now
     key.last_query = datetime.now()
     #
@@ -52,9 +62,10 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
     except KeyError:
         session.commit()
         session.close()
-        return '{0} tweets collected'.format(str(tweet_count))
+        return
     for tweet in tweets:
         try:
+            # Extract the information we care about from the API here
             tweet_dict = {
                 'author_id': tweet['author_id'],
                 'created_at': datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -68,33 +79,39 @@ def tweet_puller_archive(tweet_query: str, next_token, start_date, end_date):
             }
         except KeyError:
             pass
+        # If tweets are referenced by another tweet; throw an exception and pass if not becauase EZ
         try:
             if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                 tweet_dict['reply'] = True
                 tweet_dict['reply_to_id'] = tweet['referenced_tweets'][0]['id']
         except KeyError:
             pass
+        # Check if we've gathered that user's info, if not queue it for collection
         twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
+        
         if twitter_user is None:
             twitter_users.append(str(tweet['author_id']))
             if len(twitter_users) == 100:
                 string = ','.join(twitter_users)
                 retrieve_users_info_by_ids.apply_async((string,))
                 twitter_users = []
+        
         tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
         tweet_object.search_phrases.append(db_search_phrase)
+        
         session.commit()
-        tweet_count += 1
     if not len(twitter_users) == 0:
         string = ','.join(twitter_users)
         retrieve_users_info_by_ids.apply_async((string,))
-    session.close()
     try:
-        next_token = response['data']['meta']['next_token']
-        tweet_puller_archive.apply_async((tweet_query, next_token, start_date, end_date,))
+        task_object.parameters['next_token'] = response['data']['meta']['next_token']
+        session.commit()
+        tweet_puller_archive.apply_async((task_id,))
     except KeyError:
-        pass
-    return '{0} tweets collected'.format(str(tweet_count))
+        task_object.complete = True
+        session.commit()
+    session.close()
+    return f'{len(tweets)} tweets collected'
 
 
 @CELERY.task()

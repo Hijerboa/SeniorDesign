@@ -5,11 +5,9 @@ from initializer.initializer_utils import is_initial_admin_present
 import db.models as models
 from time import sleep
 
-sleep(2)
-
 initialize()
 
-
+# Creates an initial user
 def create_initial_user(session):
     token = secure_string()
     session.add(models.User(name='admin', email=get_secret('initial_admin_email'), key_hash=secure_hash(token), role='admin'))
@@ -17,6 +15,7 @@ def create_initial_user(session):
     return token
 
 
+# Run from initializer, any startup tasks can be run here
 def perform_initial_tasks():
     session = create_session()
     if not is_initial_admin_present():

@@ -1,11 +1,15 @@
 # Celery Initialization
+# This file is what is called by the different Non-ML celery workers at startup
+# It specfies what tasks will fall into what queues, as well celery settings
+# At the end, it creates a database engine
 from celery import Celery
 from util.cred_handler import get_secret
 from db.database_connection import initialize
 from util.cred_handler import get_secret
 
-BROKER_URL = 'amqp://{0}:{1}@rabbit//'.format(get_secret("RABBITMQ_USER"), get_secret("RABBITMQ_PASS"))
+BROKER_URL = f'amqp://{get_secret("RABBITMQ_USER")}:{get_secret("RABBITMQ_PASS")}@rabbit//'
 
+# Specifies tasks routes
 task_routes = {
     'tasks.twitter_tasks.tweet_puller_archive': {'queue': 'twitter_archive'},
     'tasks.twitter_tasks.retrieve_user_info_by_id': {'queue': 'twitter_users'},
@@ -17,11 +21,13 @@ task_routes = {
     'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'}
 }
 
+# Creates celery object, using rabbit broker and database task backend
 CELERY = Celery('tasks',
             broker=BROKER_URL,
             backend=get_secret('celery_connection_string'),
             include=['tasks.twitter_tasks', 'tasks.propublica_tasks', 'tasks.congress_api_tasks'])
 
+# Celery settings, don't modify unless absolutely necessary
 CELERY.conf.accept_content = ['json', 'msgpack']
 CELERY.conf.result_serializer = 'json'
 CELERY.conf.task_serializer = 'json'
@@ -31,4 +37,5 @@ CELERY.conf.task_acks_late = True
 CELERY.conf.worker_prefetch_multiplier = 1
 CELERY.conf.task_always_eager = False
 
+# Create database engine
 initialize()

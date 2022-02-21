@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Float, UniqueConstraint, LargeBinary, \
-    Table, DateTime, Date, Text, Enum, null
+    Table, DateTime, Date, Text, Enum, null, JSON
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import relation, relationship
 import datetime
@@ -17,6 +17,9 @@ class phrase_types(enum.Enum):
 class twitter_api_token_type(enum.Enum):
     archive = 1
     non_archive = 2
+    
+
+
 
 
 class PrimaryKeyBase:
@@ -239,21 +242,6 @@ class Bill(Base):
     def __repr__(self):
         return f'{self.title} ({self.bill_slug})'
 
-
-class Task(PrimaryKeyBase, Base):
-    __tablename__ = 'tasks'
-
-    task_id = Column(String(length=64), nullable=False)
-    user_id = Column(Integer(), ForeignKey('users.id'))
-    launched_by = relationship('User', back_populates='tasks')
-    task_type = Column(String(length=64), nullable=False)
-    status = Column(String(length=16))
-    message = Column(String(length=512))
-
-    def __repr__(self):
-        return f'Task ID: {self.task_id}\tUser ID: {self.user_id}\tType: {self.task_type}\tStatus: {self.status}\tMessage: {self.message[:50]}'
-
-
 class User(PrimaryKeyBase, Base):
     __tablename__ = 'users'
 
@@ -263,10 +251,29 @@ class User(PrimaryKeyBase, Base):
     creation = Column(DateTime, name='creation_time', default=datetime.datetime.utcnow(), nullable=False)
     updated = Column(DateTime, name='updated_time', default=datetime.datetime.utcnow(), nullable=False)
     role = Column(String(length=32), name='role', nullable=False)
-    tasks = relationship('Task', back_populates='launched_by')
 
     def __repr__(self):
         return f'name: {self.name}\trole: {self.role}'
+    
+    
+class TaskError(PrimaryKeyBase, Base):
+    __tablename__ = 'task_errors'
+    
+    description = Column(String(length=4096), nullable=False)
+    creation = Column(DateTime, name='creation_time', default=datetime.datetime.utcnow(), nullable=False)
+    task_id = Column(Integer, ForeignKey('tasks.id'))
+    task = relationship('Task', backref='errors')
+
+class Task(PrimaryKeyBase, Base):
+    __tablename__ = 'tasks'
+    
+    complete = Column(Boolean, default=False, nullable=False)
+    error = Column(Boolean, default=False, nullable=False)
+    creation = Column(DateTime, name='creation_time', default=datetime.datetime.utcnow(), nullable=False)
+    launched_by_id = Column(Integer, ForeignKey('users.id'))
+    launched_by = relationship(User, backref='tasks')
+    type = Column(String(length=256))
+    parameters = Column(JSON)
 
 
 class BillAction(PrimaryKeyBase, Base):

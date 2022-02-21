@@ -3,7 +3,7 @@ from authorization.auth_utils import get_token, does_user_have_permission, secur
 from util.make_error import make_error
 from tasks.twitter_tasks import retrieve_user_info_by_id, retrieve_user_info_by_username, \
     retrieve_users_info_by_ids, tweet_puller_archive
-from db.models import User
+from db.models import User, Task
 from db.db_utils import get_single_object, create_single_object
 from util.check_time import check_time
 from flask import Blueprint, request, jsonify
@@ -34,8 +34,14 @@ def archive_search():
         return make_error(405, 2, "No end date", "Add an end parameter")
     if not check_time(start_param):
         return make_error(405, 3, "Malformed end date", "Send parameter in YYYY-MM-DD format")
+    object: Task = create_single_object(session, Task, defaults={'launched_by_id': user.id, 'type': 'twitter_archive_search', 'parameters': {
+        'tweet_query': query_param,
+        'next_token': None,
+        'start_date': start_param,
+        'end_date': end_param
+    }})
     session.commit()
-    tweet_puller_archive.apply_async((query_param, None, start_param, end_param,), countdown=3.5)
+    tweet_puller_archive.apply_async((object.id,))
     session.close()
     return jsonify('Task has been created and queued')
 

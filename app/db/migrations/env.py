@@ -13,7 +13,7 @@ from app.util.cred_handler import get_secret
 from app.db.models import Base
 
 IGNORE_TABLES = ['celery_taskmeta', 'celery_tasksetmeta']
-IGNORE_COLUMNS = ['summary']
+IGNORE_COLUMNS = ['summary', 'parameters']
 
 def include_object(object, name, type_, reflected, compare_to):
     """

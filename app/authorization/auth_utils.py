@@ -19,10 +19,12 @@ role_to_permission = {
 
 
 def secure_string():
+    # Radomly generates a string for the API Key
     return hexlify(urandom(16)).decode("ascii")
 
 
 def secure_hash(token: str):
+    # Hashes the token
     try:
         return hexlify(
             pbkdf2_hmac(

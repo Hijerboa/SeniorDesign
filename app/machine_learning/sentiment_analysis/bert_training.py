@@ -1,4 +1,4 @@
-import os
+import os, time
 import re
 from tkinter import Y
 import numpy as np
@@ -17,6 +17,7 @@ from transformers import InputExample, InputFeatures
 # SequenceClassification - BERT with extra layers at the end for sentiment scoring
 model = TFBertForSequenceClassification.from_pretrained("bert-base-uncased")
 tf.debugging.set_log_device_placement(True)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 # Tokenizer - preprocessing, prepares inputs for the model
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
@@ -125,7 +126,6 @@ def TRAIN():
     test_data = tf_test_dataset.batch(BATCH_SIZE)
     print("TRAIN DATA\n")
     print(train_data)
-    print(train_data)
     print("TEST DATA\n")
     print(test_data)
 
@@ -139,41 +139,51 @@ def TRAIN():
 
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     path = os.path.join(location, 'TRAINED_MODEL')
-    model.save(path)
+    model.save_pretrained(path, save_model=True)
 
 def load_model():
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    new_model = tf.keras.models.load_model(os.path.join(location, 'TRAINED_MODEL'))
+    new_model = TFBertForSequenceClassification.from_pretrained(os.path.join(location, 'TRAINED_MODEL'))
     new_model.summary()
     return new_model
 
+def make_prediction(model, tweet: str):
+    tf_batch = tokenizer(tweet, max_length=128, padding=True, truncation=True, return_tensors='tf')
+    tf_outputs = model(tf_batch)
+    tf_predictions = tf.nn.softmax(tf_outputs[0], axis=-1)
+    labels = [0, 4]
+    label = tf.argmax(tf_predictions, axis=1)
+    label = label.numpy()
+    return labels[label[0]]
+
+# def test_model(model):
+#     df = get_csv_as_df(VALIDATE_DATASET)
+#     data_df = pd.DataFrame({
+#         'label': df['polarity'].apply(lambda x: decode_sentiment(x)),
+#         'text': df['text'].replace(r'\n', '', regex=True)
+#     })
+
+#     input_examples = data_df.apply(lambda x: InputExample(None, text_a=x['text'], text_b=None, label=x['label']), axis=1)
+#     tf_dataset = get_tf_dataset(list(input_examples))
+
+#     # y = data_df.apply(lambda z: z['label'], axis=1)
+#     # # y = tf.convert_to_tensor(list(y))
+#     model.compile(
+#         optimizer=tf.keras.optimizers.Adam(learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0), 
+#         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), 
+#         metrics=[tf.keras.metrics.SparseCategoricalAccuracy('accuracy')]
+#     )
+
+#     loss, acc = model.evaluate(tf_dataset)
+#     print(f"Loss: {loss} | Accuracy: {acc}")
+
 def test_model(model):
     df = get_csv_as_df(VALIDATE_DATASET)
-    data_df = pd.DataFrame({
-        'label': df['polarity'].apply(lambda x: decode_sentiment(x)),
-        'text': df['text'].replace(r'\n', '', regex=True)
-    })
-    x = data_df.apply(lambda z: tokenizer.encode_plus(
-            z['text'],
-            add_special_tokens=True,
-            max_length=280,
-            return_token_type_ids=True,
-            return_attention_mask=True,
-            pad_to_max_length=True,
-            truncation=True
-        ))
-    x = tf.convert_to_tensor(x)
-
-    y = data_df.apply(lambda z: tokenizer.encode_plus(
-            z['polarity'],
-            add_special_tokens=True,
-            max_length=280,
-            return_token_type_ids=True,
-            return_attention_mask=True,
-            pad_to_max_length=True,
-            truncation=True
-        ))
-    y = tf.convert_to_tensor(y)
-
-    loss, acc = model.evaluate(x, y)
-    print(f"Loss: {loss} | Accuracy: {acc}")
+    start_time = time.time()
+    output_values = set()
+    for index, row in df.iterrows():
+        if index % 100 == 0:
+            print(f"running {index}")
+        output_values.add(make_prediction(model, row['text']))
+    print(f"TESTING TOOK {(time.time() - start_time) / 500} per tweet")
+    print(output_values)
