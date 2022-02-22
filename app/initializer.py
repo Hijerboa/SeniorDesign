@@ -22,4 +22,4 @@ alembic.config.main(
 # Perform Auth setup
 perform_initial_tasks()
 logger.error("tasks complete")
-#un_process_bill_request.apply(('hconres108-112', 1,))
+run_process_bill_request.apply(('hconres108-112', 1,))
