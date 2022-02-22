@@ -18,10 +18,6 @@ class twitter_api_token_type(enum.Enum):
     archive = 1
     non_archive = 2
     
-
-
-
-
 class PrimaryKeyBase:
     id = Column(Integer, primary_key=True, autoincrement=True)
 
