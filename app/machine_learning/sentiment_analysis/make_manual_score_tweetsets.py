@@ -19,10 +19,11 @@ def make_manual_tweetsets():
 
     initialize()
     session = create_session()
-    tweets = session.query(Tweet).order_by(func.random()).limit(NUM_TWEETS).all()
+    tweets = session.query(Tweet).offset(100000).limit(NUM_TWEETS).all()
     print("GOT DEM TWEETS")
     for i in range(250):
         ian_file.write(tweets[i].text.replace('\n', '').replace(',', '') + '\n')
         aidan_file.write(tweets[i+250].text.replace('\n', '').replace(',', '') + '\n')
         nick_file.write(tweets[i+500].text.replace('\n', '').replace(',', '') + '\n')
         nathan_file.write(tweets[i+750].text.replace('\n', '').replace(',', '') + '\n')
+    session.close()
