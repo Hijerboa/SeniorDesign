@@ -25,14 +25,18 @@ task_routes = {
     'tasks.propublica_tasks.get_and_update_bill': {'queue': 'propublica'},
     'tasks.propublica_tasks.launch_bill_update': {'queue': 'propublica'},
     #Congress api
-    'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'}
+    'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'},
+    #Bill Requests
+    'tasks.bill_request_tasks.get_needed_date_ranges': {'queue': 'twitter'},
+    'tasks.bill_request_tasks.run_process_bill_request': {'queue': 'twitter'},
+    'tasks.bill_request_tasks.rerun_process_bill_request': {'queue': 'twitter'},
 }
 
 # Creates celery object, using rabbit broker and database task backend
 CELERY = Celery('tasks',
             broker=BROKER_URL,
             backend=get_secret('celery_connection_string'),
-            include=['tasks.twitter_tasks', 'tasks.propublica_tasks', 'tasks.congress_api_tasks'])
+            include=['tasks.twitter_tasks', 'tasks.propublica_tasks', 'tasks.congress_api_tasks', 'tasks.bill_request_tasks'])
 
 # Celery settings, don't modify unless absolutely necessary
 CELERY.conf.accept_content = ['json', 'msgpack']
