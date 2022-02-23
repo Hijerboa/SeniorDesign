@@ -24,4 +24,4 @@ alembic.config.main(
 perform_initial_tasks()
 print("startup tasks complete")
 #run_process_bill_request.apply(('hconres108-112', 1,))
-ex()
+#ex()
