@@ -9,6 +9,9 @@ from db.db_utils import create_single_object, get_or_create, get_single_object
 from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
 from twitter_utils.user_gatherer import create_user_object
 
+import random
+import time
+
 from datetime import datetime, timedelta
 from pytz import timezone
 my_tz = timezone('US/Eastern')
@@ -58,6 +61,7 @@ class tweet_puller_archive(Task):
             return str(e)
 
     def tweet_puller_archive(self, tweet_query: str, next_token, start_date, end_date, user_id):
+        logger.error(f'[{tweet_query}] Starting')
         session = create_session()
 
         db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
@@ -66,31 +70,42 @@ class tweet_puller_archive(Task):
 
         keys = []
         # Get proper API token to use based on usage time and amount
+        logger.error(f"[{tweet_query}] Collecting Key")
+        k = 1
         while len(keys) == 0:
-            keys = session.query(KeyRateLimit).\
+            key = session.query(KeyRateLimit).\
                 where(and_(KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
                 with_for_update(skip_locked=True).\
                 order_by(asc(KeyRateLimit.tweets_pulled)).\
-                limit(1).\
-                all()
-            if len(keys) == 0:
+                first()
+            if key is None:
+                session.commit()
                 # Check to see if we have any keys with tweets left:
                 keys_avail = session.query(KeyRateLimit).\
                     where(and_(KeyRateLimit.type == twitter_api_token_type.archive, KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
                     all()
+                logger.error(f'[{tweet_query}] Waiting. Have {len(keys_avail)} valid keys')
                 # If we do, just act normal
                 if len(keys_avail) > 0:
+                    wait = random.randint(1, int(2**k))
+                    logger.error(f'[{tweet_query}] Backing off for {wait} seconds')
+                    time.sleep(wait)
+                    k+=1
                     pass #Either backoff here or wait, we can figure this out though
                 else:
                     session.commit()
                     session.close()
+                    logger.error(f'[{tweet_query}] API Limit hit on all keys. Closing.')
                     raise Exception(message='API Limit hit on all keys')
-        key = keys[0]
+        #key = keys[0]
+        logger.error(f'[{tweet_query}] using key {key} - Last used {(datetime.now() - key.last_query).seconds} sec. ago')
         # Use correct secret ID
         twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         response = twitter_api.search_tweets_archive(tweet_query, start_date, end_date, next_token)
+        logger.error(f'[{tweet_query}] Got a response')
         # Update API usage time to now
         key.last_query = datetime.now()
+        logger.error(f'[{tweet_query}] Setting last query time to {key.last_query}')
         #
         try:
             tweets = response['data']['data']
@@ -98,11 +113,14 @@ class tweet_puller_archive(Task):
             key.tweets_pulled += len(tweets)
             # save to db
             session.commit()
+            logger.error(f'[{tweet_query}] Commited key fields change at {datetime.now()}')
             #
         except KeyError:
             session.commit()
+            logger.error(f'[{tweet_query}] Commited key fields change at {datetime.now()}')
             session.close()
             return '{0} tweets collected'.format(str(tweet_count))
+        logger.error(f'[{tweet_query}] Processing tweets')
         for tweet in tweets:
             try:
                 tweet_dict = {

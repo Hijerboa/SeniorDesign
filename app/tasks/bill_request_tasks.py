@@ -78,15 +78,15 @@ class process_bill_request(Task):
         phrases = [kw for kw in bill.keywords if not kw.type == 3]
         id_to_phrase = {phrase.id: phrase.search_phrase for phrase in phrases}
         ### Determine ranges that need to be pulled
-        print('Before jobs')
+        #print('Before jobs')
         jobs = group([get_needed_date_ranges.s(phrase.id, start, end) for phrase in phrases])
-        print('Jobs Made')
+        #print('Jobs Made')
         async_res = jobs.apply_async()
-        print('Jobs Started')
+        #print('Jobs Started')
         print(async_res.ready())
-        print('Started')
+        #print('Started')
         result = async_res.join()
-        print(f'Got result {result}')
+        #print(f'Got result {result}')
         ### Flatten result
         ranges = []
         for subarr in result:
@@ -105,29 +105,29 @@ class process_bill_request(Task):
 @CELERY.task
 def get_needed_date_ranges(phrase_id, start, end):
     #2022-02-22 19:18:00,047
-    logger.error(f'[String] Start: {start}\tEnd: {end}')
+    #logger.error(f'[String] Start: {start}\tEnd: {end}')
     start, end = datetime.strptime(start, '%Y-%m-%dT%H:%M:%S'), datetime.strptime(end, '%Y-%m-%dT%H:%M:%S')
     #For a given phrase id, find when it has not yet been called in the given range
-    logger.error(f'[Datetime] Start: {start}\tEnd: {end}')
+    #logger.error(f'[Datetime] Start: {start}\tEnd: {end}')
     session = create_session()
     #Get dates we have currently pulled for:
     initial_range = range(0, (end-start).days + 1) #+1 for inclusivity
-    logger.error(f'Initial Range: {initial_range}')
+    #logger.error(f'Initial Range: {initial_range}')
     existing = session.query(SearchPhraseDates).where(SearchPhraseDates.search_phrase_id == phrase_id).all()
     # Find int ranges
-    logger.error(f'Existing:\n{existing}')
+    #logger.error(f'Existing:\n{existing}')
     ex_ranges = [range((ex.start_date - start).days, (ex.end_date - start).days + 1) for ex in existing]
-    logger.error(f'Existing Ranges:\n{ex_ranges}')
+    #logger.error(f'Existing Ranges:\n{ex_ranges}')
     # Removing items from ranges using set differences
     out_ranges = set(initial_range)
     for sub_range in ex_ranges: #for each sub range
         out_ranges = out_ranges - set(sub_range)
     it = list(out_ranges)
     continuous = [list(group) for group in mit.consecutive_groups(it)]
-    logger.error(f'Continuous segments: {continuous}')
+    #logger.error(f'Continuous segments: {continuous}')
     # Turn the ranges back into start/stop dates
     bounds = [[start + timedelta(days=c[0]),start + timedelta(days=c[-1])] for c in continuous]
-    logger.error(f'Bounds {bounds}')
+    #logger.error(f'Bounds {bounds}')
     session.close()
 
     return (phrase_id, bounds)
