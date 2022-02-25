@@ -58,5 +58,9 @@ spec:
                 secretKeyRef:
                   name: govinfo
                   key: gov_info_key
+            - name: RABBITMQ_HOST
+              value: rabbit
+            - name: RABBITMQ_PORT
+              value: "5672"
       imagePullSecrets:
         - name: docker-hub-auth

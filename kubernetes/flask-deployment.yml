@@ -38,6 +38,25 @@ spec:
                 secretKeyRef:
                   name: system
                   key: SECRET_KEY
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: user
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit
+                  key: password
+            - name: celery_connection_string
+              valueFrom:
+                secretKeyRef:
+                  name: system
+                  key: celery_connection_string
+            - name: RABBITMQ_HOST
+              value: rabbit
+            - name: RABBITMQ_PORT
+              value: "5672"
       containers:
         - name: sd-flask
           image: nicklesbread/seniordesign:@DOCKER_TAG
@@ -81,5 +100,9 @@ spec:
                 secretKeyRef:
                   name: system
                   key: celery_connection_string
+            - name: RABBITMQ_HOST
+              value: rabbit
+            - name: RABBITMQ_PORT
+              value: "5672"
       imagePullSecrets:
         - name: docker-hub-auth

@@ -7,7 +7,7 @@ from util.cred_handler import get_secret
 from db.database_connection import initialize
 from util.cred_handler import get_secret
 
-BROKER_URL = f'amqp://{get_secret("RABBITMQ_USER")}:{get_secret("RABBITMQ_PASS")}@rabbit//'
+BROKER_URL = f'amqp://{get_secret("RABBITMQ_USER")}:{get_secret("RABBITMQ_PASS")}@{get_secret("RABBITMQ_HOST")}:{get_secret("RABBITMQ_PORT")}//'
 
 # Specifies tasks routes
 task_routes = {
@@ -25,14 +25,18 @@ task_routes = {
     'tasks.propublica_tasks.get_and_update_bill': {'queue': 'propublica'},
     'tasks.propublica_tasks.launch_bill_update': {'queue': 'propublica'},
     #Congress api
-    'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'}
+    'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'},
+    #Bill Requests
+    'tasks.bill_request_tasks.get_needed_date_ranges': {'queue': 'twitter_archive'},
+    'tasks.bill_request_tasks.run_process_bill_request': {'queue': 'twitter_archive'},
+    'tasks.bill_request_tasks.rerun_process_bill_request': {'queue': 'twitter_archive'},
 }
 
 # Creates celery object, using rabbit broker and database task backend
 CELERY = Celery('tasks',
             broker=BROKER_URL,
             backend=get_secret('celery_connection_string'),
-            include=['tasks.twitter_tasks', 'tasks.propublica_tasks', 'tasks.congress_api_tasks'])
+            include=['tasks.twitter_tasks', 'tasks.propublica_tasks', 'tasks.congress_api_tasks', 'tasks.bill_request_tasks'])
 
 # Celery settings, don't modify unless absolutely necessary
 CELERY.conf.accept_content = ['json', 'msgpack']

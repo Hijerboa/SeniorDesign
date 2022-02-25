@@ -18,10 +18,6 @@ class twitter_api_token_type(enum.Enum):
     archive = 1
     non_archive = 2
     
-
-
-
-
 class PrimaryKeyBase:
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -310,9 +306,10 @@ class KeyRateLimit(PrimaryKeyBase, Base):
     last_query = Column(DateTime(), nullable=False, default=datetime.datetime.utcnow(),)
     type = Column(Enum(twitter_api_token_type), nullable=False)
     tweets_pulled = Column(Integer(), nullable=False, default=0)
+    locked = Column(Boolean, default=False, nullable=False)
 
     def __repr__(self):
-        return f'key id: {self.id}\tkey type: {self.type}\tlast query: {self.last_query}\ttotal usage: {self.tweets_pulled}'
+        return f'key id: {self.id}\tkey type: {self.type}\tlast query: {self.last_query}\ttotal usage: {self.tweets_pulled}\tLocked: {self.locked}'
 
 
 

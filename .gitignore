@@ -1,5 +1,5 @@
 app/random_tweets.csv
-app/machine_learning/sentiment_analysis/vader_scored_tweets.csv
+*.csv
 
 .DS_Store
 app/util/cred.json
