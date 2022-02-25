@@ -15,18 +15,20 @@ from transformers import BertTokenizer, TFBertForSequenceClassification
 from transformers import InputExample, InputFeatures
 
 # SequenceClassification - BERT with extra layers at the end for sentiment scoring
-model = TFBertForSequenceClassification.from_pretrained("bert-base-uncased")
-tf.debugging.set_log_device_placement(True)
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+# tf.debugging.set_log_device_placement(True)
+# tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 # Tokenizer - preprocessing, prepares inputs for the model
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
-#DATASET_COLUMNS = ["polarity", "ids", "date", "query", "user", "text"]
-DATASET_COLUMNS = ["polarity", "text"]
+DATASET_COLUMNS = ["polarity", "ids", "date", "query", "user", "text"]
+# DATASET_COLUMNS = ["polarity", "text"]
 DATASET_ENCODING = "ISO-8859-1"
 # DATASET_FILENAME = "training.1600000.processed.noemoticon.csv"
-DATASET_FILENAME = "vader_scored_tweets.csv"
-VALIDATE_DATASET = "testdata.manual.2009.06.14.csv"
+# DATASET_FILENAME = "ian.csv"
+DATASET_FILENAME = "testdata.manual.2009.06.14.csv"
+# TEST_DATASET = "testdata.manual.2009.06.14.csv"
+TEST_DATASET = "testdata.manual.2009.06.14.csv"
+MODEL_NAME = "TRAINED_MODEL_TEST"
 INPUT_FEATURES_LOGGING = True
 BATCH_SIZE = 8
 
@@ -96,13 +98,13 @@ def get_tf_dataset(input_examples):
     )
     return tf_dataset
 
-def TRAIN():
+def TRAIN(model):
 
     print('Getting csv in pandas dataframe')
     df = get_csv_as_df(DATASET_FILENAME)
     # remove unnecessary columns / cleanup text / map to our sentiment scores
     data_df = pd.DataFrame({
-        'polarity': df['polarity'].apply(lambda x: x+1),
+        'polarity': df['polarity'].apply(lambda x: float(x)+1),
         'text': df['text'].replace(r'\n', '', regex=True)
     })
 
@@ -116,28 +118,31 @@ def TRAIN():
     tf_test_dataset = get_tf_dataset(list(test_input_examples))
 
     print('Shuffling training data')
-    train_data = tf_train_dataset.shuffle(2400).batch(BATCH_SIZE).repeat(2)
+    train_data = tf_train_dataset.shuffle(50).batch(BATCH_SIZE).repeat(2)
     print('Shuffling validation data')
-    validation_data = tf_test_dataset.shuffle(600).batch(BATCH_SIZE).repeat(2)
+    validation_data = tf_test_dataset.shuffle(10).batch(BATCH_SIZE).repeat(2)
 
     print('TRAINING MODEL')
+    if model == None:
+        print('NO MODEL PROVIDED, LOADING BASE MODEL')
+        model = TFBertForSequenceClassification.from_pretrained("bert-base-uncased")
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0), 
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), 
         metrics=[tf.keras.metrics.SparseCategoricalAccuracy('accuracy')]
     )
-    model.fit(train_data, epochs=1, validation_data=validation_data)
+    model.fit(train_data, epochs=2, validation_data=validation_data)
 
     print('SAVING MODEL')
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    path = os.path.join(location, 'TRAINED_MODEL')
+    path = os.path.join(location, MODEL_NAME)
     model.save_pretrained(path, save_model=True)
 
 ### THIS IS FOR TESTING MODEL ###
 
 def load_model():
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    new_model = TFBertForSequenceClassification.from_pretrained(os.path.join(location, 'TRAINED_MODEL'))
+    new_model = TFBertForSequenceClassification.from_pretrained(os.path.join(location, MODEL_NAME))
     new_model.summary()
     return new_model
 
@@ -145,11 +150,15 @@ def make_prediction(model, tweet: str):
     tf_batch = tokenizer(tweet, max_length=128, padding=True, truncation=True, return_tensors='tf')
     tf_outputs = model(tf_batch)
     tf_predictions = tf.nn.softmax(tf_outputs[0], axis=-1)
-    labels = [0, 4]
-    label = tf.argmax(tf_predictions, axis=1)
-    label = label.numpy()
-    return labels[label[0]]
-
+    tf_predictions = np.asarray(tf_predictions).tolist()
+    labels = [-1, 0, 1]
+    if abs(tf_predictions[0][0] - tf_predictions[0][1]) < 0.00:
+        return labels[1]
+    elif tf_predictions[0][0] > tf_predictions[0][1]:
+        return labels[0]
+    else:
+        return labels[2]
+    
 # def test_model(model):
 #     df = get_csv_as_df(VALIDATE_DATASET)
 #     data_df = pd.DataFrame({
@@ -172,7 +181,7 @@ def make_prediction(model, tweet: str):
 #     print(f"Loss: {loss} | Accuracy: {acc}")
 
 def test_model(model):
-    df = get_csv_as_df(VALIDATE_DATASET)
+    df = get_csv_as_df(TEST_DATASET)
     start_time = time.time()
     i = 0
     for index, row in df.iterrows():
