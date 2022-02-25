@@ -68,5 +68,7 @@ spec:
                 secretKeyRef:
                   name: twitter
                   key: twitter_bearer_token_5
+            - name: RABBITMQ_HOST
+              value: rabbit
       imagePullSecrets:
         - name: docker-hub-auth

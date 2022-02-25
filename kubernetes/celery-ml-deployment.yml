@@ -38,5 +38,7 @@ spec:
                 secretKeyRef:
                   name: system
                   key: celery_connection_string
+            - name: RABBITMQ_HOST
+              value: rabbit
       imagePullSecrets:
         - name: docker-hub-auth
