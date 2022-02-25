@@ -1,40 +1,44 @@
-from util.politician_info_puller import get_congress_members
-#from util.twitter_api_puller import get_tweets
+from db.database_connection import initialize, create_session
+from sqlalchemy import asc, and_
+from tasks.task_initializer import CELERY
 
-# On mac include this with each script:
-#    import pymysql
-#    pymysql.install_as_MySQLdb()
+from util.cred_handler import get_secret
+from apis.twitter_api import TwitterAPI
+from apis.propublica_api import ProPublicaAPI
+from db.database_connection import create_session
+from db.db_utils import create_single_object, get_or_create, get_single_object
+from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
+from twitter_utils.user_gatherer import create_user_object
 
-"""for i in range(80, 118):
-    get_congress_members(i, 'senate')
-    if i > 101:
-        get_congress_members(i, 'house')
-#get_tweets('impeach biden')
-get_tweets('H.Res.57')
-get_tweets('abuse of power biden')
-get_tweets('biden high crimes')
-get_tweets('impeach joe biden')
-get_tweets('criminal biden')"""
+import random
+import time
 
-#from scripts.TestBillCollector import do_things
-#do_things()
-#from scripts.congress_info_puller import get_congress_members
-#get_congress_members()
+from datetime import datetime, timedelta
 
-#from scripts.congress_info_puller import get_congress_members
-#get_congress_members()
+import logging
+API_MANUAL_TIMEOUT = 3 #Manual timeout in seconds. Raise this if we're getting rate limited.
+API_MONTHLY_TWEET_LIMIT = 10000000 #10,000,000 tweets/key/month
 
-#from scripts.bill_collector import runner
-#runner()
+logger = logging.getLogger('FUCK THIS HOLY SHIT')
 
-#from scripts.bill_full_text_collector import do_things
-#do_things()
+def ex():
+    initialize()
+    session = create_session() 
+    keys = session.query(KeyRateLimit).\
+                    where(and_(KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
+                    order_by(asc(KeyRateLimit.tweets_pulled)).\
+                    limit(1).\
+                    with_for_update(of=KeyRateLimit, nowait=True).one()
+    keys.id = keys.id + 1
+    keys.id = keys.id - 1
+    print(f'{keys} T+{datetime.now()}', flush=True)
+    keys2 = session.query(KeyRateLimit).\
+                    where(and_(KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
+                    order_by(asc(KeyRateLimit.tweets_pulled)).\
+                    limit(1).\
+                    with_for_update(of=KeyRateLimit, nowait=True).one()
+    session.flush()
+    print(f'{keys2} T+{datetime.now()}', flush=True)
 
-#from scripts.govinfo.package_name_collector import run_thing, do_things
-#run_thing()
-#do_things(110, 'ats', 'sres')
-#from scripts.twitter.member_twitter_collector import do_things
-#do_things()
 
-from scripts.ml_scripts.launch_keyword_extraction import launch_keyword_extraction
-launch_keyword_extraction()
+    #docker-compose up | grep "initializer_1"

@@ -74,7 +74,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --uid 1 --without-gossip --without-mingle
+    command: celery -A tasks.task_initializer worker -l INFO --concurrency 4 -Q twitter_archive --uid 1 --without-gossip --without-mingle
     volumes:
     - ./app/:/app/
     environment:

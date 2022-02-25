@@ -27,9 +27,9 @@ task_routes = {
     #Congress api
     'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'},
     #Bill Requests
-    'tasks.bill_request_tasks.get_needed_date_ranges': {'queue': 'twitter'},
-    'tasks.bill_request_tasks.run_process_bill_request': {'queue': 'twitter'},
-    'tasks.bill_request_tasks.rerun_process_bill_request': {'queue': 'twitter'},
+    'tasks.bill_request_tasks.get_needed_date_ranges': {'queue': 'twitter_archive'},
+    'tasks.bill_request_tasks.run_process_bill_request': {'queue': 'twitter_archive'},
+    'tasks.bill_request_tasks.rerun_process_bill_request': {'queue': 'twitter_archive'},
 }
 
 # Creates celery object, using rabbit broker and database task backend
