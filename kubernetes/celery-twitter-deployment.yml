@@ -71,6 +71,6 @@ spec:
             - name: RABBITMQ_HOST
               value: rabbit
             - name: RABBITMQ_PORT
-              value: 5672
+              value: "5672"
       imagePullSecrets:
         - name: docker-hub-auth
