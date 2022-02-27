@@ -26,15 +26,7 @@ class Config:
 # Tokenizer - preprocessing, prepares inputs for the model
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
-DATASET_COLUMNS = ["polarity", "ids", "date", "query", "user", "text"]
-# DATASET_COLUMNS = ["polarity", "text"]
 DATASET_ENCODING = "ISO-8859-1"
-# DATASET_FILENAME = "training.1600000.processed.noemoticon.csv"
-# DATASET_FILENAME = "ian.csv"
-DATASET_FILENAME = "testdata.manual.2009.06.14.csv"
-# TEST_DATASET = "testdata.manual.2009.06.14.csv"
-TEST_DATASET = "testdata.manual.2009.06.14.csv"
-MODEL_NAME = "TRAINED_MODEL_TEST"
 INPUT_FEATURES_LOGGING = True
 BATCH_SIZE = 8
 
@@ -172,7 +164,7 @@ def make_prediction(model, tweet: str, labels: List[int]):
 def test_model(model, config: Config):
     """
     model: object returned from load_model()
-    config: Config for the file you are testing
+    config: Config for the test file you are testing against
     """
     df = get_csv_as_df(config.csv_file, config.dataset_columns)
     start_time = time.time()
