@@ -6,7 +6,6 @@ app/util/cred.json
 app/util/cred-user-1.json
 app/util/cred-user-2.json
 app/runner.py
-*.ipynb
 
 .idea
 # Byte-compiled / optimized / DLL files
