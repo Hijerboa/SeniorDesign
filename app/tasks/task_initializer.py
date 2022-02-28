@@ -7,7 +7,7 @@ from util.cred_handler import get_secret
 from db.database_connection import initialize
 from util.cred_handler import get_secret
 
-BROKER_URL = f'amqp://{get_secret("RABBITMQ_USER")}:{get_secret("RABBITMQ_PASS")}@{get_secret("RABBITMQ_HOST")}:{get_secret("RABBITMQ_PORT")}//'
+BROKER_URL = f'{get_secret("CELERY_BROKER_URL")}'
 
 # Specifies tasks routes
 task_routes = {
