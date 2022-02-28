@@ -16,7 +16,7 @@ tags:
   description: "A bunch of ML Tasks (mainly open via api for testing)"
 paths:
 
-  /user/me:
+  /api/v1/user/me:
     get:
       tags:
         - "User"
@@ -32,7 +32,7 @@ paths:
       security:
         - HTTPBearer: []
         
-  /twitter/tweets/archive/search:
+  /api/v1/twitter/tweets/archive/search:
     get:
       parameters:
         - in: query
@@ -69,7 +69,7 @@ paths:
       security:
         - HTTPBearer: []
                 
-  /twitter/users/lookup/by_id/single:
+  /api/v1/twitter/users/lookup/by_id/single:
     get:
       parameters:
         - in: query
@@ -93,7 +93,7 @@ paths:
       security:
         - HTTPBearer: []
                 
-  /twitter/users/lookup/by_id/multiple:
+  /api/v1/twitter/users/lookup/by_id/multiple:
     get:
       parameters:
         - in: query
@@ -117,7 +117,7 @@ paths:
       security:
         - HTTPBearer: []
         
-  /twitter/users/lookup/by_username/single:
+  /api/v1/twitter/users/lookup/by_username/single:
     get:
       parameters:
         - in: query
@@ -141,7 +141,7 @@ paths:
       security:
         - HTTPBearer: []
   
-  /propublica/bills/{congress}/{chamber}:
+  /api/v1/propublica/bills/{congress}/{chamber}:
     get:
         tags:
           - "Propublica"
@@ -172,7 +172,7 @@ paths:
         security:
           - HTTPBearer: []
     
-  /ml_tasks/bill_keywords:
+  /api/v1/ml_tasks/bill_keywords:
     get:
       parameters:
         - in: query

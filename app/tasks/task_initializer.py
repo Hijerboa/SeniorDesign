@@ -21,8 +21,10 @@ task_routes = {
     'tasks.twitter_tasks.run_retrieve_users_info_by_ids': {'queue': 'twitter_users'},
     'tasks.twitter_tasks.rerun_retrieve_users_info_by_ids': {'queue': 'twitter_users'},
     #Propublica
-    'tasks.propublica_tasks.get_bill_data_by_congress': {'queue': 'propublica'},
-    'tasks.propublica_tasks.get_and_update_bill': {'queue': 'propublica'},
+    'tasks.propublica_tasks.run_get_bill_data_by_congress': {'queue': 'propublica'},
+    'tasks.propublica_tasks.run_get_and_update_bill': {'queue': 'propublica'},
+    'tasks.propublica_tasks.rerun_get_bill_data_by_congress': {'queue': 'propublica'},
+    'tasks.propublica_tasks.rerun_get_and_update_bill': {'queue': 'propublica'},
     'tasks.propublica_tasks.launch_bill_update': {'queue': 'propublica'},
     #Congress api
     'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'},
