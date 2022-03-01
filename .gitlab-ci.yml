@@ -6,7 +6,7 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
 - build
-- deploy
+# - deploy
 
 image: docker:19.03.12
 
