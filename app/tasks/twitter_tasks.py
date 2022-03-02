@@ -33,6 +33,7 @@ def run_tweet_puller_archive(tweet_query: str, next_token, start_date, end_date,
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 @CELERY.task()
@@ -43,6 +44,7 @@ def rerun_tweet_puller_archive(task: Task, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 # Task class
@@ -53,11 +55,14 @@ class tweet_puller_archive(Task):
     def run(self):
         session = create_session()
         try:
-            return self.tweet_puller_archive(self.parameters['tweet_query'], self.parameters['next_token'], self.parameters['start_date'], self.parameters['end_date'], self.launched_by_id)
+            result = self.tweet_puller_archive(self.parameters['tweet_query'], self.parameters['next_token'], self.parameters['start_date'], self.parameters['end_date'], self.launched_by_id)
+            session.close()
+            return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()
+            session.close()
             return str(e)
 
     def tweet_puller_archive(self, tweet_query: str, next_token, start_date, end_date, user_id):
@@ -73,7 +78,7 @@ class tweet_puller_archive(Task):
         logger.error(f"[{tweet_query}] Collecting Key")
         k = 1
         while len(keys) == 0:
-            key = session.query(KeyRateLimit).\
+            key: KeyRateLimit = session.query(KeyRateLimit).\
                 where(and_(KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
                 with_for_update(skip_locked=True).\
                 order_by(asc(KeyRateLimit.tweets_pulled)).\
@@ -175,6 +180,7 @@ def run_retrieve_user_info_by_id(twitter_user_id: str, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 @CELERY.task()
@@ -185,6 +191,7 @@ def rerun_retrieve_user_info_by_id(task: Task, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 # Task class
@@ -195,11 +202,14 @@ class retrieve_user_info_by_id(Task):
     def run(self):
         session = create_session()
         try:
-            return self.retrieve_user_info_by_username(self.parameters['twitter_user_id'])
+            result = self.retrieve_user_info_by_username(self.parameters['twitter_user_id'])
+            session.close()
+            return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()
+            session.close()
             return str(e)
 
     def retrieve_user_info_by_id(self, twitter_user_id: int):
@@ -215,7 +225,7 @@ class retrieve_user_info_by_id(Task):
                 all()
             if len(keys) == 0:
                 pass #Either backoff here or wait, we can figure this out though
-        key = keys[0]
+        key: KeyRateLimit = keys[0]
         # Use correct secret ID
         twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         user_data = twitter_api.get_user_by_id(twitter_user_id)['data']['data']
@@ -239,6 +249,7 @@ def run_retrieve_users_info_by_ids(user_ids: str, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 @CELERY.task()
@@ -249,6 +260,7 @@ def rerun_retrieve_users_info_by_ids(task: Task, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 # Task Class
@@ -259,11 +271,14 @@ class retrieve_users_info_by_ids(Task):
     def run(self):
         session = create_session()
         try:
-            return self.retrieve_user_info_by_username(self.parameters['user_ids'])
+            result = self.retrieve_user_info_by_username(self.parameters['user_ids'])
+            session.close()
+            return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()
+            session.close()
             return str(e)
 
     def retrieve_users_info_by_ids(self, user_ids: str):
@@ -279,7 +294,7 @@ class retrieve_users_info_by_ids(Task):
                 all()
             if len(keys) == 0:
                 pass #Either backoff here or wait, we can figure this out though
-        key = keys[0]  
+        key: KeyRateLimit = keys[0]  
         # Use correct secret ID
         twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         user_response = twitter_api.get_users_by_ids(user_ids)['data']['data']
@@ -307,6 +322,7 @@ def run_retrieve_user_info_by_username(username: str, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 @CELERY.task()
@@ -317,6 +333,7 @@ def rerun_retrieve_user_info_by_username(task: Task, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 # Task class
@@ -327,11 +344,14 @@ class retrieve_user_info_by_username(Task):
     def run(self):
         session = create_session()
         try:
-            return self.retrieve_user_info_by_username(self.parameters['username'])
+            result = self.retrieve_user_info_by_username(self.parameters['username'])
+            session.close()
+            return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()
+            session.close()
             return str(e)
 
     def retrieve_user_info_by_username(self, username: str):
@@ -347,7 +367,7 @@ class retrieve_user_info_by_username(Task):
                 all()
             if len(keys) == 0:
                 pass #Either backoff here or wait, we can figure this out though
-        key = keys[0]   
+        key: KeyRateLimit = keys[0]   
         # Use correct secret ID
         twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         user_data = twitter_api.get_user_by_username(username)['data']['data']

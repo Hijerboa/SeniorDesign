@@ -22,6 +22,7 @@ def launch_bill_update(congress_number: int):
     bills = session.query(Bill).filter(Bill.active == True, Bill.congress == congress_number)
     for bill in bills:
         get_and_update_bill.apply_async((bill.bill_id,))
+    session.close()
 
 
 @CELERY.task()
@@ -32,6 +33,7 @@ def run_get_bill_data_by_congress(congress_id: int, congress_chamber: str, user_
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 
@@ -44,21 +46,26 @@ def rerun_get_bill_data_by_congress(task_id: int, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
     
 
 class get_bill_data_by_congress(Task):
     def __init__(self, congress_id: int, congress_chamber: str, user_id: int):
+        self.user_id = user_id
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='propublica_get_bills', parameters={'congress_id': congress_id, 'congress_chamber': congress_chamber})
 
     def run(self):
         session = create_session()
         try:
-            return self.get_bill_data_by_congress(self.parameters['congress_id'], self.parameters['congress_chamber'])
+            result = self.get_bill_data_by_congress(self.parameters['congress_id'], self.parameters['congress_chamber'])
+            session.close()
+            return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()
+            session.close()
             return str(e)
 
     def get_bill_data_by_congress(self, congress_id: int, congress_chamber: str):
@@ -89,7 +96,7 @@ class get_bill_data_by_congress(Task):
                 bill['congress'] = congress_id
                 object, created = get_or_create(session, Bill, bill_id=bill['bill_id'], defaults=bill)
                 if created:
-                    get_and_update_bill.apply_async((object.bill_id,))
+                    run_get_and_update_bill.apply_async((object.bill_id, self.user_id))
                 num_bills += 1
                 session.commit()
                 for committee_code in committee_codes:
@@ -104,6 +111,7 @@ class get_bill_data_by_congress(Task):
             current_offset += 20
             session.commit()
         session.commit()
+        session.close()
         return '{0} bills collected'.format(str(num_bills))
 
 
@@ -115,6 +123,7 @@ def run_get_and_update_bill(bill_id: str, user_id: int):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 
@@ -127,6 +136,7 @@ def rerun_get_and_update_bill(task_id: int, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
     
 
@@ -137,11 +147,14 @@ class get_and_update_bill(Task):
     def run(self):
         session = create_session()
         try:
-            return self.get_and_update_bill(self.parameters['bill_id'])
+            result = self.get_and_update_bill(self.parameters['bill_id'])
+            session.close()
+            return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()
+            session.close()
             return str(e)
     
 
