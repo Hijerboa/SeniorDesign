@@ -1,0 +1,103 @@
+{
+    "ipcMode": null,
+    "executionRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "dnsSearchDomains": null,
+            "environmentFiles": null,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "secretOptions": null,
+                "options": {
+                    "awslogs-group": "/ecs/bill_data_worker",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "entryPoint": null,
+            "portMappings": null,
+            "command": ["celery", "-A", "tasks.task_initializer", "worker", "-l", "INFO", "--concurrency", "4", "-Q", "propublica", "--uid", "1", "--without-gossip", "--without-mingle"],
+            "linuxParameters": null,
+            "cpu": 0,
+            "environment": null,
+            "resourceRequirements": null,
+            "ulimits": null,
+            "repositoryCredentials": {
+                "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
+            },
+            "dnsServers": null,
+            "mountPoints": [],
+            "workingDirectory": null,
+            "secrets": [
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_rabbit_connection",
+                    "name": "CELERY_BROKER_URL"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_celery_connection_string",
+                    "name": "celery_connection_string"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_db_connection_string",
+                    "name": "connection_string"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_pro_publica_url",
+                    "name": "pro_publica_url"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_pro_publica_api_key",
+                    "name": "pro_publica_api_key"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_gov_info_url",
+                    "name": "gov_info_url"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_gov_info_key",
+                    "name": "gov_info_key"
+                }
+            ],
+            "dockerSecurityOptions": null,
+            "memory": null,
+            "memoryReservation": null,
+            "volumesFrom": [],
+            "stopTimeout": null,
+            "image": "docker.io/nicklesbread/seniordesign:5",
+            "startTimeout": null,
+            "firelensConfiguration": null,
+            "dependsOn": null,
+            "disableNetworking": null,
+            "interactive": null,
+            "healthCheck": null,
+            "essential": true,
+            "links": null,
+            "hostname": null,
+            "extraHosts": null,
+            "pseudoTerminal": null,
+            "user": null,
+            "readonlyRootFilesystem": null,
+            "dockerLabels": null,
+            "systemControls": null,
+            "privileged": null,
+            "name": "bill_data_worker"
+        }
+    ],
+    "memory": "512",
+    "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
+    "family": "bill_data_worker",
+    "pidMode": null,
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "runtimePlatform": {
+        "operatingSystemFamily": "LINUX",
+        "cpuArchitecture": null
+    },
+    "cpu": "256",
+    "inferenceAccelerators": [],
+    "proxyConfiguration": null,
+    "volumes": [],
+    "tags": []
+}
