@@ -10,4 +10,3 @@ def run():
     for version in versions:
         for doc_class in doc_classes:
             get_versions.apply_async((117, version, doc_class, 0,))
-        

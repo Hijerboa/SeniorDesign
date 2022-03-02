@@ -191,4 +191,3 @@ class get_and_update_bill(Task):
                 session.commit()
         session.close()
         return f'Updated bill {bill_id}'
-    

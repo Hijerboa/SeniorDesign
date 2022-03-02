@@ -55,4 +55,3 @@ def get_versions(congress: int, bill_version: str, doc_class, offset: int):
     if len(packages) == 100:
         get_versions.apply_async((congress, bill_version, doc_class, offset+100,), countdown=1)
     return f'{len(packages)} collected'
-        
