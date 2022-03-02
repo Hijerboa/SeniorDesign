@@ -6,7 +6,7 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
 - build
-- deploy
+# - deploy
 
 image: docker:19.03.12
 
@@ -23,32 +23,32 @@ build:
   - docker image push "nicklesbread/seniordesign:latest"
   - docker image push "nicklesbread/seniordesign:$CI_PIPELINE_IID"
 
-build_rabbit:
-  stage: build
-  tags: ["docker-build"]
-  script:
-    - docker login -u "$HUB_USER" -p "$HUB_PASSWORD"
-    - docker build -t "nicklesbread/rabbitmq-seniordesign" -f rabbit/Dockerfile.rabbit rabbit
-    - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
-    - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:latest"
-    - docker image push "nicklesbread/rabbitmq-seniordesign:latest"
-    - docker image push "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
+# build_rabbit:
+#   stage: build
+#   tags: ["docker-build"]
+#   script:
+#     - docker login -u "$HUB_USER" -p "$HUB_PASSWORD"
+#     - docker build -t "nicklesbread/rabbitmq-seniordesign" -f rabbit/Dockerfile.rabbit rabbit
+#     - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
+#     - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:latest"
+#     - docker image push "nicklesbread/rabbitmq-seniordesign:latest"
+#     - docker image push "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
 
 
-deploy:
-  stage: deploy
-  tags: ["docker-build"]    
-  image: dtzar/helm-kubectl
-  script:
-    - kubectl config set-cluster k8s --server="${KUBE_SERVER}"
-    - kubectl config set clusters.k8s.certificate-authority-data ${KUBE_CERTIFICATE_AUTHORITY_DATA}
-    - kubectl config set-credentials gitlab --token="${KUBE_USER_TOKEN}"
-    - kubectl config set-context default --cluster=k8s --user=gitlab
-    - kubectl config use-context default
-    - kubectl get namespaces
-    - find ./kubernetes -type f -exec sed -i -e "s/@DOCKER_TAG/${CI_PIPELINE_IID}/g" {} \;
-    - kubectl apply -f kubernetes -n prod-senior-design
-    - kubectl apply -f kubernetes/cron-jobs -n prod-senior-design
+# deploy:
+#   stage: deploy
+#   tags: ["docker-build"]    
+#   image: dtzar/helm-kubectl
+#   script:
+#     - kubectl config set-cluster k8s --server="${KUBE_SERVER}"
+#     - kubectl config set clusters.k8s.certificate-authority-data ${KUBE_CERTIFICATE_AUTHORITY_DATA}
+#     - kubectl config set-credentials gitlab --token="${KUBE_USER_TOKEN}"
+#     - kubectl config set-context default --cluster=k8s --user=gitlab
+#     - kubectl config use-context default
+#     - kubectl get namespaces
+#     - find ./kubernetes -type f -exec sed -i -e "s/@DOCKER_TAG/${CI_PIPELINE_IID}/g" {} \;
+#     - kubectl apply -f kubernetes -n prod-senior-design
+#     - kubectl apply -f kubernetes/cron-jobs -n prod-senior-design
 
 
 
