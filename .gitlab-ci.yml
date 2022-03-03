@@ -7,6 +7,7 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 include:
 - template: Security/SAST.gitlab-ci.yml
+- template: Security/Secret-Detection.gitlab-ci.yml
 stages:
 - test
 - build
@@ -27,8 +28,7 @@ build:
   - docker image push "nicklesbread/seniordesign:latest"
   - docker image push "nicklesbread/seniordesign:$CI_PIPELINE_IID"
   rules:
-  #- if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
-  - if: '$CI_BUILD_REF_NAME == "main"'
+  - if: $CI_BUILD_REF_NAME == "main"
     when: always
   - when: never
 deploy:
@@ -37,8 +37,7 @@ deploy:
   - docker-build
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   rules:
-  #- if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
-  - if: '$CI_BUILD_REF_NAME == "main"'
+  - if: $CI_BUILD_REF_NAME == "main"
     when: always
   - when: never
   script:
