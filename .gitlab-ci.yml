@@ -27,7 +27,7 @@ build:
   - docker image push "nicklesbread/seniordesign:latest"
   - docker image push "nicklesbread/seniordesign:$CI_PIPELINE_IID"
   rules:
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  - if: '$CI_PIPELINE_SOURCE != "merge_request_event"'
     when: never
 deploy:
   stage: deploy
