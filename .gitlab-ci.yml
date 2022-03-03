@@ -2,27 +2,26 @@
 # SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
 # Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
 # Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
-
 include:
-  - template: Security/SAST.gitlab-ci.yml
-
+- template: Security/SAST.gitlab-ci.yml
+- template: Security/Dependency-Scanning.gitlab-ci.yml
 stages:
 - test
 - build
 - deploy
-
 image: docker:19.03.12
-
 build:
   stage: build
-  tags: ["docker-build"]
+  tags:
+  - docker-build
   before_script:
   - echo $CI_PIPELINE_SOURCE
   - docker info
   rules:
-  - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
+  - if: "$CI_PIPELINE_SOURCE != 'merge_request_event'"
   script:
   - docker login -u "$HUB_USER" -p "$HUB_PASSWORD"
   - docker build -t "nicklesbread/seniordesign" .
@@ -30,36 +29,28 @@ build:
   - docker image tag "nicklesbread/seniordesign:latest" "nicklesbread/seniordesign:latest"
   - docker image push "nicklesbread/seniordesign:latest"
   - docker image push "nicklesbread/seniordesign:$CI_PIPELINE_IID"
-
-# build_rabbit:
-#   stage: build
-#   tags: ["docker-build"]
-#   script:
-#     - docker login -u "$HUB_USER" -p "$HUB_PASSWORD"
-#     - docker build -t "nicklesbread/rabbitmq-seniordesign" -f rabbit/Dockerfile.rabbit rabbit
-#     - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
-#     - docker image tag "nicklesbread/rabbitmq-seniordesign:latest" "nicklesbread/rabbitmq-seniordesign:latest"
-#     - docker image push "nicklesbread/rabbitmq-seniordesign:latest"
-#     - docker image push "nicklesbread/rabbitmq-seniordesign:$CI_PIPELINE_IID"
-
 deploy:
   stage: deploy
-  tags: ["docker-build"]
+  tags:
+  - docker-build
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   rules:
-  - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
+  - if: "$CI_PIPELINE_SOURCE != 'merge_request_event'"
   script:
-    - find ./ecs_json -type f -exec sed -i -e "s/@DOCKER_TAG/${CI_PIPELINE_IID}/g" {} \;
-    - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_bill_data_worker.json
-    - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_flask_server.json
-    - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_tweet_worker.json
-    - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_user_worker.json
-    - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_ml_worker.json
-    - aws ecs update-service --cluster senior-design --service bill_data_worker --task-definition bill_data_worker
-    - aws ecs update-service --cluster senior-design --service flask --task-definition flask_server
-    - aws ecs update-service --cluster senior-design --service twitter_user_worker --task-definition twitter_user_worker
-    - aws ecs update-service --cluster senior-design --service twitter_tweet_worker --task-definition twitter_tweet_worker
-    - aws ecs update-service --cluster senior-design --service ml_worker --task-definition ml_worker
-
-
-
+  - find ./ecs_json -type f -exec sed -i -e "s/@DOCKER_TAG/${CI_PIPELINE_IID}/g" {}
+    \;
+  - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_bill_data_worker.json
+  - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_flask_server.json
+  - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_tweet_worker.json
+  - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_user_worker.json
+  - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_ml_worker.json
+  - aws ecs update-service --cluster senior-design --service bill_data_worker --task-definition
+    bill_data_worker
+  - aws ecs update-service --cluster senior-design --service flask --task-definition
+    flask_server
+  - aws ecs update-service --cluster senior-design --service twitter_user_worker --task-definition
+    twitter_user_worker
+  - aws ecs update-service --cluster senior-design --service twitter_tweet_worker
+    --task-definition twitter_tweet_worker
+  - aws ecs update-service --cluster senior-design --service ml_worker --task-definition
+    ml_worker
