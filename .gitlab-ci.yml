@@ -27,8 +27,8 @@ build:
   - docker image push "nicklesbread/seniordesign:latest"
   - docker image push "nicklesbread/seniordesign:$CI_PIPELINE_IID"
   rules:
-  - if: '$CI_PIPELINE_SOURCE != "merge_request_event"'
-    when: never
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    when: on_success
 deploy:
   stage: deploy
   tags:
@@ -36,7 +36,7 @@ deploy:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   rules:
   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    when: never
+    when: on_success
   script:
   - find ./ecs_json -type f -exec sed -i -e "s/@DOCKER_TAG/${CI_PIPELINE_IID}/g" {}
     \;
