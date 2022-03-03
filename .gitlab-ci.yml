@@ -18,9 +18,6 @@ build:
   - docker-build
   before_script:
   - docker info
-  rules:
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    when: never
   script:
   - echo $CI_PIPELINE_SOURCE
   - docker login -u "$HUB_USER" -p "$HUB_PASSWORD"
@@ -29,6 +26,9 @@ build:
   - docker image tag "nicklesbread/seniordesign:latest" "nicklesbread/seniordesign:latest"
   - docker image push "nicklesbread/seniordesign:latest"
   - docker image push "nicklesbread/seniordesign:$CI_PIPELINE_IID"
+  rules:
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    when: never
 deploy:
   stage: deploy
   tags:
