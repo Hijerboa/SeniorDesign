@@ -17,11 +17,12 @@ build:
   tags:
   - docker-build
   before_script:
-  - echo $CI_PIPELINE_SOURCE
   - docker info
   rules:
-  - if: "$CI_PIPELINE_SOURCE != 'merge_request_event'"
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    when: never
   script:
+  - echo $CI_PIPELINE_SOURCE
   - docker login -u "$HUB_USER" -p "$HUB_PASSWORD"
   - docker build -t "nicklesbread/seniordesign" .
   - docker image tag "nicklesbread/seniordesign:latest" "nicklesbread/seniordesign:$CI_PIPELINE_IID"
@@ -34,7 +35,8 @@ deploy:
   - docker-build
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   rules:
-  - if: "$CI_PIPELINE_SOURCE != 'merge_request_event'"
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    when: never
   script:
   - find ./ecs_json -type f -exec sed -i -e "s/@DOCKER_TAG/${CI_PIPELINE_IID}/g" {}
     \;
