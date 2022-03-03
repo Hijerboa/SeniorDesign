@@ -19,6 +19,7 @@ build:
   stage: build
   tags: ["docker-build"]
   before_script:
+  - echo $CI_PIPELINE_SOURCE
   - docker info
   rules:
   - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
