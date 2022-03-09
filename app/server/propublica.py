@@ -6,12 +6,10 @@ from db.models import User
 from db.db_utils import get_single_object
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, jsonify
+    Blueprint, request, jsonify
 )
 
 bp = Blueprint('propublica', __name__)
-
-from celery import uuid
 
 
 @bp.route('/bills/<congress>/<chamber>', methods=(['GET']))
