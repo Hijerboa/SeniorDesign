@@ -1,9 +1,7 @@
-from app.db.db_utils import create_single_object, get_single_object
-from app.db.models import TaskError
 from tasks.task_initializer import CELERY
 from db.database_connection import create_session
-from db.db_utils import get_or_create
-from db.models import Bill, BillVersion, Task
+from db.db_utils import get_or_create, create_single_object, get_single_object
+from db.models import Bill, BillVersion, Task, TaskError
 from apis.govinfo_api import GovInfoAPI
 from util.cred_handler import get_secret
 from html.parser import HTMLParser
