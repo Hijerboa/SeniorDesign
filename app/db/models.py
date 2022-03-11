@@ -81,7 +81,7 @@ class Tweet(Base):
     replies = Column(Integer, nullable=False)
     quote_count = Column(Integer, nullable=False)
     seniment= Column(Float, nullable=True)
-    search_phrases = relationship(SearchPhrase, secondary=tweet_to_search)
+    search_phrases = relationship(SearchPhrase, secondary=tweet_to_search, backref='tweets')
 
     def __repr__(self):
         return f'{self.text[:50]}'
