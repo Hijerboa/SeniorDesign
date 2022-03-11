@@ -84,7 +84,7 @@ class Tweet(Base):
     search_phrases = relationship(SearchPhrase, secondary=tweet_to_search, backref='tweets')
 
     def __repr__(self):
-        return f'{self.text[:50]}'
+        return f'{self.text}'
 
 
 class TwitterUser(Base):
