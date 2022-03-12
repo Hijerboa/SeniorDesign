@@ -9,5 +9,5 @@ def run():
 
     bills = session.query(Bill).filter(Bill.active == True, Bill.congress == 117)
     for bill in bills:
-        run_get_and_update_bill.apply_async((bill.bill_id,))
+        run_get_and_update_bill.apply_async((bill.bill_id, 1,))
     session.close()

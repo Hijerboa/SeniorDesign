@@ -27,6 +27,7 @@ task_routes = {
     'tasks.propublica_tasks.rerun_get_and_update_bill': {'queue': 'propublica'},
     'tasks.propublica_tasks.launch_bill_update': {'queue': 'propublica'},
     #Congress api
+    'tasks.congress_api_tasks.run_get_versions': {'queue': 'propublica'},
     'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'},
     #Bill Requests
     'tasks.bill_request_tasks.get_needed_date_ranges': {'queue': 'twitter_archive'},
