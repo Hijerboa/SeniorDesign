@@ -26,7 +26,7 @@ class MyHTMLParser(HTMLParser):
     
     
 @CELERY.task()
-def run_get_versions(congress: int, bill_version: str, doc_class, offset: int, user_id: int):
+def run_get_versions(congress: int, bill_version: str, doc_class: str, offset: int, user_id: int):
     session = create_session()
     task = get_versions(congress, bill_version, doc_class, offset, user_id)
     session.add(task)
@@ -68,7 +68,7 @@ class get_versions(Task):
             return str(e)
         
         
-    def get_versions(congress: int, bill_version: str, doc_class, offset: int):
+    def get_versions(self, congress: int, bill_version: str, doc_class, offset: int):
         api: GovInfoAPI = GovInfoAPI(get_secret('gov_info_url'), get_secret('gov_info_key'))
         session = create_session()
         start_string = '1999-01-01T00:00:00Z'
