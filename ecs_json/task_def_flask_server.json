@@ -1,0 +1,136 @@
+{
+    "executionRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/flask_server",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "portMappings": [
+                {
+                    "hostPort": 5000,
+                    "protocol": "tcp",
+                    "containerPort": 5000
+                }
+            ],
+            "command": [
+                "gunicorn",
+                "server:create_app()",
+                "-b",
+                "0.0.0.0:5000"
+            ],
+            "cpu": 0,
+            "environment": [
+                {
+                    "name": "initial_admin_email",
+                    "value": "nick@nickcleary.tech"
+                }
+            ],
+            "repositoryCredentials": {
+                "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
+            },
+            "mountPoints": [],
+            "secrets": [
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_rabbit_connection",
+                    "name": "CELERY_BROKER_URL"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_celery_connection_string",
+                    "name": "celery_connection_string"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_db_connection_string",
+                    "name": "connection_string"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_hash_salt",
+                    "name": "hash_salt"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_secret_key",
+                    "name": "SECRET_KEY"
+                }
+            ],
+            "volumesFrom": [],
+            "image": "docker.io/nicklesbread/seniordesign:@DOCKER_TAG",
+            "dependsOn": [
+                {
+                    "containerName": "initializer",
+                    "condition": "COMPLETE"
+                }
+            ],
+            "essential": true,
+            "name": "flask_app"
+        },
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/flask_server",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "portMappings": [],
+            "command": [
+                "python3",
+                "initializer.py"
+            ],
+            "cpu": 0,
+            "environment": [
+                {
+                    "name": "initial_admin_email",
+                    "value": "nick@nickcleary.tech"
+                }
+            ],
+            "repositoryCredentials": {
+                "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
+            },
+            "mountPoints": [],
+            "secrets": [
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_rabbit_connection",
+                    "name": "CELERY_BROKER_URL"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_celery_connection_string",
+                    "name": "celery_connection_string"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_db_connection_string",
+                    "name": "connection_string"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_hash_salt",
+                    "name": "hash_salt"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_secret_key",
+                    "name": "SECRET_KEY"
+                }
+            ],
+            "volumesFrom": [],
+            "image": "docker.io/nicklesbread/seniordesign:@DOCKER_TAG",
+            "essential": false,
+            "name": "initializer"
+        }
+    ],
+    "memory": "512",
+    "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
+    "family": "flask_server",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "runtimePlatform": {
+        "operatingSystemFamily": "LINUX"
+    },
+    "cpu": "256",
+    "inferenceAccelerators": [],
+    "volumes": []
+}

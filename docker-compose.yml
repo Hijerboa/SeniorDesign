@@ -124,6 +124,20 @@ services:
       - RABBITMQ_PASS=bigpassword
     depends_on:
       - rabbit
+  
+  # cron:
+  #   platform: linux/x86_64
+  #   volumes:
+  #     - ./app/:/app/
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     - RABBITMQ_USER=admin
+  #     - RABBITMQ_PASS=bigpassword
+  #   command: ['python3', 'cron_runner.py', 'get_recent_bills']
+  #   depends_on:
+  #     - rabbit
 
 volumes:
   mariadb_data:

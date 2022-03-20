@@ -34,6 +34,3 @@ def update_key_refs():
         else:
             print('key already in db.')
         print('next key')
-
-    
-    

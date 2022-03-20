@@ -24,4 +24,3 @@ def test_bill_summary_length():
     print(f'{under_10000} with a length between 1000 and 10000')
     print(f'{under_100000} with a length between 10000 and 100000')
     print(f'{over_100000} with a length over 100000')
-            
