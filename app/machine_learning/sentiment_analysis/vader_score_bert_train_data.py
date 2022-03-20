@@ -24,7 +24,15 @@ def generate_data():
     for tweet in tweets:
         text = tweet.text.replace('\n', '').replace(',', '')
         score = vader_score(text)
-        out_file.write(f'{score["compound"]},{text}\n')
+
+        comp_val = score['compound']
+        if comp_val <= -0.35:
+            score_class = -1
+        elif comp_val >= 0.35:
+            score_class = 1
+        else:
+            score_class = 0
+        out_file.write(f'{score_class},{text}\n')
     end = datetime.now()
     delta = end - start
     print(f'Took {delta.seconds} seconds')
