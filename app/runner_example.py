@@ -1,3 +1,4 @@
+'''
 from db.database_connection import initialize, create_session
 from sqlalchemy import asc, and_
 from tasks.task_initializer import CELERY
@@ -39,6 +40,8 @@ def ex():
                     with_for_update(of=KeyRateLimit, nowait=True).one()
     session.flush()
     print(f'{keys2} T+{datetime.now()}', flush=True)
+
+'''
 
 
     #docker-compose up | grep "initializer_1"
