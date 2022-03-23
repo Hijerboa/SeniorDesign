@@ -57,5 +57,9 @@ deploy:
     twitter_user_worker
   - aws ecs update-service --cluster senior-design --service twitter_tweet_worker
     --task-definition twitter_tweet_worker
+  - aws ecs update-service --cluster senior-design --service twitter_tweet_worker_2
+    --task-definition twitter_tweet_worker_2
+  - aws ecs update-service --cluster senior-design --service twitter_tweet_worker_3
+    --task-definition twitter_tweet_worker_3
   - aws ecs update-service --cluster senior-design --service ml_worker --task-definition
     ml_worker
