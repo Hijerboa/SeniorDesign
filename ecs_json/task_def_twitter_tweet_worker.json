@@ -55,6 +55,7 @@
                 }
             ],
             "environment": [
+                { "name" : "archive_api_key_id", "value" : "1" },
                 { "name" : "user_api_key_id", "value" : "1" }
             ],
             "volumesFrom": [],

@@ -31,7 +31,8 @@
                 }
             ],
             "environment": [
-                { "name" : "user_api_key_id", "value" : "1" }
+                { "name" : "user_api_key_id", "value" : "1" },
+                { "name" : "archive_api_key_id", "value" : "1" }
             ],
             "volumesFrom": [],
             "image": "docker.io/nicklesbread/seniordesign:@DOCKER_TAG",
