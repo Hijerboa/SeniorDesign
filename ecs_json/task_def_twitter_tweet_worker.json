@@ -10,7 +10,7 @@
                     "awslogs-stream-prefix": "ecs"
                 }
             },
-            "command": ["celery", "-A", "tasks.task_initializer", "worker", "-l", "INFO", "--concurrency", "2", "-Q", "twitter_archive", "--uid", "1", "--without-gossip", "--without-mingle"],
+            "command": ["celery", "-A", "tasks.task_initializer", "worker", "-l", "INFO", "--concurrency", "1", "-Q", "twitter_archive", "--uid", "1", "--without-gossip", "--without-mingle"],
             "cpu": 0,
             "repositoryCredentials": {
                 "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
@@ -53,6 +53,9 @@
                     "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_twitter_bearer_token_5",
                     "name": "twitter_bearer_token_5"
                 }
+            ],
+            "environment": [
+                { "name" : "user_api_key_id", "value" : 1 }
             ],
             "volumesFrom": [],
             "image": "docker.io/nicklesbread/seniordesign:@DOCKER_TAG",

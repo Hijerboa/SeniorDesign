@@ -5,12 +5,12 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/twitter_user_worker",
+                    "awslogs-group": "/ecs/twitter_tweet_worker_3",
                     "awslogs-region": "us-east-2",
                     "awslogs-stream-prefix": "ecs"
                 }
             },
-            "command": ["celery", "-A", "tasks.task_initializer", "worker", "-l", "INFO", "--concurrency", "1", "-Q", "twitter_users", "--uid", "1", "--without-gossip", "--without-mingle"],
+            "command": ["celery", "-A", "tasks.task_initializer", "worker", "-l", "INFO", "--concurrency", "1", "-Q", "twitter_archive", "--uid", "1", "--without-gossip", "--without-mingle"],
             "cpu": 0,
             "repositoryCredentials": {
                 "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
@@ -55,17 +55,17 @@
                 }
             ],
             "environment": [
-                { "name" : "user_api_key_id", "value" : 4 }
+                { "name" : "user_api_key_id", "value" : 3 }
             ],
             "volumesFrom": [],
             "image": "docker.io/nicklesbread/seniordesign:@DOCKER_TAG",
             "essential": true,
-            "name": "twitter_user_worker"
+            "name": "twitter_tweet_worker_3"
         }
     ],
-    "memory": "512",
+    "memory": "1024",
     "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
-    "family": "twitter_user_worker",
+    "family": "twitter_tweet_worker_3",
     "requiresCompatibilities": [
         "FARGATE"
     ],
@@ -73,7 +73,7 @@
     "runtimePlatform": {
         "operatingSystemFamily": "LINUX"
     },
-    "cpu": "256",
+    "cpu": "512",
     "inferenceAccelerators": [],
     "volumes": []
 }
