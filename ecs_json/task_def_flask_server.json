@@ -28,7 +28,8 @@
                 {
                     "name": "initial_admin_email",
                     "value": "nick@nickcleary.tech"
-                }
+                },
+                { "name" : "user_api_key_id", "value" : "1" }
             ],
             "repositoryCredentials": {
                 "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
@@ -86,7 +87,8 @@
                 {
                     "name": "initial_admin_email",
                     "value": "nick@nickcleary.tech"
-                }
+                },
+                { "name" : "user_api_key_id", "value" : "1" }
             ],
             "repositoryCredentials": {
                 "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
