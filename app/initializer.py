@@ -2,7 +2,6 @@ import alembic.config
 import os, os.path, time
 from initializer.authentication_setup import perform_initial_tasks
 from tasks.bill_request_tasks import run_process_bill_request
-from runner_example import ex
 
 import logging
 logger = logging.getLogger(__name__)
@@ -23,7 +22,7 @@ alembic.config.main(
 # Perform Auth setup
 perform_initial_tasks()
 print("startup tasks complete")
-#run_process_bill_request.apply(('hconres108-112', 1,))
+run_process_bill_request.apply(('hconres108-112', 1,))
 #ex()
 
 """from db.database_connection import create_session
@@ -34,3 +33,6 @@ session = create_session()
 bills: [Bill] = session.query(Bill).filter(Bill.keywords == None).all()
 for bill in bills:
     keyword_extraction_by_bill.apply_async((bill.bill_id,))"""
+
+
+    #docker-compose up | grep "initializer_1"

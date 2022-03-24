@@ -15,11 +15,14 @@ import time
 from datetime import datetime, timedelta
 from pytz import timezone
 my_tz = timezone('US/Eastern')
-API_MANUAL_TIMEOUT = 3 #Manual timeout in seconds. Raise this if we're getting rate limited.
+API_MANUAL_TIMEOUT = 5 #Manual timeout in seconds. Raise this if we're getting rate limited.
 API_MONTHLY_TWEET_LIMIT = 10000000 #10,000,000 tweets/key/month
 
 import logging
 logger = logging.getLogger(__name__)
+
+archive_api_key_id = get_secret('archive_api_key_id')
+user_api_key_id = get_secret('user_api_key_id')
 
 ###
 ### Retrieve Tweets from archive
@@ -56,17 +59,19 @@ class tweet_puller_archive(Task):
         session = create_session()
         try:
             result = self.tweet_puller_archive(self.parameters['tweet_query'], self.parameters['next_token'], self.parameters['start_date'], self.parameters['end_date'], self.launched_by_id)
+            self.complete = True
             session.close()
             return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
+            self.error = True
             session.commit()
             session.close()
             return str(e)
 
     def tweet_puller_archive(self, tweet_query: str, next_token, start_date, end_date, user_id):
-        logger.error(f'[{tweet_query}] Starting')
+        #logger.error(f'[{tweet_query}] Starting')
         session = create_session()
 
         db_search_phrase, created = get_or_create(session, SearchPhrase, search_phrase=tweet_query)
@@ -75,59 +80,61 @@ class tweet_puller_archive(Task):
 
         key = None
         # Get proper API token to use based on usage time and amount
-        logger.error(f"[{tweet_query}] Collecting Key")
+        #logger.error(f"[{tweet_query}] Collecting Key")
         k = 1
         while key == None:
             key: KeyRateLimit = session.query(KeyRateLimit).\
-                where(and_(KeyRateLimit.locked == False, KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
+                where(and_(KeyRateLimit.id == archive_api_key_id, KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
                 order_by(asc(KeyRateLimit.tweets_pulled)).\
                 first()
             if key is None:
                 session.commit()
                 # Check to see if we have any keys with tweets left:
                 keys_avail = session.query(KeyRateLimit).\
-                    where(and_(KeyRateLimit.type == twitter_api_token_type.archive, KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
+                    where(and_(KeyRateLimit.id == archive_api_key_id, KeyRateLimit.type == twitter_api_token_type.archive, KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
                     all()
-                logger.error(f'[{tweet_query}] Waiting. Have {len(keys_avail)} valid keys')
+                #logger.error(f'[{tweet_query}] Waiting. Have {len(keys_avail)} valid keys')
                 # If we do, just act normal
                 if len(keys_avail) > 0:
                     wait = random.randint(1, int(2**k))
-                    logger.error(f'[{tweet_query}] Backing off for {wait} seconds')
+                    #logger.error(f'[{tweet_query}] Backing off for {wait} seconds')
                     time.sleep(wait)
-                    k+=1
+                    if k < 3:
+                        k+=1
                     pass #Either backoff here or wait, we can figure this out though
                 else:
                     session.commit()
                     session.close()
-                    logger.error(f'[{tweet_query}] API Limit hit on all keys. Closing.')
-                    raise Exception(message='API Limit hit on all keys')
-            key.locked = True
-            session.commit()
+                    logger.error(f'[{tweet_query}] API Limit hit on archive key {archive_api_key_id}. Closing.')
+                    raise Exception(message=f'API Limit hit on archive key {archive_api_key_id}')
+
+        session.commit()
         #key = keys[0]
         logger.error(f'[{tweet_query}] using key {key} - Last used {(datetime.now() - key.last_query).seconds} sec. ago')
         # Use correct secret ID
         twitter_api = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         response = twitter_api.search_tweets_archive(tweet_query, start_date, end_date, next_token)
-        logger.error(f'[{tweet_query}] Got a response')
+        #logger.error(f'[{tweet_query}] Got a response')
         # Update API usage time to now
         key.last_query = datetime.now()
-        logger.error(f'[{tweet_query}] Setting last query time to {key.last_query}')
+        #logger.error(f'[{tweet_query}] Setting last query time to {key.last_query}')
         #
         try:
             tweets = response['data']['data']
             # and update the number of tweets pulled
             key.tweets_pulled += len(tweets)
-            key.locked = False
+
             # save to db
             session.commit()
-            logger.error(f'[{tweet_query}] Commited key fields change at {datetime.now()}')
+            #logger.error(f'[{tweet_query}] Commited key fields change at {datetime.now()}')
             #
         except KeyError:
+
             session.commit()
-            logger.error(f'[{tweet_query}] Commited key fields change at {datetime.now()}')
+            #logger.error(f'[{tweet_query}] Commited key fields change at {datetime.now()}')
             session.close()
             return '{0} tweets collected'.format(str(tweet_count))
-        logger.error(f'[{tweet_query}] Processing tweets')
+        #logger.error(f'[{tweet_query}] Processing tweets')
         for tweet in tweets:
             try:
                 tweet_dict = {
@@ -205,11 +212,13 @@ class retrieve_user_info_by_id(Task):
         session = create_session()
         try:
             result = self.retrieve_user_info_by_username(self.parameters['twitter_user_id'])
+            self.complete = True
             session.close()
             return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
+            self.error = True
             session.commit()
             session.close()
             return str(e)
@@ -220,19 +229,19 @@ class retrieve_user_info_by_id(Task):
         key = None
         while key == None:
             key = session.query(KeyRateLimit).\
-                where(and_(KeyRateLimit.locked == False, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
+                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
                 order_by(asc(KeyRateLimit.last_query)).\
                 first()
             if key == None:
                 pass #Either backoff here or wait, we can figure this out though
-        key.locked = True
+
         session.commit()
         # Use correct secret ID
         twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         user_data = twitter_api.get_user_by_id(twitter_user_id)['data']['data']
         # Update API usage time to now and commit to db
         key.last_query = datetime.now()
-        key.locked = False
+
         session.commit()
 
         create_user_object(user_data, session)
@@ -274,11 +283,13 @@ class retrieve_users_info_by_ids(Task):
         session = create_session()
         try:
             result = self.retrieve_user_info_by_username(self.parameters['user_ids'])
+            self.complete = True
             session.close()
             return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
+            self.error = True
             session.commit()
             session.close()
             return str(e)
@@ -289,19 +300,19 @@ class retrieve_users_info_by_ids(Task):
         key = None
         while key == None:
             key = session.query(KeyRateLimit).\
-                where(and_(KeyRateLimit.locked == False, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
+                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
                 order_by(asc(KeyRateLimit.last_query)).\
                 first()
             if key == None:
                 pass #Either backoff here or wait, we can figure this out though
-        key.locked = True
+
         session.commit()
         # Use correct secret ID
         twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         user_response = twitter_api.get_users_by_ids(user_ids)['data']['data']
         # Update API usage time to now and commit to db
         key.last_query = datetime.now()
-        key.locked = False
+
         session.commit()
 
         user_num = 0
@@ -347,11 +358,13 @@ class retrieve_user_info_by_username(Task):
         session = create_session()
         try:
             result = self.retrieve_user_info_by_username(self.parameters['username'])
+            self.complete = True
             session.close()
             return result
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
+            self.error = False
             session.commit()
             session.close()
             return str(e)
@@ -362,19 +375,19 @@ class retrieve_user_info_by_username(Task):
         key = None
         while key == None:
             key = session.query(KeyRateLimit).\
-                where(and_(KeyRateLimit.locked == False, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
+                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
                 order_by(asc(KeyRateLimit.last_query)).\
                 first()
             if key == None:
                 pass #Either backoff here or wait, we can figure this out though
-        key.locked = True
+
         session.commit() 
         # Use correct secret ID
         twitter_api: TwitterAPI = TwitterAPI(get_secret('twitter_api_url'), get_secret(f'twitter_bearer_token_{key.id}'))
         user_data = twitter_api.get_user_by_username(username)['data']['data']
         # Update API usage time to now and commit to db
         key.last_query = datetime.now()
-        key.locked = False
+
         session.commit()
 
         

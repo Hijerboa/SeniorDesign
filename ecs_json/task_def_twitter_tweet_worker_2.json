@@ -5,7 +5,7 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/twitter_tweet_worker",
+                    "awslogs-group": "/ecs/twitter_tweet_worker_2",
                     "awslogs-region": "us-east-2",
                     "awslogs-stream-prefix": "ecs"
                 }
@@ -55,17 +55,17 @@
                 }
             ],
             "environment": [
-                { "name" : "user_api_key_id", "value" : "1" }
+                { "name" : "user_api_key_id", "value" : "2" }
             ],
             "volumesFrom": [],
             "image": "docker.io/nicklesbread/seniordesign:@DOCKER_TAG",
             "essential": true,
-            "name": "twitter_tweet_worker"
+            "name": "twitter_tweet_worker_2"
         }
     ],
     "memory": "1024",
     "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
-    "family": "twitter_tweet_worker",
+    "family": "twitter_tweet_worker_2",
     "requiresCompatibilities": [
         "FARGATE"
     ],

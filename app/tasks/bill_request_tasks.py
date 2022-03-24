@@ -78,6 +78,7 @@ class process_bill_request(Task):
         phrases = [kw for kw in bill.keywords if not kw.type == 3]
         id_to_phrase = {phrase.id: phrase.search_phrase for phrase in phrases}
         ### Determine ranges that need to be pulled
+        #print('Creating Date Ranges')
         #print('Before jobs')
         jobs = group([get_needed_date_ranges.s(phrase.id, start, end) for phrase in phrases])
         #print('Jobs Made')
@@ -92,13 +93,14 @@ class process_bill_request(Task):
         for subarr in result:
             ranges += [(subarr[0], s) for s in subarr[1]]
         ### Spawn tweet pullers
+        #print('Spawning Tweet Pullers')
         for r in ranges:
             print(f'Params: {(id_to_phrase[r[0]], None, r[1][0].strftime("%Y-%m-%d"), r[1][1].strftime("%Y-%m-%d"), user_id,)}')
             run_tweet_puller_archive.apply_async((id_to_phrase[r[0]], None, r[1][0].strftime("%Y-%m-%d"), r[1][1].strftime("%Y-%m-%d"), user_id,))
             phrase_date = SearchPhraseDates(search_phrase_id = r[0], start_date=r[1][0], end_date=r[1][1])
             session.add(phrase_date)
             session.commit()
-            print('commited')
+            #print('commited')
         
         return 'Tasks Started Successfully'
 

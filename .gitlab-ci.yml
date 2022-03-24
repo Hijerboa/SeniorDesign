@@ -7,7 +7,6 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 include:
 - template: Security/SAST.gitlab-ci.yml
-- template: Security/Secret-Detection.gitlab-ci.yml
 stages:
 - test
 - build
@@ -46,6 +45,8 @@ deploy:
   - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_bill_data_worker.json
   - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_flask_server.json
   - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_tweet_worker.json
+  - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_tweet_worker_2.json
+  - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_tweet_worker_3.json
   - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_user_worker.json
   - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_ml_worker.json
   - aws ecs update-service --cluster senior-design --service bill_data_worker --task-definition
@@ -56,5 +57,9 @@ deploy:
     twitter_user_worker
   - aws ecs update-service --cluster senior-design --service twitter_tweet_worker
     --task-definition twitter_tweet_worker
+  - aws ecs update-service --cluster senior-design --service twitter_tweet_worker_2
+    --task-definition twitter_tweet_worker_2
+  - aws ecs update-service --cluster senior-design --service twitter_tweet_worker_3
+    --task-definition twitter_tweet_worker_3
   - aws ecs update-service --cluster senior-design --service ml_worker --task-definition
     ml_worker
