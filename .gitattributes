@@ -1,2 +1,1 @@
 *.h5 filter=lfs diff=lfs merge=lfs -text
-app/BERT_724 filter=lfs diff=lfs merge=lfs -text
