@@ -28,6 +28,7 @@ def run_process_bill_request(bill_id, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 @CELERY.task()
@@ -38,6 +39,7 @@ def rerun_process_bill_request(task: Task, user_id):
     session.commit()
     res = task.run()
     session.commit()
+    session.close()
     return res
 
 class process_bill_request(Task):
@@ -47,11 +49,14 @@ class process_bill_request(Task):
     def run(self):
         session = create_session()
         try:
-            return self.process_bill_request(self.parameters['bill_id'], self.launched_by_id)
+            value = self.process_bill_request(self.parameters['bill_id'], self.launched_by_id)
+            session.close()
+            return value
         except Exception as e: 
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()
+            session.close()
             return str(e)
 
     def process_bill_request(self, bill_id, user_id):
@@ -102,6 +107,7 @@ class process_bill_request(Task):
             session.commit()
             #print('commited')
         
+        session.close()
         return 'Tasks Started Successfully'
 
 @CELERY.task
