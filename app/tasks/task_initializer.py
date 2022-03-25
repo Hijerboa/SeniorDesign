@@ -30,7 +30,7 @@ task_routes = {
     'tasks.congress_api_tasks.run_get_versions': {'queue': 'propublica'},
     'tasks.congress_api_tasks.get_versions': {'queue': 'propublica'},
     #Bill Requests
-    'tasks.bill_request_tasks.get_needed_date_ranges': {'queue': 'twitter_users'},
+    'tasks.bill_request_tasks.get_needed_date_ranges': {'queue': 'propublica'},
     'tasks.bill_request_tasks.run_process_bill_request': {'queue': 'propublica'},
     'tasks.bill_request_tasks.rerun_process_bill_request': {'queue': 'propublica'},
 }

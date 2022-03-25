@@ -56,7 +56,7 @@
             "name": "bill_data_worker"
         }
     ],
-    "memory": "512",
+    "memory": "1024",
     "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
     "family": "bill_data_worker",
     "requiresCompatibilities": [
@@ -66,7 +66,7 @@
     "runtimePlatform": {
         "operatingSystemFamily": "LINUX"
     },
-    "cpu": "256",
+    "cpu": "512",
     "inferenceAccelerators": [],
     "volumes": []
 }

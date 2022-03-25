@@ -64,7 +64,7 @@
             "name": "twitter_tweet_worker_2"
         }
     ],
-    "memory": "1024",
+    "memory": "512",
     "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
     "family": "twitter_tweet_worker_2",
     "requiresCompatibilities": [
@@ -74,7 +74,7 @@
     "runtimePlatform": {
         "operatingSystemFamily": "LINUX"
     },
-    "cpu": "512",
+    "cpu": "256",
     "inferenceAccelerators": [],
     "volumes": []
 }
