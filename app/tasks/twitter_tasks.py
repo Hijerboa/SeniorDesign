@@ -282,7 +282,7 @@ class retrieve_users_info_by_ids(Task):
     def run(self):
         session = create_session()
         try:
-            result = self.retrieve_user_info_by_username(self.parameters['user_ids'])
+            result = self.retrieve_users_info_by_ids(self.parameters['user_ids'])
             self.complete = True
             session.close()
             return result

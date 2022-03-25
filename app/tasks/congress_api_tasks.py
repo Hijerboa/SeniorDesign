@@ -95,5 +95,5 @@ class get_versions(Task):
                 session.commit()
         session.close()
         if len(packages) == 100:
-            run_get_versions.apply_async((congress, bill_version, doc_class, offset+100,))
+            run_get_versions.apply_async((congress, bill_version, doc_class, offset+100, 1))
         return f'{len(packages)} collected'
