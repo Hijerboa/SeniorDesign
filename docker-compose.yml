@@ -69,19 +69,19 @@ services:
     volumes:
       - rabbitmq:/var/lib/rabbitmq
 
-  celery_worker_tweet_archive:
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --uid 1 --without-gossip --without-mingle
-    volumes:
-    - ./app/:/app/
-    environment:
-      - RABBITMQ_USER=admin
-      - RABBITMQ_PASS=bigpassword
-    depends_on:
-      - rabbit
+  # celery_worker_tweet_archive:
+  #   platform: linux/x86_64
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --uid 1 --without-gossip --without-mingle
+  #   volumes:
+  #   - ./app/:/app/
+  #   environment:
+  #     - RABBITMQ_USER=admin
+  #     - RABBITMQ_PASS=bigpassword
+  #   depends_on:
+  #     - rabbit
 
   celery_worker_twitter_user_1:
     platform: linux/x86_64
