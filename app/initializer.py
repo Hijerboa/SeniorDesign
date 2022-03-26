@@ -32,7 +32,7 @@ from tasks.machine_learning_tasks import keyword_extraction_by_bill
 session = create_session()
 bills: [Bill] = session.query(Bill).filter(Bill.keywords == None).all()
 for bill in bills:
-    keyword_extraction_by_bill.apply_async((bill.bill_id,))"""
+    keyword_extraction_by_bill.apply_async((bill.bill_id,))
 
 from db.database_connection import create_session
 from db.models import Bill
@@ -42,4 +42,4 @@ session = create_session()
 bills: [Bill] = session.query(Bill).limit(1000).all()
 for bill in bills:
     run_process_bill_request(bill.bill_id, 1)
-session.close()
+session.close()"""
