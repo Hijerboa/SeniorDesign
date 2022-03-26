@@ -15,7 +15,6 @@ services:
       - RABBITMQ_PASS=bigpassword
     command: ['gunicorn', 'server:create_app()', '-b', '0.0.0.0:5000', '--reload']
     depends_on:
-      - db
       - initializer
 
   initializer:
@@ -29,8 +28,6 @@ services:
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
     command: ['python3', 'initializer.py']
-    depends_on:
-      - db
 
   # db:
   #   image: mariadb:10.7

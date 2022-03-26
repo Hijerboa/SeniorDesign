@@ -61,7 +61,8 @@ class Server:
                 print(phrase.id)
                 tweets = session.query(models.Tweet).where(models.Tweet.search_phrases.contains(phrase)).all()
                 rcount += len(tweets)
-                rsum += sum([t.sentiment for t in tweets])
+                if not tweets is None:
+                    rsum += sum([t.seniment for t in tweets])
 
             if rcount > 0:
                 ravg = rsum / rcount
