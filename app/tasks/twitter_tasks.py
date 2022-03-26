@@ -84,7 +84,7 @@ class tweet_puller_archive(Task):
         k = 1
         while key == None:
             key: KeyRateLimit = session.query(KeyRateLimit).\
-                where(and_(KeyRateLimit.id == archive_api_key_id, KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
+                where(and_(KeyRateLimit.id == archive_api_key_id, KeyRateLimit.type == twitter_api_token_type.archive,  KeyRateLimit.last_query < datetime.now() - timedelta(seconds=API_MANUAL_TIMEOUT), KeyRateLimit.tweets_pulled < API_MONTHLY_TWEET_LIMIT - 100)).\
                 order_by(asc(KeyRateLimit.tweets_pulled)).\
                 first()
             if key is None:
@@ -229,7 +229,7 @@ class retrieve_user_info_by_id(Task):
         key = None
         while key == None:
             key = session.query(KeyRateLimit).\
-                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
+                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() - timedelta(seconds=API_MANUAL_TIMEOUT))).\
                 order_by(asc(KeyRateLimit.last_query)).\
                 first()
             if key == None:
@@ -300,7 +300,7 @@ class retrieve_users_info_by_ids(Task):
         key = None
         while key == None:
             key = session.query(KeyRateLimit).\
-                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
+                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() - timedelta(seconds=API_MANUAL_TIMEOUT))).\
                 order_by(asc(KeyRateLimit.last_query)).\
                 first()
             if key == None:
@@ -375,7 +375,7 @@ class retrieve_user_info_by_username(Task):
         key = None
         while key == None:
             key = session.query(KeyRateLimit).\
-                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() + timedelta(seconds=API_MANUAL_TIMEOUT))).\
+                where(and_(KeyRateLimit.id == user_api_key_id, KeyRateLimit.type == twitter_api_token_type.non_archive,  KeyRateLimit.last_query < datetime.now() - timedelta(seconds=API_MANUAL_TIMEOUT))).\
                 order_by(asc(KeyRateLimit.last_query)).\
                 first()
             if key == None:
