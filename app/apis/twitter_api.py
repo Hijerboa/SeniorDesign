@@ -76,6 +76,7 @@ class TwitterAPI:
         Returns:
             (Response Code, Twitter API response)
         """
+        query = query.replace('and', '').replace('or', '')
         args = {
             # Always add no retweets, no reason to pull those, and they affect our limits
             'query': "{0} -is:retweet".format(query),

@@ -1,3 +1,4 @@
+from cProfile import run
 import alembic.config
 import os, os.path, time
 from initializer.authentication_setup import perform_initial_tasks
@@ -43,4 +44,7 @@ session = create_session()
 bills = ['hr1319-117', 'hr3684-117', 'hres57-117', 'hr1-117', 'hr5376-117', 'hr4350-117', 'hr6-117', 'hr1996-117', 'hr127-117', 'hr5-117', 's1260-117', 'hr3648-117', 'hr4980-117', 'hr3755-117']
 for bill in bills:
     run_process_bill_request(bill, 1)
+bills: [Bill] = session.query(Bill).limit(2000).all()
+for bill in bills:
+    run_process_bill_request(bill.bill_id, 1)
 session.close()"""
