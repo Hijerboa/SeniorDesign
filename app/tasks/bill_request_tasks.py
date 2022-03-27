@@ -80,7 +80,7 @@ class process_bill_request(Task):
             end = actions[-1].datetime
 
         ### Get bill phrases
-        phrases = [kw for kw in bill.keywords if not kw.type == 3]
+        phrases = [kw for kw in bill.keywords]
         id_to_phrase = {phrase.id: phrase.search_phrase for phrase in phrases}
         ### Determine ranges that need to be pulled
         #print('Creating Date Ranges')
