@@ -55,6 +55,7 @@
                 }
             ],
             "environment": [
+                { "name" : "archive_api_key_id", "value" : "1" },
                 { "name" : "user_api_key_id", "value" : "1" }
             ],
             "volumesFrom": [],
@@ -63,7 +64,7 @@
             "name": "twitter_tweet_worker"
         }
     ],
-    "memory": "1024",
+    "memory": "512",
     "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
     "family": "twitter_tweet_worker",
     "requiresCompatibilities": [
@@ -73,7 +74,7 @@
     "runtimePlatform": {
         "operatingSystemFamily": "LINUX"
     },
-    "cpu": "512",
+    "cpu": "256",
     "inferenceAccelerators": [],
     "volumes": []
 }

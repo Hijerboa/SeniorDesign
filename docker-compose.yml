@@ -15,7 +15,6 @@ services:
       - RABBITMQ_PASS=bigpassword
     command: ['gunicorn', 'server:create_app()', '-b', '0.0.0.0:5000', '--reload']
     depends_on:
-      - db
       - initializer
 
   initializer:
@@ -29,23 +28,21 @@ services:
       - RABBITMQ_USER=admin
       - RABBITMQ_PASS=bigpassword
     command: ['python3', 'initializer.py']
-    depends_on:
-      - db
 
-  db:
-    image: mariadb:10.7
-    platform: linux/x86_64
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    environment:
-      db_url: mysql://mysql:mysql@db:3306/mysql
-      MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
-      MARIADB_USER: maria
-      MARIADB_PASSWORD: maria
-      MARIADB_DATABASE: maria
-    ports:
-      - 3306:3306
+  # db:
+  #   image: mariadb:10.7
+  #   platform: linux/x86_64
+  #   volumes:
+  #     - mariadb_data:/var/lib/mysql
+  #   command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+  #   environment:
+  #     db_url: mysql://mysql:mysql@db:3306/mysql
+  #     MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+  #     MARIADB_USER: maria
+  #     MARIADB_PASSWORD: maria
+  #     MARIADB_DATABASE: maria
+  #   ports:
+  #     - 3306:3306
 
   flower:
     image: mher/flower:0.9.5
@@ -69,19 +66,19 @@ services:
     volumes:
       - rabbitmq:/var/lib/rabbitmq
 
-  celery_worker_tweet_archive:
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --uid 1 --without-gossip --without-mingle
-    volumes:
-    - ./app/:/app/
-    environment:
-      - RABBITMQ_USER=admin
-      - RABBITMQ_PASS=bigpassword
-    depends_on:
-      - rabbit
+  # celery_worker_tweet_archive:
+  #   platform: linux/x86_64
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --uid 1 --without-gossip --without-mingle
+  #   volumes:
+  #   - ./app/:/app/
+  #   environment:
+  #     - RABBITMQ_USER=admin
+  #     - RABBITMQ_PASS=bigpassword
+  #   depends_on:
+  #     - rabbit
 
   celery_worker_twitter_user_1:
     platform: linux/x86_64
@@ -135,7 +132,7 @@ services:
   #   environment:
   #     - RABBITMQ_USER=admin
   #     - RABBITMQ_PASS=bigpassword
-  #   command: ['python3', 'cron_runner.py', 'get_recent_bills']
+  #   command: ['python3', 'cron_runner.py', 'collect_bill_versions']
   #   depends_on:
   #     - rabbit
 

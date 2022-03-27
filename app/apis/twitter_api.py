@@ -76,6 +76,7 @@ class TwitterAPI:
         Returns:
             (Response Code, Twitter API response)
         """
+        query = query.replace(' and ', ' ').replace(' or ', ' ').replace('.', '')
         args = {
             # Always add no retweets, no reason to pull those, and they affect our limits
             'query': "{0} -is:retweet".format(query),
@@ -83,7 +84,7 @@ class TwitterAPI:
             'tweet.fields': 'author_id,created_at,lang,referenced_tweets,source,in_reply_to_user_id,public_metrics,context_annotations,entities',
             'max_results': 100,
             'start_time': '{0}T00:00:00Z'.format(start_time),
-            'end_time': '{0}T00:00:00Z'.format(end_time)
+            'end_time': '{0}T23:59:59Z'.format(end_time)
         }
         if next_token is not None:
             args['next_token'] = next_token

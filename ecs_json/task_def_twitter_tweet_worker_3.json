@@ -55,7 +55,8 @@
                 }
             ],
             "environment": [
-                { "name" : "user_api_key_id", "value" : "3" }
+                { "name" : "user_api_key_id", "value" : "4" },
+                { "name" : "archive_api_key_id", "value" : "3" }
             ],
             "volumesFrom": [],
             "image": "docker.io/nicklesbread/seniordesign:@DOCKER_TAG",
@@ -63,7 +64,7 @@
             "name": "twitter_tweet_worker_3"
         }
     ],
-    "memory": "1024",
+    "memory": "512",
     "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
     "family": "twitter_tweet_worker_3",
     "requiresCompatibilities": [
@@ -73,7 +74,7 @@
     "runtimePlatform": {
         "operatingSystemFamily": "LINUX"
     },
-    "cpu": "512",
+    "cpu": "256",
     "inferenceAccelerators": [],
     "volumes": []
 }
