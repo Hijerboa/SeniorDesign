@@ -1,4 +1,4 @@
-from tasks.congress_api_tasks import get_versions
+from tasks.congress_api_tasks import run_get_versions
 
 def run():
     versions = ['as', 'ash', 'ath', 'ats', 'cdh', 'cds', 'cph', 'cps', 'eah', 'eas', 'eh', 'eph', 'enr', 'es',
@@ -9,5 +9,4 @@ def run():
     
     for version in versions:
         for doc_class in doc_classes:
-            get_versions.apply_async((117, version, doc_class, 0,))
-        
+            run_get_versions.apply_async((117, version, doc_class, 0, 1,))

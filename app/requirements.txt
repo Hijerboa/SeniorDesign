@@ -21,3 +21,6 @@ yake==0.4.8
 numpy
 vaderSentiment==3.3.2
 mysql-connector
+
+# Dashboard
+dash

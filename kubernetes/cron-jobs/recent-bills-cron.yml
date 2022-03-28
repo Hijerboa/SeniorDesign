@@ -20,22 +20,15 @@ spec:
                     secretKeyRef:
                       name: system
                       key: connection_string
-                - name: RABBITMQ_USER
-                  valueFrom:
-                    secretKeyRef:
-                      name: rabbit
-                      key: user
-                - name: RABBITMQ_PASS
-                  valueFrom:
-                    secretKeyRef:
-                      name: rabbit
-                      key: password
                 - name: celery_connection_string
                   valueFrom:
                     secretKeyRef:
                       name: system
                       key: celery_connection_string
-                - name: RABBITMQ_HOST
-                  value: rabbit
+                - name: CELERY_BROKER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: rabbit
+                      key: broker_url
           imagePullSecrets:
             - name: docker-hub-auth

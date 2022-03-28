@@ -25,7 +25,7 @@ def create_app(test_config=None):
     app.logger.setLevel(logging.INFO)
 
     app.logger.info("Configuring Swagger")
-    SWAGGER_URL = '/docs'
+    SWAGGER_URL = '/api/v1/docs'
     API_URL = '/static/swagger.json'
     SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
         SWAGGER_URL,
@@ -40,9 +40,9 @@ def create_app(test_config=None):
     app.logger.info("Registering blueprints")
 
     from . import user, twitter, propublica, ml
-    app.register_blueprint(user.bp, url_prefix='/user')
-    app.register_blueprint(twitter.bp, url_prefix='/twitter')
-    app.register_blueprint(propublica.bp, url_prefix='/propublica')
-    app.register_blueprint(ml.bp, url_prefix='/ml_tasks')
+    app.register_blueprint(user.bp, url_prefix='/api/v1/user')
+    app.register_blueprint(twitter.bp, url_prefix='/api/v1/twitter')
+    app.register_blueprint(propublica.bp, url_prefix='/api/v1/propublica')
+    app.register_blueprint(ml.bp, url_prefix='/api/v1/ml_tasks')
 
     return app

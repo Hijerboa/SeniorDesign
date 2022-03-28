@@ -7,7 +7,7 @@ OUTPUT_FILE_PATH_MAXVAL = './classified_vader_scored_tweets_max_val.csv'
 sia_obj = SentimentIntensityAnalyzer()
 
 def vader_score(tweet_text: str):
-    return sia_obj.polarity_scores(tweet_text) 
+    return sia_obj.polarity_scores(tweet_text)
 
 
 def generate_data():
@@ -18,7 +18,7 @@ def generate_data():
 
     line = in_file.readline().split(",")
 
-    class_dict = {'neg':-1, 'neu':0, 'pos':1}
+    class_dict = {'neg': -1, 'neu': 0, 'pos': 1}
 
     while line != '':
         i += 1
@@ -46,5 +46,6 @@ def generate_data():
 
     in_file.close()
     out_file_cv.close()
+
 
 generate_data()

@@ -1,0 +1,56 @@
+{
+    "executionRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/get_recent_bills",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": ["python3", "cron_runner.py", "get_recent_bills"],
+            "cpu": 0,
+            "repositoryCredentials": {
+                "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
+            },
+            "mountPoints": [],
+            "secrets": [
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_rabbit_connection",
+                    "name": "CELERY_BROKER_URL"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_celery_connection_string",
+                    "name": "celery_connection_string"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_db_connection_string",
+                    "name": "connection_string"
+                }
+            ],
+            "environment": [
+                { "name" : "user_api_key_id", "value" : "1" },
+                { "name" : "archive_api_key_id", "value" : "1" }
+            ],
+            "volumesFrom": [],
+            "image": "docker.io/nicklesbread/seniordesign:latest",
+            "essential": true,
+            "name": "get_recent_bills"
+        }
+    ],
+    "memory": "512",
+    "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
+    "family": "get_recent_bills",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "runtimePlatform": {
+        "operatingSystemFamily": "LINUX"
+    },
+    "cpu": "256",
+    "inferenceAccelerators": [],
+    "volumes": []
+}

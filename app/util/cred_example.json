@@ -12,5 +12,7 @@
   "twitter_bearer_token": "",
   "bunny_server_api_key": "",
   "gov_info_url": "",
-  "gov_info_key": ""
+  "gov_info_key": "",
+  "archive_api_key_id":"",
+  "user_api_key_id":""
 }

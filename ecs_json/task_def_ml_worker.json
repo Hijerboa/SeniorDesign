@@ -1,0 +1,56 @@
+{
+    "executionRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/ml_worker",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": ["celery", "-A", "tasks.task_ml_initializer", "worker", "-l", "INFO", "--concurrency", "2", "-Q", "ml_tasks", "--pool", "threads", "--without-gossip", "--without-mingle"],
+            "cpu": 0,
+            "repositoryCredentials": {
+                "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"
+            },
+            "mountPoints": [],
+            "secrets": [
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_rabbit_connection",
+                    "name": "CELERY_BROKER_URL"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_celery_connection_string",
+                    "name": "celery_connection_string"
+                },
+                {
+                    "valueFrom": "arn:aws:ssm:us-east-2:489462363401:parameter/senior_design_db_connection_string",
+                    "name": "connection_string"
+                }
+            ],
+            "environment": [
+                { "name" : "user_api_key_id", "value" : "1" },
+                { "name" : "archive_api_key_id", "value" : "1" }
+            ],
+            "volumesFrom": [],
+            "image": "docker.io/nicklesbread/seniordesign:@DOCKER_TAG",
+            "essential": true,
+            "name": "ml_worker"
+        }
+    ],
+    "memory": "512",
+    "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
+    "family": "ml_worker",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "runtimePlatform": {
+        "operatingSystemFamily": "LINUX"
+    },
+    "cpu": "256",
+    "inferenceAccelerators": [],
+    "volumes": []
+}

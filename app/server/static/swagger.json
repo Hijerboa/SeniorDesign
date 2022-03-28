@@ -27,7 +27,7 @@
     }
   ],
   "paths": {
-    "/user/me": {
+    "/api/v1/user/me": {
       "get": {
         "tags": [
           "User"
@@ -53,7 +53,7 @@
         ]
       }
     },
-    "/twitter/tweets/archive/search": {
+    "/api/v1/twitter/tweets/archive/search": {
       "get": {
         "parameters": [
           {
@@ -110,7 +110,7 @@
         ]
       }
     },
-    "/twitter/users/lookup/by_id/single": {
+    "/api/v1/twitter/users/lookup/by_id/single": {
       "get": {
         "parameters": [
           {
@@ -147,7 +147,7 @@
         ]
       }
     },
-    "/twitter/users/lookup/by_id/multiple": {
+    "/api/v1/twitter/users/lookup/by_id/multiple": {
       "get": {
         "parameters": [
           {
@@ -184,7 +184,7 @@
         ]
       }
     },
-    "/twitter/users/lookup/by_username/single": {
+    "/api/v1/twitter/users/lookup/by_username/single": {
       "get": {
         "parameters": [
           {
@@ -221,7 +221,7 @@
         ]
       }
     },
-    "/propublica/bills/{congress}/{chamber}": {
+    "/api/v1/propublica/bills/{congress}/{chamber}": {
       "get": {
         "tags": [
           "Propublica"
@@ -269,7 +269,7 @@
         ]
       }
     },
-    "/ml_tasks/bill_keywords": {
+    "/api/v1/ml_tasks/bill_keywords": {
       "get": {
         "parameters": [
           {
