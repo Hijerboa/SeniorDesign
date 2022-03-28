@@ -5,7 +5,7 @@ from transformers import BertTokenizer, TFBertForSequenceClassification
 LABELS = [-1, 0, 1]
 
 # Model
-MODEL_FILE_PATH = 'app/BERT_724'
+MODEL_FILE_PATH = 'app/models/BERT_724'
 MODEL = TFBertForSequenceClassification.from_pretrained(MODEL_FILE_PATH, num_labels=3)
 
 # Tokenizer - preprocessing, prepares inputs for the model
