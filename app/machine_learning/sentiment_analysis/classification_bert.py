@@ -287,9 +287,9 @@ def make_prediction_confidence(model, tweet: str, labels: List[int]):
     tf_outputs = model(tf_batch)
     tf_predictions = tf.nn.softmax(tf_outputs[0], axis=-1)
     prediction = tf.argmax(tf_predictions, axis=1).numpy()
-    prediction = prediction[0]
-    if prediction > 0.85:
-        return labels[prediction]
+    conf = tf_predictions[0, prediction[0]].numpy()
+    if conf > 0.85:
+        return labels[prediction[0]]
     else:
         return None
         

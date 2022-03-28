@@ -17,7 +17,9 @@ def make_prediction(tweet: str):
     tf_outputs = MODEL(tf_batch)
     tf_predictions = tf.nn.softmax(tf_outputs[0], axis=-1)
     prediction = tf.argmax(tf_predictions, axis=1).numpy()
-    return LABELS[prediction[0]]
+    polarity = LABELS[prediction[0]]
+    conf = tf_predictions[0, prediction[0]].numpy()
+    return (polarity, conf)
         
 
 def score_batch(tweets: List[str]):
