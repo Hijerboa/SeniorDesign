@@ -1,0 +1,62 @@
+IAN_1_EPOCH
+aidan.csv - 0.588
+nick.csv - 0.532
+nathan.csv - 0.472
+tdm.csv - 0.698
+
+IAN_1_EPOCH -> NATHAN_2_EPOCH
+aidan.csv - 0.624
+nick.csv - 0.624
+tdm.csv - 0.594
+
+IAN_1_EPOCH -> NATHAN_2_EPOCH -> AIDAN_3_EPOCH
+nick.csv - 0.644
+tdm - 0.628
+
+IAN_1_EPOCH -> NATHAN_2_EPOCH -> AIDAN_3_EPOCH -> NATHAN_4_EPOCH
+nick.csv - 0.64
+tdm - 0.654
+
+-----------------------------------------------------------------------
+
+100000_THRESHOLD
+ian.csv - 0.532
+aidan.csv - 0.532
+nick.csv - 0.528
+nathan.csv - 0.508
+
+100000_2_THRESHOLD
+ian.csv - 0.54
+aidan.csv - 0.556
+nick.csv - 0.556
+nathan.csv - 0.492
+
+100000_3_THRESHOLD
+ian.csv - 0.548
+aidan.csv - 0.536
+nick.csv - 0.5
+nathan.csv - 0.5
+
+100000_4_THRESHOLD
+ian.csv - 0.552
+aidan.csv - 0.536
+nick.csv - 0.516
+nathan.csv - 0.504
+
+100000_5_THRESHOLD
+ian.csv - 0.576
+aidan.csv - 0.552
+nick.csv - 0.516
+nathan.csv - 0.508
+
+100000_6_THRESHOLD
+ian.csv - 0.576
+aidan.csv - 0.552
+nick.csv - 0.516
+nathan.csv - 0.508
+
+100000_7_THRESHOLD       <-- 800K
+ian.csv - 0.54
+aidan.csv - 0.54
+nick.csv - 0.5
+nathan.csv - 0.492
