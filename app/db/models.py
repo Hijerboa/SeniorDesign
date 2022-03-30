@@ -81,6 +81,7 @@ class Tweet(Base):
     replies = Column(Integer, nullable=False)
     quote_count = Column(Integer, nullable=False)
     sentiment= Column(Float, nullable=True)
+    sentiment_confidence = Column(Float, nullable=True)
     search_phrases = relationship(SearchPhrase, secondary=tweet_to_search, backref='tweets')
 
     def __repr__(self):
@@ -230,7 +231,7 @@ class Bill(Base):
     sub_committee_codes = relationship(SubcommitteeCodes, secondary=bill_to_subcommittee_code)
     subjects = relationship(BillSubject, secondary=bill_to_subject)
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
-    sentiment = Column(Float(), nullable=True)
+    sentiment = Column(JSON)
     actions = relationship('BillAction', backref='bill_object')
     versions = relationship('BillVersion', backref='bill_object')
     keywords = relationship(SearchPhrase, secondary=bill_to_search)
