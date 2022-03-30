@@ -13,7 +13,7 @@ RUN pip install -r requirements.txt
 COPY app/models /app/
 
 RUN apt-get update \
-    && apt-get -y install netcat gcc gunicorn \
+    && apt-get -y install gunicorn \
     && apt-get clean
 
 COPY app .
