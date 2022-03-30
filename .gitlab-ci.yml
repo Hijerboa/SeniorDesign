@@ -11,7 +11,7 @@ stages:
 - test
 - build
 - deploy
-image: docker:19.03.12
+image: docker:stable-dind
 build:
   stage: build
   before_script:
