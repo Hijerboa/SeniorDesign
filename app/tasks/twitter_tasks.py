@@ -15,7 +15,7 @@ import time
 from datetime import datetime, timedelta
 from pytz import timezone
 my_tz = timezone('US/Eastern')
-API_MANUAL_TIMEOUT = 5 #Manual timeout in seconds. Raise this if we're getting rate limited.
+API_MANUAL_TIMEOUT = 3.25 #Manual timeout in seconds. Raise this if we're getting rate limited.
 API_MONTHLY_TWEET_LIMIT = 10000000 #10,000,000 tweets/key/month
 
 import logging
@@ -154,25 +154,22 @@ class tweet_puller_archive(Task):
                     'replies': tweet['public_metrics']['reply_count'],
                     'quote_count': tweet['public_metrics']['quote_count']
                 }
-            except KeyError:
-                pass
-            try:
                 if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                     tweet_dict['reply'] = True
                     tweet_dict['reply_to_id'] = tweet['referenced_tweets'][0]['id']
+                twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
+                if twitter_user is None:
+                    twitter_users.append(str(tweet['author_id']))
+                    if len(twitter_users) == 100:
+                        string = ','.join(twitter_users)
+                        run_retrieve_users_info_by_ids.apply_async((string, user_id))
+                        twitter_users = []
+                tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
+                tweet_object.search_phrases.append(db_search_phrase)
+                session.commit()
+                tweet_count += 1
             except KeyError:
                 pass
-            twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
-            if twitter_user is None:
-                twitter_users.append(str(tweet['author_id']))
-                if len(twitter_users) == 100:
-                    string = ','.join(twitter_users)
-                    run_retrieve_users_info_by_ids.apply_async((string, user_id))
-                    twitter_users = []
-            tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
-            tweet_object.search_phrases.append(db_search_phrase)
-            session.commit()
-            tweet_count += 1
         if not len(twitter_users) == 0:
             string = ','.join(twitter_users)
             run_retrieve_users_info_by_ids.apply_async((string, user_id))

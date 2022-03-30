@@ -10,7 +10,7 @@ RUN pip install --upgrade pip setuptools wheel
 
 RUN pip install -r requirements.txt
 
-COPY app/BERT_724 /app/
+COPY app/models /app/
 
 RUN apt-get update \
     && apt-get -y install netcat gcc gunicorn \
