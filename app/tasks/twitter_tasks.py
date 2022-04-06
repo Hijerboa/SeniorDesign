@@ -3,11 +3,11 @@ from tasks.task_initializer import CELERY
 
 from util.cred_handler import get_secret
 from apis.twitter_api import TwitterAPI
-from apis.propublica_api import ProPublicaAPI
 from db.database_connection import create_session
 from db.db_utils import create_single_object, get_or_create, get_single_object
-from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
+from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Task, twitter_api_token_type
 from twitter_utils.user_gatherer import create_user_object
+from tasks.machine_learning_tasks import run_get_tweet_sentiments
 
 import random
 import time
@@ -137,6 +137,7 @@ class tweet_puller_archive(Task):
             session.close()
             return '{0} tweets collected'.format(str(tweet_count))
         #logger.error(f'[{tweet_query}] Processing tweets')
+        tweet_ids = []
         for tweet in tweets:
             try:
                 tweet_dict = {
@@ -161,6 +162,8 @@ class tweet_puller_archive(Task):
                         run_retrieve_users_info_by_ids.apply_async((string, user_id))
                         twitter_users = []
                 tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
+                if created:
+                    tweet_ids.append(tweet_object.id)
                 tweet_object.search_phrases.append(db_search_phrase)
                 session.commit()
                 tweet_count += 1
@@ -175,6 +178,8 @@ class tweet_puller_archive(Task):
             run_tweet_puller_archive.apply_async((tweet_query, next_token, start_date, end_date, user_id))
         except KeyError:
             pass
+        if len(tweet_ids) > 0:
+            run_get_tweet_sentiments.apply_async((tweet_ids, 1,))
         return '{0} tweets collected'.format(str(tweet_count))
 
 ###

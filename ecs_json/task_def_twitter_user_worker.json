@@ -10,7 +10,7 @@
                     "awslogs-stream-prefix": "ecs"
                 }
             },
-            "command": ["celery", "-A", "tasks.task_initializer", "worker", "-l", "INFO", "--concurrency", "1", "-Q", "twitter_users", "--uid", "1", "--without-gossip", "--without-mingle"],
+            "command": ["celery", "-A", "tasks.task_initializer", "worker", "-l", "INFO", "--concurrency", "1", "-Q", "twitter_users", "--without-gossip", "--without-mingle"],
             "cpu": 0,
             "repositoryCredentials": {
                 "credentialsParameter": "arn:aws:secretsmanager:us-east-2:489462363401:secret:dockerhub-jkw8LP"

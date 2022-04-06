@@ -21,7 +21,7 @@ yake==0.4.8
 numpy
 vaderSentiment==3.3.2
 mysql-connector
-tensorflow==2.2.0
+tensorflow==2.7.0
 
 # Dashboard
 dash

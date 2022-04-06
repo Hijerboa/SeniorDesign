@@ -65,27 +65,29 @@ services:
       dockerfile: Dockerfile.rabbit.local
     volumes:
       - rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 5672:5672
 
-  # celery_worker_tweet_archive:
-  #   platform: linux/x86_64
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --uid 1 --without-gossip --without-mingle
-  #   volumes:
-  #   - ./app/:/app/
-  #   environment:
-  #     - RABBITMQ_USER=admin
-  #     - RABBITMQ_PASS=bigpassword
-  #   depends_on:
-  #     - rabbit
+  celery_worker_tweet_archive:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --without-gossip --without-mingle
+    volumes:
+    - ./app/:/app/
+    environment:
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
+    depends_on:
+      - rabbit
 
   # celery_worker_twitter_user_1:
   #   platform: linux/x86_64
   #   build:
   #     context: .
   #     dockerfile: Dockerfile
-  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_users --uid 1 --without-gossip --without-mingle
+  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_users --without-gossip --without-mingle
   #   volumes:
   #     - ./app/:/app/
   #   environment:
@@ -99,7 +101,7 @@ services:
   #   build:
   #     context: .
   #     dockerfile: Dockerfile
-  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 4 -Q propublica --uid 1 --without-gossip --without-mingle
+  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 4 -Q propublica --without-gossip --without-mingle
   #   volumes:
   #     - ./app/:/app/
   #   environment:
@@ -113,7 +115,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A tasks.task_ml_initializer worker -l INFO -Q ml_tasks --concurrency 2 --pool threads --without-gossip --without-mingle
+    command: celery -A tasks.task_ml_initializer worker -l INFO -Q ml_tasks --concurrency 1 --pool threads --without-gossip --without-mingle
     volumes:
       - ./app/:/app/
     environment:
