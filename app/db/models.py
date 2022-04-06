@@ -52,7 +52,6 @@ bill_to_subject = Table(
     Column('subject', ForeignKey('bill_subjects.id'))
 )
 
-
 class SearchPhrase(PrimaryKeyBase, Base):
     __tablename__ = 'search_phrases'
 
@@ -86,6 +85,13 @@ class Tweet(Base):
 
     def __repr__(self):
         return f'{self.text}'
+    
+    
+class UnprocessedTweet(Base):
+    __tablename__ = 'unprocessed_tweets'
+    
+    id = Column(String(length=32), unique=True, nullable=False, primary_key=True)
+    tweet_id = Column(String(length=32), index=True, unique=True)
 
 
 class TwitterUser(Base):

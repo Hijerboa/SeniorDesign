@@ -2,7 +2,7 @@ from cProfile import run
 import alembic.config
 import os, os.path, time
 from initializer.authentication_setup import perform_initial_tasks
-from tasks.bill_request_tasks import run_process_bill_request
+# from tasks.bill_request_tasks import run_process_bill_request
 
 import logging
 logger = logging.getLogger(__name__)

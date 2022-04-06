@@ -5,7 +5,7 @@ from util.cred_handler import get_secret
 from apis.twitter_api import TwitterAPI
 from db.database_connection import create_session
 from db.db_utils import create_single_object, get_or_create, get_single_object
-from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Task, twitter_api_token_type
+from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Task, twitter_api_token_type, UnprocessedTweet
 from twitter_utils.user_gatherer import create_user_object
 
 import random
@@ -161,6 +161,8 @@ class tweet_puller_archive(Task):
                         twitter_users = []
                 tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
                 tweet_object.search_phrases.append(db_search_phrase)
+                if created:
+                    unprocessed_object, created = get_or_create(session, UnprocessedTweet, tweet_id=tweet_object.id)
                 session.commit()
                 tweet_count += 1
             except KeyError:
