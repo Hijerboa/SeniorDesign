@@ -1,3 +1,4 @@
+from random import expovariate
 from tasks.task_initializer import CELERY
 
 import time
@@ -27,26 +28,24 @@ def launch_bill_update(congress_number: int):
 
 @CELERY.task()
 def run_get_bill_data_by_congress(congress_id: int, congress_chamber: str, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = get_bill_data_by_congress(congress_id, congress_chamber, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 
 @CELERY.task()
 def rerun_get_bill_data_by_congress(task_id: int, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task: Task = get_single_object(session, Task, id=task_id)
     task = get_bill_data_by_congress(task.parameters['congress_id'], task.parameters['congress_chamber'], user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
     
 
@@ -56,13 +55,12 @@ class get_bill_data_by_congress(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='propublica_get_bills', parameters={'congress_id': congress_id, 'congress_chamber': congress_chamber})
 
     def run(self):
-        session = create_session()
         try:
             result = self.get_bill_data_by_congress(self.parameters['congress_id'], self.parameters['congress_chamber'])
-            session.close()
             return result
         except Exception as e: 
             self.error = True
+            session = create_session()
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()
             session.close()
@@ -117,26 +115,24 @@ class get_bill_data_by_congress(Task):
 
 @CELERY.task()
 def run_get_and_update_bill(bill_id: str, user_id: int):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = get_and_update_bill(bill_id, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 
 @CELERY.task()
 def rerun_get_and_update_bill(task_id: int, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task: Task = get_single_object(session, Task, id=task_id)
     task = get_and_update_bill(task.parameters('bill_id'), task.parameters['user_id'])
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
     
 
@@ -144,13 +140,12 @@ class get_and_update_bill(Task):
     def __init__(self, bill_id: str, user_id: int):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='propublica_get_and_update_bill', parameters={'bill_id': bill_id})
     
-    def run(self):
-        session = create_session()
+    def run(self):     
         try:
             result = self.get_and_update_bill(self.parameters['bill_id'])
-            session.close()
             return result
-        except Exception as e: 
+        except Exception as e:
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()

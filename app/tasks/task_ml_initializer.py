@@ -12,7 +12,8 @@ BROKER_URL = f'{get_secret("CELERY_BROKER_URL")}'
 
 # Specifies task routes
 task_routes = {
-    'tasks.machine_learning_tasks.keyword_extraction_by_bill': {'queue': 'ml_tasks'}
+    'tasks.machine_learning_tasks.keyword_extraction_by_bill': {'queue': 'ml_tasks'},
+    'tasks.machine_learning_tasks.run_get_tweet_sentiments': {'queue': 'ml_tasks'}
 }
 
 # Creates celery object, using rabbit broker and database task backend

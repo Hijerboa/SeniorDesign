@@ -26,9 +26,10 @@ print("startup tasks complete")
 #run_process_bill_request.apply(('hconres108-112', 1,))
 #ex()
 
-"""from db.database_connection import create_session
-from db.models import Bill
-from tasks.machine_learning_tasks import keyword_extraction_by_bill
+from db.database_connection import create_session
+from db.models import Bill, Tweet
+from tasks.machine_learning_tasks import run_get_tweet_sentiments
+"""from tasks.machine_learning_tasks import keyword_extraction_by_bill
 
 session = create_session()
 bills: [Bill] = session.query(Bill).filter(Bill.keywords == None).all()
@@ -50,3 +51,8 @@ while con:
         run_process_bill_request(bill.bill_id, 1)
     offset += 10
     session.close()"""
+    
+session = create_session()
+tweets = session.query(Tweet).limit(100).all()
+ids = [tweet.id for tweet in tweets]
+run_get_tweet_sentiments.apply_async((ids, 1,))

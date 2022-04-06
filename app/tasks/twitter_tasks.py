@@ -30,24 +30,21 @@ user_api_key_id = get_secret('user_api_key_id')
 
 @CELERY.task()
 def run_tweet_puller_archive(tweet_query: str, next_token, start_date, end_date, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = tweet_puller_archive(tweet_query, next_token, start_date, end_date, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_tweet_puller_archive(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = tweet_puller_archive(task.parameters['tweet_query'], task.parameters['next_token'], task.parameters['start_date'], task.parameters['end_date'], user_id)
     session.add(task)
     session.commit()
     res = task.run()
-    session.commit()
-    session.close()
     return res
 
 # Task class
@@ -55,14 +52,13 @@ class tweet_puller_archive(Task):
     def __init__(self, tweet_query: str, next_token, start_date, end_date, user_id):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='tweet_puller_archive', parameters={'tweet_query':tweet_query, 'next_token':next_token, 'start_date':start_date, 'end_date':end_date})
 
-    def run(self):
-        session = create_session()
+    def run(self):    
         try:
             result = self.tweet_puller_archive(self.parameters['tweet_query'], self.parameters['next_token'], self.parameters['start_date'], self.parameters['end_date'], self.launched_by_id)
             self.complete = True
-            session.close()
             return result
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             self.error = True
@@ -186,24 +182,22 @@ class tweet_puller_archive(Task):
 ###
 @CELERY.task()
 def run_retrieve_user_info_by_id(twitter_user_id: str, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_user_info_by_id(twitter_user_id, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_retrieve_user_info_by_id(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_user_info_by_id(task.parameters['twitter_user_id'], user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 # Task class
@@ -212,13 +206,12 @@ class retrieve_user_info_by_id(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='retrieve_user_info_by_id', parameters={'twitter_user_id':twitter_user_id})
 
     def run(self):
-        session = create_session()
         try:
             result = self.retrieve_user_info_by_username(self.parameters['twitter_user_id'])
             self.complete = True
-            session.close()
             return result
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             self.error = True
@@ -263,24 +256,22 @@ class retrieve_user_info_by_id(Task):
 ###
 @CELERY.task()
 def run_retrieve_users_info_by_ids(user_ids: str, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_users_info_by_ids(user_ids, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_retrieve_users_info_by_ids(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_users_info_by_ids(task.parameters['user_ids'], user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 # Task Class
@@ -289,13 +280,12 @@ class retrieve_users_info_by_ids(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='retrieve_users_info_by_ids', parameters={'user_ids':user_ids})
 
     def run(self):
-        session = create_session()
         try:
             result = self.retrieve_users_info_by_ids(self.parameters['user_ids'])
             self.complete = True
-            session.close()
             return result
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             self.error = True
@@ -344,24 +334,22 @@ class retrieve_users_info_by_ids(Task):
 ###
 @CELERY.task()
 def run_retrieve_user_info_by_username(username: str, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_user_info_by_username(username, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_retrieve_user_info_by_username(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_user_info_by_username(task.parameters['username'], user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 # Task class
@@ -370,13 +358,12 @@ class retrieve_user_info_by_username(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='retrieve_user_info_by_username', parameters={'username':username})
 
     def run(self):
-        session = create_session()
         try:
             result = self.retrieve_user_info_by_username(self.parameters['username'])
             self.complete = True
-            session.close()
             return result
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             self.error = False

@@ -1,14 +1,15 @@
-from typing import List
+from typing import List, Tuple
 import tensorflow as tf
 from transformers import BertTokenizer, TFBertForSequenceClassification
-import datetime
+from db.models import Tweet
 
 LABELS = [-1, 0, 1]
 
 # Model
 MODEL_FILE_PATH = 'models/BERT_724'
 MODEL = TFBertForSequenceClassification.from_pretrained(
-    MODEL_FILE_PATH, num_labels=3)
+    MODEL_FILE_PATH, num_labels=3
+)
 
 # Tokenizer - preprocessing, prepares inputs for the model
 TOKENIZER = BertTokenizer.from_pretrained("bert-base-uncased")
@@ -25,13 +26,14 @@ def make_prediction(tweet: str):
     return (polarity, conf)
 
 
-# Takes a list of tweets and returns a list of tuples containing polarity/confidence for respective tweets
-def score_batch(tweets: List[str]):
-    score_conf_tups = []
-    for text in tweets:
-        start = datetime.datetime.now()
-        score_conf_tups.append(make_prediction(text))
-        end = datetime.datetime.now()
-        diff = (end - start).microseconds
-        print(diff)
-    return score_conf_tups
+# Takes a list of tweets and returns a list of tuples containing (tweet_id, tweet_text, polarity, confidence)
+def score_batch(tweets: Tuple[str, str]):
+    """Returns a list of tweets and their confidence/sentiments
+
+    Args:
+        tweets (Tuple[id, text]): List of tuples
+
+    Returns:
+        _type_: [Tuple(id, polarity, confidence)]
+    """
+    return [(t[0],)+ make_prediction(t[1]) for t in tweets]
