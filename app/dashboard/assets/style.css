@@ -1,0 +1,25 @@
+@media only screen and (max-width: 992px) {
+    .scroll-toggle{
+        overflow-y: hidden;
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    .scroll-toggle{
+        overflow-y: auto;
+        height: calc(100vh - 52px);
+    }
+
+    .bill-info-div{
+        height: calc(100vh - 52px);
+    }
+
+    .bill{
+        height:100%;
+    }
+
+    .nav-class{
+        height:52px
+    }
+
+}
