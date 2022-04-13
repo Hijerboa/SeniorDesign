@@ -2,6 +2,10 @@
     .scroll-toggle{
         overflow-y: hidden;
     }
+
+    .offcanvas-toggle{
+        visibility: hidden;
+    }
 }
 
 @media only screen and (min-width: 992px) {
@@ -22,4 +26,7 @@
         height:52px
     }
 
+    .offcanvas-toggle{
+        visibility: visible;
+    }
 }

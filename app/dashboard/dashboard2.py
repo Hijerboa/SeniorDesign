@@ -19,7 +19,7 @@ LOREM_TEXT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do ei
 # Somewhat cannibalized from the DBC documentation
 
 
-def _getNavbar():
+def _getNavbar(): # TODO: Change icon to somehting else, add twitter links, remove search bar, make responsive dropdown open alternate search.
     LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
 
     # Bar for the search functionality. This will have a callback to update from the list of bills, etc.
@@ -88,7 +88,7 @@ def _getBillSentimentChart():
 
 # Get the card for current bill information
 
-
+#TODO: Make this into a parent class to be instantiated for different card/agg types.
 def _getBillInfoCard(i):
     parent_div = html.Div([
         dbc.Card([
@@ -116,7 +116,7 @@ def _getBillInfoCard(i):
     )
     return parent_div
 
-
+# TODO: Load data from the selected bill
 def _getBillSummary():
     parent_div = html.Div(
         dbc.Card([
@@ -141,6 +141,20 @@ def _getBillSummary():
     )
     return parent_div
 
+
+def _getOffCanvas(): #TODO: Fill with bill search elements
+    offcanvas = dbc.Offcanvas(
+            html.P(
+                "This is the content of the Offcanvas. "
+                "Close it by clicking on the close button, or "
+                "the backdrop."
+            ),
+            id="offcanvas",
+            title="Title",
+            is_open=False,
+        )
+    return offcanvas
+
 # Server object for containerization
 
 
@@ -162,6 +176,7 @@ class Server:
         # Build main app layout
         self.app.layout = html.Div(children=[
             _getNavbar(),  # Get the navbar elements and place into the layout above the main container
+            _getOffCanvas(), #Get the off canvas search area and place into the layout.
             dbc.Container([
                 dbc.Row([
                         dbc.Col(  # This column contains the bill information card
@@ -187,12 +202,15 @@ class Server:
                         ],),
             ],
                 fluid=True,
-            )
+            ),
+            dbc.Button([
+                html.I(className='bi bi-chevron-double-right')
+            ], id="open-offcanvas", n_clicks=0, className='offcanvas-toggle position-absolute translate-middle-vertical top-50 px-1'),
         ], className='min-vh-100 h-100'
         )
 
         # Register Card Collapses:
-        for i in range(1, 4):
+        for i in range(1, 4): # TODO this will be dynamic based on the number/type of cards added.
             @self.app.callback(
                 Output("collapse-"+str(i), "is_open"),
                 Output("button-collapse-"+str(i), "className"),
@@ -216,6 +234,17 @@ class Server:
         )
         def toggle_navbar_collapse(n, is_open):
             if n:
+                return not is_open
+            return is_open
+
+        # add callback for opening the offcanvas
+        @self.app.callback(
+            Output("offcanvas", "is_open"),
+            Input("open-offcanvas", "n_clicks"),
+            [State("offcanvas", "is_open")],
+        )
+        def toggle_offcanvas(n1, is_open):
+            if n1:
                 return not is_open
             return is_open
 
