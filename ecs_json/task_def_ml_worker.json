@@ -50,7 +50,7 @@
     "runtimePlatform": {
         "operatingSystemFamily": "LINUX"
     },
-    "cpu": "1024",
+    "cpu": "512",
     "inferenceAccelerators": [],
     "volumes": []
 }
