@@ -90,7 +90,7 @@ class Tweet(Base):
 class UnprocessedTweet(Base):
     __tablename__ = 'unprocessed_tweets'
     
-    id = Column(String(length=32), unique=True, nullable=False, primary_key=True)
+    id = Column(Integer(), unique=True, nullable=False, primary_key=True, autoincrement=True)
     tweet_id = Column(String(length=32), index=True, unique=True)
 
 

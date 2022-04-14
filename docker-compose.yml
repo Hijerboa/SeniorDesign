@@ -68,33 +68,31 @@ services:
     ports:
       - 5672:5672
 
-  celery_worker_tweet_archive:
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --without-gossip --without-mingle
-    volumes:
-    - ./app/:/app/
-    environment:
-      - RABBITMQ_USER=admin
-      - RABBITMQ_PASS=bigpassword
-    depends_on:
-      - rabbit
-
-  # celery_worker_twitter_user_1:
+  # celery_worker_tweet_archive:
   #   platform: linux/x86_64
   #   build:
   #     context: .
   #     dockerfile: Dockerfile
-  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_users --without-gossip --without-mingle
+  #   command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_archive --without-gossip --without-mingle
   #   volumes:
-  #     - ./app/:/app/
+  #   - ./app/:/app/
   #   environment:
   #     - RABBITMQ_USER=admin
   #     - RABBITMQ_PASS=bigpassword
   #   depends_on:
   #     - rabbit
+
+  celery_worker_twitter_user_1:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A tasks.task_initializer worker -l INFO --concurrency 1 -Q twitter_users --without-gossip --without-mingle
+    volumes:
+      - ./app/:/app/
+    environment:
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=bigpassword
 
   # celery_worker_propublica:
   #   platform: linux/x86_64
