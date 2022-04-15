@@ -250,4 +250,4 @@ class Server:
 
     # Run this to start the server
     def run(self) -> None:
-        self.app.run_server(debug=True)
+        self.app.run_server(debug=True, host='0.0.0.0')
