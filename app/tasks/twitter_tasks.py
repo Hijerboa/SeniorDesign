@@ -208,7 +208,7 @@ class retrieve_user_info_by_id(Task):
 
     def run(self):
         try:
-            result = self.retrieve_user_info_by_username(self.parameters['twitter_user_id'])
+            result = self.retrieve_user_info_by_id(self.parameters['twitter_user_id'])
             self.complete = True
             return result
         except Exception as e: 
@@ -220,7 +220,7 @@ class retrieve_user_info_by_id(Task):
             session.close()
             return str(e)
 
-    def retrieve_user_info_by_id(self, twitter_user_id: int):
+    def retrieve_user_info_by_id(self, twitter_user_id: str):
         session = create_session()
         # Get proper API token to use based on usage time. Tweets pulled doesn't matter for getting user info.
         key = None
