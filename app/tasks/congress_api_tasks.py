@@ -1,3 +1,4 @@
+from venv import create
 from tasks.task_initializer import CELERY
 from db.database_connection import create_session
 from db.db_utils import get_or_create, create_single_object, get_single_object
@@ -27,26 +28,24 @@ class MyHTMLParser(HTMLParser):
     
 @CELERY.task()
 def run_get_versions(congress: int, bill_version: str, doc_class: str, offset: int, user_id: int):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = get_versions(congress, bill_version, doc_class, offset, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 
 @CELERY.task()
 def rerun_get_versions(task_id: int, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task: Task = get_single_object(session, Task, id=task_id)
     task = get_versions(task.parameters['congress'], task.parameters['bill_version'], task.parameters['doc_class'], task.parameters['offset'])
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 class get_versions(Task):
@@ -55,12 +54,11 @@ class get_versions(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='congress_api_get_versions', parameters={'congress': congress, 'bill_version': bill_version, 'doc_class': doc_class, 'offset': offset})
         
     def run(self):
-        session = create_session()
         try:
             result = self.get_versions(self.parameters['congress'], self.parameters['bill_version'], self.parameters['doc_class'], self.parameters['offset'])
-            session.close()
             return result
         except Exception as e:
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()

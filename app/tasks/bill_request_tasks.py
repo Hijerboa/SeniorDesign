@@ -4,12 +4,10 @@ from celery import group
 import logging
 import time
 
-from util.cred_handler import get_secret
 from db.database_connection import create_session
-from db.db_utils import create_single_object, get_or_create, get_single_object
-from db.models import KeyRateLimit, SearchPhraseDates, TaskError, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
+from db.db_utils import create_single_object
+from db.models import SearchPhraseDates, TaskError, Bill, CommitteeCodes, SubcommitteeCodes, Task
 from datetime import datetime, timedelta
-from pytz import timezone
 import more_itertools as mit
 from tasks.twitter_tasks import run_tweet_puller_archive
 
@@ -22,24 +20,22 @@ logger = logging.getLogger('FUCK YOU')
 
 @CELERY.task()
 def run_process_bill_request(bill_id, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = process_bill_request(bill_id, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_process_bill_request(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = process_bill_request(task.parameters['bill_id'], user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 class process_bill_request(Task):
@@ -47,12 +43,11 @@ class process_bill_request(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='process_bill_request', parameters={'bill_id':bill_id})
 
     def run(self):
-        session = create_session()
         try:
             value = self.process_bill_request(self.parameters['bill_id'], self.launched_by_id)
-            session.close()
             return value
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             session.commit()

@@ -18,11 +18,11 @@ def initialize():
     Base.metadata.bind = engine
 
 
-def create_session():
+def create_session(expire_on_commit=True):
     """
     Creates a session in the database for the program
     :return: a session variable
     """
-    DB_session = sessionmaker(bind=engine)
+    DB_session = sessionmaker(bind=engine, expire_on_commit=expire_on_commit)
     session = DB_session()
     return session

@@ -3,10 +3,9 @@ from tasks.task_initializer import CELERY
 
 from util.cred_handler import get_secret
 from apis.twitter_api import TwitterAPI
-from apis.propublica_api import ProPublicaAPI
 from db.database_connection import create_session
 from db.db_utils import create_single_object, get_or_create, get_single_object
-from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Bill, CommitteeCodes, SubcommitteeCodes, Task, twitter_api_token_type
+from db.models import KeyRateLimit, TaskError, Tweet, SearchPhrase, TwitterUser, Task, twitter_api_token_type, UnprocessedTweet
 from twitter_utils.user_gatherer import create_user_object
 
 import random
@@ -15,7 +14,7 @@ import time
 from datetime import datetime, timedelta
 from pytz import timezone
 my_tz = timezone('US/Eastern')
-API_MANUAL_TIMEOUT = 5 #Manual timeout in seconds. Raise this if we're getting rate limited.
+API_MANUAL_TIMEOUT = 3.25 #Manual timeout in seconds. Raise this if we're getting rate limited.
 API_MONTHLY_TWEET_LIMIT = 10000000 #10,000,000 tweets/key/month
 
 import logging
@@ -30,24 +29,21 @@ user_api_key_id = get_secret('user_api_key_id')
 
 @CELERY.task()
 def run_tweet_puller_archive(tweet_query: str, next_token, start_date, end_date, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = tweet_puller_archive(tweet_query, next_token, start_date, end_date, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_tweet_puller_archive(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = tweet_puller_archive(task.parameters['tweet_query'], task.parameters['next_token'], task.parameters['start_date'], task.parameters['end_date'], user_id)
     session.add(task)
     session.commit()
     res = task.run()
-    session.commit()
-    session.close()
     return res
 
 # Task class
@@ -55,14 +51,13 @@ class tweet_puller_archive(Task):
     def __init__(self, tweet_query: str, next_token, start_date, end_date, user_id):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='tweet_puller_archive', parameters={'tweet_query':tweet_query, 'next_token':next_token, 'start_date':start_date, 'end_date':end_date})
 
-    def run(self):
-        session = create_session()
+    def run(self):    
         try:
             result = self.tweet_puller_archive(self.parameters['tweet_query'], self.parameters['next_token'], self.parameters['start_date'], self.parameters['end_date'], self.launched_by_id)
             self.complete = True
-            session.close()
             return result
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             self.error = True
@@ -154,25 +149,24 @@ class tweet_puller_archive(Task):
                     'replies': tweet['public_metrics']['reply_count'],
                     'quote_count': tweet['public_metrics']['quote_count']
                 }
-            except KeyError:
-                pass
-            try:
                 if tweet['referenced_tweets'][0]['type'] == 'replied_to':
                     tweet_dict['reply'] = True
                     tweet_dict['reply_to_id'] = tweet['referenced_tweets'][0]['id']
+                twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
+                if twitter_user is None:
+                    twitter_users.append(str(tweet['author_id']))
+                    if len(twitter_users) == 100:
+                        string = ','.join(twitter_users)
+                        run_retrieve_users_info_by_ids.apply_async((string, user_id))
+                        twitter_users = []
+                tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
+                tweet_object.search_phrases.append(db_search_phrase)
+                if created:
+                    unprocessed_object, created = get_or_create(session, UnprocessedTweet, tweet_id=tweet_object.id)
+                session.commit()
+                tweet_count += 1
             except KeyError:
                 pass
-            twitter_user = get_single_object(session, TwitterUser, id=tweet['author_id'])
-            if twitter_user is None:
-                twitter_users.append(str(tweet['author_id']))
-                if len(twitter_users) == 100:
-                    string = ','.join(twitter_users)
-                    run_retrieve_users_info_by_ids.apply_async((string, user_id))
-                    twitter_users = []
-            tweet_object, created = get_or_create(session, Tweet, id=tweet['id'], defaults=tweet_dict)
-            tweet_object.search_phrases.append(db_search_phrase)
-            session.commit()
-            tweet_count += 1
         if not len(twitter_users) == 0:
             string = ','.join(twitter_users)
             run_retrieve_users_info_by_ids.apply_async((string, user_id))
@@ -189,24 +183,22 @@ class tweet_puller_archive(Task):
 ###
 @CELERY.task()
 def run_retrieve_user_info_by_id(twitter_user_id: str, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_user_info_by_id(twitter_user_id, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_retrieve_user_info_by_id(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_user_info_by_id(task.parameters['twitter_user_id'], user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 # Task class
@@ -215,13 +207,12 @@ class retrieve_user_info_by_id(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='retrieve_user_info_by_id', parameters={'twitter_user_id':twitter_user_id})
 
     def run(self):
-        session = create_session()
         try:
-            result = self.retrieve_user_info_by_username(self.parameters['twitter_user_id'])
+            result = self.retrieve_user_info_by_id(self.parameters['twitter_user_id'])
             self.complete = True
-            session.close()
             return result
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             self.error = True
@@ -229,7 +220,7 @@ class retrieve_user_info_by_id(Task):
             session.close()
             return str(e)
 
-    def retrieve_user_info_by_id(self, twitter_user_id: int):
+    def retrieve_user_info_by_id(self, twitter_user_id: str):
         session = create_session()
         # Get proper API token to use based on usage time. Tweets pulled doesn't matter for getting user info.
         key = None
@@ -266,24 +257,22 @@ class retrieve_user_info_by_id(Task):
 ###
 @CELERY.task()
 def run_retrieve_users_info_by_ids(user_ids: str, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_users_info_by_ids(user_ids, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_retrieve_users_info_by_ids(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_users_info_by_ids(task.parameters['user_ids'], user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 # Task Class
@@ -292,13 +281,12 @@ class retrieve_users_info_by_ids(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='retrieve_users_info_by_ids', parameters={'user_ids':user_ids})
 
     def run(self):
-        session = create_session()
         try:
             result = self.retrieve_users_info_by_ids(self.parameters['user_ids'])
             self.complete = True
-            session.close()
             return result
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             self.error = True
@@ -347,24 +335,22 @@ class retrieve_users_info_by_ids(Task):
 ###
 @CELERY.task()
 def run_retrieve_user_info_by_username(username: str, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_user_info_by_username(username, user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 @CELERY.task()
 def rerun_retrieve_user_info_by_username(task: Task, user_id):
-    session = create_session()
+    session = create_session(expire_on_commit=False)
     task = retrieve_user_info_by_username(task.parameters['username'], user_id)
     session.add(task)
     session.commit()
-    res = task.run()
-    session.commit()
     session.close()
+    res = task.run()
     return res
 
 # Task class
@@ -373,13 +359,12 @@ class retrieve_user_info_by_username(Task):
         super().__init__(complete=False, error=False, launched_by_id=user_id, type='retrieve_user_info_by_username', parameters={'username':username})
 
     def run(self):
-        session = create_session()
         try:
             result = self.retrieve_user_info_by_username(self.parameters['username'])
             self.complete = True
-            session.close()
             return result
         except Exception as e: 
+            session = create_session()
             self.error = True
             error_object = create_single_object(session, TaskError, defaults={'description': str(e), 'task_id': self.id})
             self.error = False

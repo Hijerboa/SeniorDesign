@@ -32,6 +32,7 @@ build:
   - when: never
 deploy:
   stage: deploy
+  needs: ["build"]
   tags:
   - docker-build
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
@@ -49,12 +50,12 @@ deploy:
   - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_tweet_worker_3.json
   - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_twitter_user_worker.json
   - aws ecs register-task-definition --cli-input-json file://ecs_json/task_def_ml_worker.json
-  - aws ecs update-service --cluster senior-design --service bill_data_worker --task-definition
-    bill_data_worker
-  - aws ecs update-service --cluster senior-design --service flask --task-definition
-    flask_server
-  - aws ecs update-service --cluster senior-design --service twitter_user_worker --task-definition
-    twitter_user_worker
+  # - aws ecs update-service --cluster senior-design --service bill_data_worker --task-definition
+  #   bill_data_worker
+  # - aws ecs update-service --cluster senior-design --service flask --task-definition
+  #   flask_server
+  # - aws ecs update-service --cluster senior-design --service twitter_user_worker --task-definition
+  #   twitter_user_worker
   - aws ecs update-service --cluster senior-design --service twitter_tweet_worker
     --task-definition twitter_tweet_worker
   - aws ecs update-service --cluster senior-design --service twitter_tweet_worker_2

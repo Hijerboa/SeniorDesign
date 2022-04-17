@@ -7,11 +7,16 @@ def get_or_create(session, model, defaults=None, **kwargs):
     if instance:
         return instance, False
     else:
-        params = dict((k, v) for k, v in kwargs.items() if not isinstance(v, ClauseElement))
-        params.update(defaults or {})
-        instance: model = model(**params)
-        session.add(instance)
-        return instance, True
+        try:
+            params = dict((k, v) for k, v in kwargs.items() if not isinstance(v, ClauseElement))
+            params.update(defaults or {})
+            instance: model = model(**params)
+            session.add(instance)
+            return instance, True
+        except:
+            session.rollback()
+            instance = session.query(model).filter_by(**kwargs).first()
+            return instance, False
 
 
 def create_single_object(session, model, defaults=None, **kwargs):

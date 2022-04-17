@@ -52,7 +52,6 @@ bill_to_subject = Table(
     Column('subject', ForeignKey('bill_subjects.id'))
 )
 
-
 class SearchPhrase(PrimaryKeyBase, Base):
     __tablename__ = 'search_phrases'
 
@@ -81,10 +80,18 @@ class Tweet(Base):
     replies = Column(Integer, nullable=False)
     quote_count = Column(Integer, nullable=False)
     sentiment= Column(Float, nullable=True)
+    sentiment_confidence = Column(Float, nullable=True)
     search_phrases = relationship(SearchPhrase, secondary=tweet_to_search, backref='tweets')
 
     def __repr__(self):
         return f'{self.text}'
+    
+    
+class UnprocessedTweet(Base):
+    __tablename__ = 'unprocessed_tweets'
+    
+    id = Column(Integer(), unique=True, nullable=False, primary_key=True, autoincrement=True)
+    tweet_id = Column(String(length=32), index=True, unique=True)
 
 
 class TwitterUser(Base):
@@ -230,7 +237,7 @@ class Bill(Base):
     sub_committee_codes = relationship(SubcommitteeCodes, secondary=bill_to_subcommittee_code)
     subjects = relationship(BillSubject, secondary=bill_to_subject)
     inserted = Column(DateTime, name='inserted_time', default=datetime.datetime.utcnow(), nullable=False)
-    sentiment = Column(Float(), nullable=True)
+    sentiment = Column(JSON)
     actions = relationship('BillAction', backref='bill_object')
     versions = relationship('BillVersion', backref='bill_object')
     keywords = relationship(SearchPhrase, secondary=bill_to_search)

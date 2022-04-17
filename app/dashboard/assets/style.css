@@ -1,0 +1,41 @@
+@media only screen and (max-width: 992px) {
+    .scroll-toggle{
+        overflow-y: hidden;
+    }
+
+    .offcanvas-toggle{
+        visibility: hidden;
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    .scroll-toggle{
+        overflow-y: auto;
+
+        height: calc(100vh - 52px);
+    }
+
+    .scroll-toggle::-webkit-scrollbar {
+        display: none;
+      }
+
+    .bill-info-div{
+        height: calc(100vh - 52px);
+    }
+    
+    .bill-info-div::-webkit-scrollbar {
+        display: none;
+      }
+
+    .bill{
+        height:100%;
+    }
+
+    .nav-class{
+        height:52px
+    }
+
+    .offcanvas-toggle{
+        visibility: visible;
+    }
+}
