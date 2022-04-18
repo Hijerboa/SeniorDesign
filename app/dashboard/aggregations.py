@@ -85,12 +85,6 @@ def only_politicians(keywords):
     session.close()
     return result
 
-def exclude_bots():
-    """
-    Might need to skip this one, would be computationally expensive + more than DB calls
-    """
-    pass
-
 def confidence_filtering(keywords, confidence):
     session = conn.create_session()
     tweets = set()
