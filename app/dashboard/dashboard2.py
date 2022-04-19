@@ -27,7 +27,7 @@ sess.close()
 
 # Somewhat cannibalized from the DBC documentation
 
-def _getNavbar(logo_src):  # TODO: Change icon to somehting else, add twitter links, remove search bar, make responsive dropdown open alternate search, make navbar toggler switch at proper screen size.
+def _getNavbar(logo_src):  #
     LOGO = "./favicon.ico"
     
     dd_items = [{'label': BILLS[id].short_title[:70] + ('' if len(BILLS[id].short_title) < 70 else '...') + ' [' + str(BILLS[id].bill_slug) + ' - ' + str(BILLS[id].congress) + ']' , 'value': BILLS[id].bill_id} for id in BILLS.keys()]
@@ -49,7 +49,7 @@ def _getNavbar(logo_src):  # TODO: Change icon to somehting else, add twitter li
                     # Use row and col to control vertical alignment of logo / brand
                     dbc.Row(
                         [
-                            dbc.Col(html.Img(src=logo_src, height="30px")), #TODO: Replace with icon
+                            dbc.Col(html.Img(src=logo_src, height="30px")), 
                             dbc.Col(dbc.NavbarBrand(
                                 "YAY OR NAY", className="ms-2")),
                         ],
@@ -91,7 +91,6 @@ def _getBillSentimentChart():
 
 # Get the card for current bill information
 
-# TODO: Make this into a parent class to be instantiated for different card/agg types.
 
 # Card Template
 def _getBillInfoCard(i):
@@ -365,14 +364,14 @@ def _getConfidenceCard(i):
             ], className='bg-primary bg-opacity-25'),
             dbc.Collapse([
                 html.Div([
+                    dbc.CardBody([
+                        html.H5('This bill is part of our manually verified test set! The results for this bill are guarenteed to be *extra* accurate.', className=''),
+                    ], className=''),
                     html.Div(
                         html.I(className='fa-solid fa-award text-warning p-3',
                             style={'font-size': "4rem"}),
                         className='d-flex justify-content-center'
                     ),
-                    dbc.CardBody([
-                        html.H5('This bill is part of our manually verified test set! The results for this bill are guarenteed to be *extra* accurate.', className=''),
-                    ], className='')
                 ], className='d-inline-flex align-items-center')
             ], id='collapse-'+str(i), is_open=True,)
         ], className='w-100')
@@ -458,24 +457,12 @@ def _getInstructionCard(): #TODO: Fill this with usage instructions for page loa
     )
     return parent_div
 
-def _getOffCanvas():  # TODO: Fill with bill search elements
-    offcanvasSearchArea = html.Div([
-
-    ])
-    
-    offcanvas = dbc.Offcanvas(
-        offcanvasSearchArea,
-        id="offcanvas",
-        title="Title",
-        is_open=False,
-    )
-    return offcanvas
 
 # Server object for containerization
 
 
 class Server:
-    def __init__(self) -> None: #TODO: make header use favicon and set title accordingly
+    def __init__(self) -> None: 
 
         # Load up our stylesheets
         # Get dash bootstrap CSS for normal components
@@ -515,17 +502,17 @@ class Server:
                                         className='pb-2'),
                                 dbc.Row(_getHasManyActionsCard(3),
                                         className='pb-2'),
-                                dbc.Row(_getFlatScalingCard(4, {'num_users': 6969, 'prop_positive': 52.95, 'count_total': 3080}),
+                                dbc.Row(_getFlatScalingCard(4, {'num_users': 2133, 'prop_positive': 52.95, 'count_total': 3080}),
                                         className='pb-2'), 
-                                dbc.Row(_getBipartisanCard(5, {'D': 4, 'R': 2}),
-                                        className='pb-2'), 
+                                #dbc.Row(_getBipartisanCard(5, {'D': 4, 'R': 2}),
+                                #        className='pb-2'), 
+                                dbc.Row(_getConfidenceCard(9),
+                                        className='pb-2'),
                                 dbc.Row(_getVerifiedCard(6, {'num_users': 420, 'prop_positive': 77.1234, 'count_total': 52560}),
                                         className='pb-2'), 
                                 dbc.Row(_getPoliticiansCard(7, {'num_users': 30, 'prop_positive': 99.99, 'count_total': 10000}),
                                         className='pb-2'), 
                                 dbc.Row(_getLogWeightedCard(8, {'num_users': 30, 'prop_positive': 65.00, 'count_total': 10000}),
-                                        className='pb-2'),
-                                dbc.Row(_getConfidenceCard(9),
                                         className='pb-2'),
                             ], id='info-card-container', className='mw-100 scroll-toggle'),
                             xl=6, lg=6, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
@@ -540,7 +527,6 @@ class Server:
         )
 
         # Register Card Collapses:
-        # TODO this will be dynamic based on the number/type of cards added.
         for i in range(1, 99):
             @self.app.callback(
                 Output("collapse-"+str(i), "is_open"),
