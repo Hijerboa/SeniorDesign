@@ -27,8 +27,8 @@ sess.close()
 
 # Somewhat cannibalized from the DBC documentation
 
-def _getNavbar():  # TODO: Change icon to somehting else, add twitter links, remove search bar, make responsive dropdown open alternate search, make navbar toggler switch at proper screen size.
-    LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
+def _getNavbar(logo_src):  # TODO: Change icon to somehting else, add twitter links, remove search bar, make responsive dropdown open alternate search, make navbar toggler switch at proper screen size.
+    LOGO = "./favicon.ico"
     
     dd_items = [{'label': BILLS[id].short_title[:70] + ('' if len(BILLS[id].short_title) < 70 else '...') + ' [' + str(BILLS[id].bill_slug) + ' - ' + str(BILLS[id].congress) + ']' , 'value': BILLS[id].bill_id} for id in BILLS.keys()]
 
@@ -49,7 +49,7 @@ def _getNavbar():  # TODO: Change icon to somehting else, add twitter links, rem
                     # Use row and col to control vertical alignment of logo / brand
                     dbc.Row(
                         [
-                            dbc.Col(html.Img(src=LOGO, height="30px")), #TODO: Replace with icon
+                            dbc.Col(html.Img(src=logo_src, height="30px")), #TODO: Replace with icon
                             dbc.Col(dbc.NavbarBrand(
                                 "YAY OR NAY", className="ms-2")),
                         ],
@@ -357,7 +357,7 @@ def _getConfidenceCard(i):
         dbc.Card([
             dbc.CardHeader([
                 html.Div([
-                    html.H4('Still Active',
+                    html.H4('Manually Verified',
                             className='text-align-center'),
                     html.Div(
                         html.I(id='button-collapse-'+str(i), className='bi bi-chevron-double-down mb-1 '), className='d-flex justify-content-end flex-fill')
@@ -366,12 +366,12 @@ def _getConfidenceCard(i):
             dbc.Collapse([
                 html.Div([
                     html.Div(
-                        html.I(className='fa-solid fa-arrow-right-arrow-left p-3',
+                        html.I(className='fa-solid fa-award text-warning p-3',
                             style={'font-size': "4rem"}),
                         className='d-flex justify-content-center'
                     ),
                     dbc.CardBody([
-                        html.H5('This Bill is still actively moving through Congress! Keep an eye out for changes in sentiment as the Bill progresses.', className=''),
+                        html.H5('This bill is part of our manually verified test set! The results for this bill are guarenteed to be *extra* accurate.', className=''),
                     ], className='')
                 ], className='d-inline-flex align-items-center')
             ], id='collapse-'+str(i), is_open=True,)
@@ -394,14 +394,14 @@ def _getIsActiveCard(i):
             ], className='bg-primary bg-opacity-25'),
             dbc.Collapse([
                 html.Div([
+                    dbc.CardBody([
+                        html.H5('This Bill is still actively moving through Congress! Keep an eye out for changes in sentiment as the Bill progresses.', className=''),
+                    ], className=''),
                     html.Div(
                         html.I(className='fa-solid fa-arrow-right-arrow-left p-3',
                             style={'font-size': "4rem"}),
                         className='d-flex justify-content-center'
                     ),
-                    dbc.CardBody([
-                        html.H5('This Bill is still actively moving through Congress! Keep an eye out for changes in sentiment as the Bill progresses.', className=''),
-                    ], className='')
                 ], className='d-inline-flex align-items-center')
             ], id='collapse-'+str(i), is_open=True,)
         ], className='w-100')
@@ -495,7 +495,7 @@ class Server:
         # Build main app layout
         #searchArea = _makeSearchArea()
         self.app.layout = html.Div(children=[
-            _getNavbar(),  # Get the navbar elements and place into the layout above the main container
+            _getNavbar(self.app.get_asset_url('favicon.png')),  # Get the navbar elements and place into the layout above the main container
             # Get the off canvas search area and place into the layout.
             #_getOffCanvas(searchArea),
             dbc.Container([
@@ -503,7 +503,7 @@ class Server:
                         dbc.Col(  # This column contains the bill information card
                             dbc.Container([
                                 # placeholder for bill summary
-                                dbc.Row(_getBillSummary(list(BILLS.values())[0]),
+                                dbc.Row(_getBillSummary(BILLS["hr3755-117"]),
                                         className='h-100 pb-2 pt-2'),
                             ], id='bill-summary-container', className='mw-100 bill-info-div scroll-toggle'),
                             xl=6, lg=6, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
@@ -515,7 +515,7 @@ class Server:
                                         className='pb-2'),
                                 dbc.Row(_getHasManyActionsCard(3),
                                         className='pb-2'),
-                                dbc.Row(_getFlatScalingCard(4, {'num_users': 6969, 'prop_positive': 69.6969, 'count_total': 420000}),
+                                dbc.Row(_getFlatScalingCard(4, {'num_users': 6969, 'prop_positive': 52.95, 'count_total': 3080}),
                                         className='pb-2'), 
                                 dbc.Row(_getBipartisanCard(5, {'D': 4, 'R': 2}),
                                         className='pb-2'), 
@@ -524,6 +524,8 @@ class Server:
                                 dbc.Row(_getPoliticiansCard(7, {'num_users': 30, 'prop_positive': 99.99, 'count_total': 10000}),
                                         className='pb-2'), 
                                 dbc.Row(_getLogWeightedCard(8, {'num_users': 30, 'prop_positive': 65.00, 'count_total': 10000}),
+                                        className='pb-2'),
+                                dbc.Row(_getConfidenceCard(9),
                                         className='pb-2'),
                             ], id='info-card-container', className='mw-100 scroll-toggle'),
                             xl=6, lg=6, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
