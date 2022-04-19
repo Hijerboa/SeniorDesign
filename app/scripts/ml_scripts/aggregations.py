@@ -3,7 +3,7 @@ from machine_learning.aggregation.aggregation_scaffold import get_tweets, get_fl
 
 def get_aggregations_dict(bill_id):
 
-    tweets, initial_dict = get_tweets('hr4350-117')
+    tweets, initial_dict = get_tweets(bill_id)
     initial_dict['non_conf_thresholded_flat'] = get_flat_sentiment(tweets)
     initial_dict['conf_thresholded_flat'] = get_flat_sentiment(tweets, confidence_thresholding=True)
 
