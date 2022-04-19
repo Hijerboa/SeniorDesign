@@ -30,13 +30,13 @@ sess.close()
 def _getNavbar():  # TODO: Change icon to somehting else, add twitter links, remove search bar, make responsive dropdown open alternate search, make navbar toggler switch at proper screen size.
     LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
     
-    dd_items = [{'label': BILLS[id].short_title[:70] + ('' if len(BILLS[id].short_title) < 70 else '...') , 'value': BILLS[id].bill_id} for id in BILLS.keys()]
+    dd_items = [{'label': BILLS[id].short_title[:70] + ('' if len(BILLS[id].short_title) < 70 else '...') + ' [' + str(BILLS[id].bill_slug) + ' - ' + str(BILLS[id].congress) + ']' , 'value': BILLS[id].bill_id} for id in BILLS.keys()]
 
     search_bar = dbc.Row(
         [
-            dcc.Dropdown(id='bill-dropdown', options=dd_items, className='text-dark')
+            dcc.Dropdown(id='bill-dropdown', options=dd_items, className='text-dark', optionHeight=60)
         ],
-        className="g-0 ms-auto mt-3 mt-md-0 flex-fill",
+        className=" ms-auto mt-3 mt-md-0 flex-auto searchbar",
         align="center",
     )
 
@@ -49,9 +49,9 @@ def _getNavbar():  # TODO: Change icon to somehting else, add twitter links, rem
                     # Use row and col to control vertical alignment of logo / brand
                     dbc.Row(
                         [
-                            dbc.Col(html.Img(src=LOGO, height="30px")),
+                            dbc.Col(html.Img(src=LOGO, height="30px")), #TODO: Replace with icon
                             dbc.Col(dbc.NavbarBrand(
-                                "INSERT SENIOR DESIGN TITLE", className="ms-2")),
+                                "YAY OR NAY", className="ms-2")),
                         ],
                         align="center",
                         className="g-0",
@@ -352,6 +352,34 @@ def _getHasManyActionsCard(i):
     )
     return parent_div
 
+def _getConfidenceCard(i):
+    parent_div = html.Div([
+        dbc.Card([
+            dbc.CardHeader([
+                html.Div([
+                    html.H4('Still Active',
+                            className='text-align-center'),
+                    html.Div(
+                        html.I(id='button-collapse-'+str(i), className='bi bi-chevron-double-down mb-1 '), className='d-flex justify-content-end flex-fill')
+                ], id='button-collapse-div-'+str(i), className='hstack w-100')
+            ], className='bg-primary bg-opacity-25'),
+            dbc.Collapse([
+                html.Div([
+                    html.Div(
+                        html.I(className='fa-solid fa-arrow-right-arrow-left p-3',
+                            style={'font-size': "4rem"}),
+                        className='d-flex justify-content-center'
+                    ),
+                    dbc.CardBody([
+                        html.H5('This Bill is still actively moving through Congress! Keep an eye out for changes in sentiment as the Bill progresses.', className=''),
+                    ], className='')
+                ], className='d-inline-flex align-items-center')
+            ], id='collapse-'+str(i), is_open=True,)
+        ], className='w-100')
+    ], className='d-flex align-items-center h-75'
+    )
+    return parent_div
+
 # Card to display if bill is active
 def _getIsActiveCard(i):
     parent_div = html.Div([
@@ -398,7 +426,7 @@ def _getBillSummary(bill):
                 html.P(bill.summary),
                 html.B('BILL LINK'),
                 html.Br(),
-                html.A(bill.congressdotgov_url, href=bill.congressdotgov_url),
+                html.A(bill.congressdotgov_url, href=bill.congressdotgov_url, target='_blank'),
                 html.P('...')
             ])
         ], className='h-100',
@@ -462,6 +490,8 @@ class Server:
                              dbc.themes.VAPOR, dbc.icons.BOOTSTRAP, "https://use.fontawesome.com/releases/v6.1.1/css/all.css", dbc_css],
                              meta_tags=[{'name':'viewport', 'content':'width=device-width, initial-scale=1.0, maximum-scale=1.2, minimum-scale=0.5'}])
 
+        self.app.title = "Yay or Nay"
+
         # Build main app layout
         #searchArea = _makeSearchArea()
         self.app.layout = html.Div(children=[
@@ -479,13 +509,10 @@ class Server:
                             xl=6, lg=6, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
                         dbc.Col(  # This column contains the sentiment info cards. #TODO: Load this from the bill result.
                             dbc.Container([
-                                # placeholder for sentiment info
                                 dbc.Row(_getAttributionsCard(1),
                                         className='pb-2 pt-lg-2'),
-                                # placeholder for sentiment info
                                 dbc.Row(_getIsActiveCard(2),
                                         className='pb-2'),
-                                # placeholder for sentiment info
                                 dbc.Row(_getHasManyActionsCard(3),
                                         className='pb-2'),
                                 dbc.Row(_getFlatScalingCard(4, {'num_users': 6969, 'prop_positive': 69.6969, 'count_total': 420000}),
