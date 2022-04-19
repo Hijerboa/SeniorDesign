@@ -459,7 +459,8 @@ class Server:
         load_figure_template('vapor')
         # Create app context with stylesheets
         self.app = dash.Dash(__name__, external_stylesheets=[
-                             dbc.themes.VAPOR, dbc.icons.BOOTSTRAP, "https://use.fontawesome.com/releases/v6.1.1/css/all.css", dbc_css])
+                             dbc.themes.VAPOR, dbc.icons.BOOTSTRAP, "https://use.fontawesome.com/releases/v6.1.1/css/all.css", dbc_css],
+                             meta_tags=[{'name':'viewport', 'content':'width=device-width, initial-scale=1.0, maximum-scale=1.2, minimum-scale=0.5'}])
 
         # Build main app layout
         #searchArea = _makeSearchArea()
