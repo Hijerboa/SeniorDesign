@@ -3,8 +3,8 @@ from db.database_connection import create_session
 from db.models import Tweet, TwitterUser, CongressMemberData, Bill
 
 CONF_THRESHOLD = 0.7
-NEG_THRESHOLD = -0.5
-POS_THRESHOLD = 0.5
+NEG_THRESHOLD = -0.33
+POS_THRESHOLD = 0.33
 
 def get_tweets(bill_id: str):
     """Returns all tweets for a specified bill and their user objects
@@ -40,11 +40,14 @@ def get_tweets(bill_id: str):
     
     tweet_users_tuples = set()
     for tweet in all_tweets:
-        tuple = (tweet, users_dict[tweet.author_id])
+        try:
+            tuple = (tweet, users_dict[tweet.author_id])
+        except KeyError:
+            continue
         tweet_users_tuples.add(tuple)
     
     session.close()
-    return tweet_users_tuples
+    return tweet_users_tuples, {'num_users': len(user_objects), 'num_tweets': len(tweet_users_tuples)}
 
 
 def get_flat_sentiment(tweets, confidence_thresholding=False):
@@ -190,15 +193,52 @@ def more_than_average_likes(tweets, confidence_thresholding=False):
                 total_neutral += 1
                 weighted_neutral += 1 * weight
                 
-        results_dict = {
-            'total_tweets': len(tweets),
-            'analyzed_tweets': analyzed_tweets,
-            'total_positive': total_positive,
-            'total_neutral': total_neutral,
-            'total_negative': total_negative,
-            'weighted_positive': weighted_positive,
-            'weighted_neutral': weighted_neutral,
-            'weighted_negative': weighted_negative
-        }
+    results_dict = {
+        'total_tweets': len(tweets),
+        'analyzed_tweets': analyzed_tweets,
+        'total_positive': total_positive,
+        'total_neutral': total_neutral,
+        'total_negative': total_negative,
+        'weighted_positive': weighted_positive,
+        'weighted_neutral': weighted_neutral,
+        'weighted_negative': weighted_negative
+    }
 
     return results_dict
+
+
+def confidence_weighting(tweets):
+    
+    total_positive = 0
+    total_negative = 0
+    total_neutral = 0
+    weighted_positive = 0
+    weighted_negative = 0
+    analyzed_tweets = 0
+    
+    for tuple in tweets:
+        tweet = tuple[0]
+        analyzed_tweets += 1
+        if tweet.sentiment is None:
+            continue
+        if tweet.sentiment > POS_THRESHOLD:
+            total_positive += 1
+            weighted_positive += tweet.sentiment_confidence
+        elif tweet.sentiment < NEG_THRESHOLD:
+            total_negative += 1
+            weighted_negative += tweet.sentiment_confidence
+        else:
+            total_neutral += 1
+            
+    results_dict = {
+        'total_tweets': len(tweets),
+        'analyzed_tweets': analyzed_tweets,
+        'total_positive': total_positive,
+        'total_neutral': total_neutral,
+        'total_negative': total_negative,
+        'weighted_positive': weighted_positive,
+        'weighted_negative': weighted_negative
+    }
+
+    return results_dict
+            
