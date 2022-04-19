@@ -1,3 +1,4 @@
+import numpy as np
 from db.database_connection import create_session
 from db.models import Tweet, TwitterUser, CongressMemberData, Bill
 
@@ -153,5 +154,51 @@ def politician_sentiment(tweets, confidence_thresholding=False):
     }
     
     session.close()
+
+    return results_dict
+
+
+def more_than_average_likes(tweets, confidence_thresholding=False):
+    
+    total_positive = 0
+    total_negative = 0
+    total_neutral = 0
+    weighted_positive = 0
+    weighted_neutral = 0
+    weighted_negative = 0
+    analyzed_tweets = 0
+    
+    likes = [tuple[0].likes for tuple in tweets]
+        
+    likes_mean = np.mean(likes)
+    likes_std = np.std(likes)
+    
+    for tuple in tweets:
+        tweet = tuple[0]
+        weight = 1 + (tweet.likes - likes_mean) / likes_std
+        if (confidence_thresholding and tweet.sentiment_confidence is not None and tweet.sentiment_confidence >= CONF_THRESHOLD) or (not confidence_thresholding):
+            analyzed_tweets += 1
+            if tweet.sentiment is None:
+                continue
+            if tweet.sentiment > POS_THRESHOLD:
+                total_positive += 1
+                weighted_positive += 1 * weight
+            elif tweet.sentiment < NEG_THRESHOLD:
+                total_negative += 1
+                weighted_negative += 1 * weight
+            else:
+                total_neutral += 1
+                weighted_neutral += 1 * weight
+                
+        results_dict = {
+            'total_tweets': len(tweets),
+            'analyzed_tweets': analyzed_tweets,
+            'total_positive': total_positive,
+            'total_neutral': total_neutral,
+            'total_negative': total_negative,
+            'weighted_positive': weighted_positive,
+            'weighted_neutral': weighted_neutral,
+            'weighted_negative': weighted_negative
+        }
 
     return results_dict
