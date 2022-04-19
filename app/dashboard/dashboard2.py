@@ -15,6 +15,7 @@ import db.models as models
 
 STYLE_BUTTON_CLOSED = 'fa bi-chevron-double-down mb-1'
 STYLE_BUTTON_OPENED = 'bi bi-chevron-double-up mb-1'
+ACTIONS_HOT_THRESHOLD = 0
 LOREM_TEXT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 # Load these at startup for cheatsies
@@ -146,7 +147,7 @@ def _getAttributionsCard(i):
     return parent_div
 
 #Card to display interaction weighted sentiment
-def _getLogWeightedCard(i, bill_sent_logscaled):
+def _getInteractionWeightedCard(i, bill_sent_logscaled):
     # Logic for determining what face/text to show:
     # TODO: Determine good/bad/neut from dict.
     sent_overall = 'Neutral'
@@ -351,6 +352,7 @@ def _getHasManyActionsCard(i):
     )
     return parent_div
 
+# Display if bill is in manual set
 def _getConfidenceCard(i):
     parent_div = html.Div([
         dbc.Card([
@@ -407,6 +409,15 @@ def _getIsActiveCard(i):
     ], className='d-flex align-items-center h-75'
     )
     return parent_div
+
+# TODO: Metadata cards
+# TODO: General Results
+# TODO: Specialized Results
+# TODO: Confusion Matrix
+# TODO: Total num tweets
+# TODO: Total num users
+# TODO: Any and all other things we want to use to self document this
+
 
 # TODO: Load data from the selected bill and populate relevant fields
 
@@ -494,27 +505,11 @@ class Server:
                                         className='h-100 pb-2 pt-2'),
                             ], id='bill-summary-container', className='mw-100 bill-info-div scroll-toggle'),
                             xl=6, lg=6, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
-                        dbc.Col(  # This column contains the sentiment info cards. #TODO: Load this from the bill result.
+                        dbc.Col(  # This column contains the sentiment info cards. #
                             dbc.Container([
                                 dbc.Row(_getAttributionsCard(1),
                                         className='pb-2 pt-lg-2'),
-                                dbc.Row(_getIsActiveCard(2),
-                                        className='pb-2'),
-                                dbc.Row(_getHasManyActionsCard(3),
-                                        className='pb-2'),
-                                dbc.Row(_getFlatScalingCard(4, {'num_users': 2133, 'prop_positive': 52.95, 'count_total': 3080}),
-                                        className='pb-2'), 
-                                #dbc.Row(_getBipartisanCard(5, {'D': 4, 'R': 2}),
-                                #        className='pb-2'), 
-                                dbc.Row(_getConfidenceCard(9),
-                                        className='pb-2'),
-                                dbc.Row(_getVerifiedCard(6, {'num_users': 420, 'prop_positive': 77.1234, 'count_total': 52560}),
-                                        className='pb-2'), 
-                                dbc.Row(_getPoliticiansCard(7, {'num_users': 30, 'prop_positive': 99.99, 'count_total': 10000}),
-                                        className='pb-2'), 
-                                dbc.Row(_getLogWeightedCard(8, {'num_users': 30, 'prop_positive': 65.00, 'count_total': 10000}),
-                                        className='pb-2'),
-                            ], id='info-card-container', className='mw-100 scroll-toggle'),
+                            ], id='bill-info-container', className='mw-100 scroll-toggle'),
                             xl=6, lg=6, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
                         ],),
             ],
@@ -565,6 +560,82 @@ class Server:
                 return not is_open
             return is_open
 
+        # The big boy callback for loading a bill
+        @self.app.callback(
+            Output("bill-summary-container", 'children'),
+            Output('bill-info-container', 'children'),
+            Input('bill-dropdown', 'value')
+        )
+        def select_bill(bill_id):
+            # TODO: Add handling for info screen bill
+            if bill_id is None:
+                return
+
+            # Or actually load a bill
+            sess = conn.create_session()
+            bill_selected = sess.query(models.Bill).where(models.Bill.bill_id.in_([bill_id])).first()
+            bill_sent_dict = bill_selected.sentiment
+            print(bill_sent_dict)
+
+            # Bill summary is static and only has one element.
+            bill_summary_element = dbc.Row(_getBillSummary(bill_selected), className='h-100 pb-2 pt-2')
+
+            # Bill info cards are dynamic.
+            bill_info_element = []
+            i = 1 #count for callback registering
+
+            # Bill active card
+            if bill_selected.active:
+                bill_info_element.append(
+                    dbc.Row(_getIsActiveCard(i), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+            
+            # Bill has a lot of actions card
+            if len(bill_selected.actions) > ACTIONS_HOT_THRESHOLD:
+                bill_info_element.append(
+                    dbc.Row(_getHasManyActionsCard(i), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+
+            # Manually Verified card
+            if bill_id in BILLS.keys():
+                bill_info_element.append(
+                    dbc.Row(_getConfidenceCard(i), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+
+            # Bipartisan card
+            if (bill_selected.dem_cosponsors if bill_selected.dem_cosponsors else 0) > 0 and (bill_selected.rep_cosponsors if bill_selected.rep_cosponsors else 0) > 0:
+                bill_info_element.append(
+                    dbc.Row(_getBipartisanCard(i, {'D': bill_selected.dem_cosponsors, 'R': bill_selected.rep_cosponsors}), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+
+            # Flat Sent Card
+            if 'non_conf_thresholded_flat' in bill_sent_dict.keys():
+                bill_info_element.append(
+                    dbc.Row(_getFlatScalingCard(i, bill_sent_dict['non_conf_thresholded_flat']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+                
+            # Flat Sent Card
+            if 'conf_thresholded_verified' in bill_sent_dict.keys():
+                bill_info_element.append(
+                    dbc.Row(_getVerifiedCard(i, bill_sent_dict['conf_thresholded_verified']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+
+            # Sources card
+            if True:
+                bill_info_element.append(
+                    dbc.Row(_getAttributionsCard(i), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+
+            sess.close()
+            return bill_summary_element, bill_info_element
+
     # Run this to start the server
     def run(self) -> None:
-        self.app.run_server(debug=False, host='0.0.0.0')
+        self.app.run_server(debug=True, host='0.0.0.0')
