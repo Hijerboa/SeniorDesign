@@ -5,6 +5,8 @@ from dash import dcc
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+
 from dash_bootstrap_templates import load_figure_template
 import json
 
@@ -147,14 +149,49 @@ def _getAttributionsCard(i):
     return parent_div
 
 #Card to display interaction weighted sentiment
-def _getInteractionWeightedCard(i, bill_sent_logscaled):
+def _getInteractionWeightedCard(i, bill_sent_logscaled, num_users):
     # Logic for determining what face/text to show:
-    # TODO: Determine good/bad/neut from dict.
-    sent_overall = 'Neutral'
-    sent_color = 'text-warning '
-    sent_icon = 'fa-face-meh '
-    sent_header = 'Interaction Shows That This Bill is Neutral'
-    sent_text = f'When accounting for how much interaction collected tweets recieved (Likes, Retweets, Replies), we found that the overall reaction to this bill was neutral with {bill_sent_logscaled["prop_positive"]:.2f}% of the weighted sentiments not leaning strongly in either direction.'
+    w_pos = bill_sent_logscaled['weighted_positive']
+    w_neg = bill_sent_logscaled['weighted_negative']
+    w_neu = bill_sent_logscaled['weighted_neutral']
+
+    p_neu = w_neu / (w_pos + w_neg + w_neu)
+    p_pos = w_pos / (w_pos + w_neg + w_neu)
+    p_neg = w_neg / (w_pos + w_neg + w_neu)
+
+    if p_neu > p_pos and p_neu > p_neg: #Neutral Threshold
+        sent_overall = 'Neutral'
+        sent_color = 'text-warning '
+        sent_icon = 'fa-face-meh '
+        sent_header = 'Interaction Shows That This Bill is Neutral'
+        sent_text = f'When accounting for how much interaction collected tweets recieved (Likes, Retweets, Replies) and weighting their sentiment accordingly, we found that the overall reaction to this bill was neutral with {(p_neu*100):.2f}% of the weighted sentiment not leaning strongly in either direction.'
+    else:
+        if p_pos > p_neg:
+            sent_overall = 'Good'
+            sent_color = 'text-success '
+            sent_icon = 'fa-face-laugh '
+            sent_header = 'Interaction Shows That This Bill has a positive sentiment'
+            sent_text = f'When accounting for how much interaction collected tweets recieved (Likes, Retweets, Replies) and weighting their sentiment accordingly, we found that the overall reaction to this bill was good with {(p_pos*100):.2f}% of the weighted sentiment being positive.'
+        else:
+            sent_overall = 'Bad'
+            sent_color = 'text-danger '
+            sent_icon = 'fa-face-frown '
+            sent_header = 'Interaction Shows That This Bill has a negative sentiment'
+            sent_text = f'When accounting for how much interaction collected tweets recieved (Likes, Retweets, Replies) and weighting their sentiment accordingly, we found that the overall reaction to this bill was bad with {(p_neg*100):.2f}% of the weighted sentiment being negative.'
+
+
+    df = pd.DataFrame(data={'Weigheted Sentiment Score': [w_neg, w_neu, w_pos], 'Sentiment Category': ['Negative', 'Neutral', 'Positive']})
+    plot = px.bar(
+        df, x='Weigheted Sentiment Score', y='Sentiment Category',
+        orientation='h',
+        color='Sentiment Category',
+        color_discrete_map={
+            'Negative': 'red',
+            'Neutral': 'yellow',
+            'Positive': 'green'
+        },
+    )
+    plot.update_layout(showlegend=False)
 
     parent_div = html.Div([
         dbc.Card([
@@ -172,11 +209,11 @@ def _getInteractionWeightedCard(i, bill_sent_logscaled):
                            style={'font-size': "8rem"}),
                     ],className='d-flex justify-content-center'
                 ),
-
                 dbc.CardBody([
                     html.H4(sent_header),
                     html.H5(sent_text)
-                ], className='pt-0')
+                ], className='pt-0'),
+                dcc.Graph(figure=plot)
             ], id='collapse-'+str(i), is_open=False)
         ], className='w-100')
     ], className='d-flex align-items-center h-75'
@@ -184,14 +221,38 @@ def _getInteractionWeightedCard(i, bill_sent_logscaled):
     return parent_div
 
 #Card to display politician sentiment
-def _getPoliticiansCard(i, bill_sent_politicians):
+def _getPoliticiansCard(i, bill_sent_politicians, num_users):
     # Logic for determining what face/text to show:
-    # TODO: Determine good/bad/neut from dict.
-    sent_overall = 'Bad'
-    sent_color = 'text-danger '
-    sent_icon = 'fa-face-laugh '
-    sent_header = 'Politicians Aren\'t Happy About This Bill'
-    sent_text = f'With {bill_sent_politicians["num_users"]:,} politicians tweeting about this bill, {bill_sent_politicians["prop_positive"]:.2f}% of their {bill_sent_politicians["count_total"]:,} tweets that passed our opinion threshold were found to view the bill negatively'
+
+    t_pos = bill_sent_politicians['total_positive']
+    t_neg = bill_sent_politicians['total_negative']
+    if t_pos > 0 or t_neg > 0:
+        p_pos = bill_sent_politicians['total_positive'] / (bill_sent_politicians['total_positive'] + bill_sent_politicians['total_negative'])
+        p_neg = bill_sent_politicians['total_negative'] / (bill_sent_politicians['total_positive'] + bill_sent_politicians['total_negative'])
+    else:
+        p_pos = 0.0
+        p_neg = 0.0
+    p_neut = bill_sent_politicians['total_neutral'] / (bill_sent_politicians['analyzed_tweets'])
+    a_tweets = bill_sent_politicians['analyzed_tweets']
+
+    if p_neut > 0.5: #Neutral Threshold
+        sent_overall = 'Neutral'
+        sent_color = 'text-warning '
+        sent_header = 'Politicians Don\'t Have Much Of An Opinion On This Bill.'
+        sent_text = f'With {num_users:,} known politicians tweeting about this bill, we found {(p_neut*100):.2f}% of their {a_tweets:,} tweets collected that passed our opinion threshold ({a_tweets:,} total) to not have a strong opinion of the bill either positively or negatively.'
+    else:
+        if p_pos > p_neg:
+            sent_overall = 'Good'
+            sent_color = 'text-success'
+            sent_header = 'Politicians Like This Bill!'
+            sent_text = f'With {num_users:,} known politicians tweeting about this bill, {(p_pos*100):.2f}% of their {(t_pos + t_neg):,} tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill favorably!'
+        else:
+            sent_overall = 'Bad'
+            sent_color = 'text-danger'
+            sent_header = 'Politicians Dislike This Bill'
+            sent_text = f'With {num_users:,} known politicians tweeting about this bill, {(p_neg*100):.2f}% of their {(t_pos + t_neg):,} tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill negatively.'
+
+    #TODO: Add chart
 
     parent_div = html.Div([
         dbc.Card([
@@ -221,14 +282,37 @@ def _getPoliticiansCard(i, bill_sent_politicians):
     return parent_div
 
 #Card to display verified user sentiment
-def _getVerifiedCard(i, bill_sent_verified):
+def _getVerifiedCard(i, bill_sent_verified, num_users):
     # Logic for determining what face/text to show:
-    # TODO: Determine good/bad/neut from dict.
-    sent_overall = 'Good'
-    sent_color = 'text-success '
-    sent_icon = 'fa-face-laugh '
-    sent_header = 'Verified Users Like This Bill!'
-    sent_text = f'With {bill_sent_verified["num_users"]:,} verified users tweeting about this bill, {bill_sent_verified["prop_positive"]:.2f}% of their {bill_sent_verified["count_total"]:,} tweets that passed our opinion threshold were found to view the bill favorably!'
+    t_pos = bill_sent_verified['total_positive']
+    t_neg = bill_sent_verified['total_negative']
+    if t_pos > 0 or t_neg > 0:
+        p_pos = bill_sent_verified['total_positive'] / (bill_sent_verified['total_positive'] + bill_sent_verified['total_negative'])
+        p_neg = bill_sent_verified['total_negative'] / (bill_sent_verified['total_positive'] + bill_sent_verified['total_negative'])
+    else:
+        p_pos = 0.0
+        p_neg = 0.0
+    p_neut = bill_sent_verified['total_neutral'] / (bill_sent_verified['analyzed_tweets'])
+    a_tweets = bill_sent_verified['analyzed_tweets']
+
+    if p_neut > 0.5: #Neutral Threshold
+        sent_overall = 'Neutral'
+        sent_color = 'text-warning '
+        sent_header = 'Verified Users Don\'t Have Much Of An Opinion On This Bill.'
+        sent_text = f'With {num_users:,} verified users tweeting about this bill, we found {(p_neut*100):.2f}% of the {a_tweets:,} verified tweets collected that passed our opinion threshold ({a_tweets:,} total) to not have a strong opinion of the bill either positively or negatively.'
+    else:
+        if p_pos > p_neg:
+            sent_overall = 'Good'
+            sent_color = 'text-success'
+            sent_header = 'Verified Users Like This Bill!'
+            sent_text = f'With {num_users:,} verified users tweeting about this bill, {(p_pos*100):.2f}% of their {(t_pos + t_neg):,} verified tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill favorably!'
+        else:
+            sent_overall = 'Bad'
+            sent_color = 'text-danger'
+            sent_header = 'Verified Users Dislike This Bill'
+            sent_text = f'With {num_users:,} verified users tweeting about this bill, {(p_neg*100):.2f}% of their {(t_pos + t_neg):,} verified tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill negatively.'
+
+     #TODO: Add chart
 
     parent_div = html.Div([
         dbc.Card([
@@ -287,13 +371,37 @@ def _getBipartisanCard(i, sponsor_counts):
     return parent_div
 
 #Card to display flat sentiment score
-def _getFlatScalingCard(i, bill_sent_flat):
+def _getFlatScalingCard(i, bill_sent_flat, num_users):
     # Logic for determining what face/text to show:
-    # TODO: Determine good/bad/neut from dict.
-    sent_overall = 'Good'
-    sent_classes = 'fa-face-laugh text-success'
-    sent_header = 'Overall reactions to this Bill have been positive!'
-    sent_text = f'With {bill_sent_flat["num_users"]:,} users tweeting about this bill, {bill_sent_flat["prop_positive"]:.2f}% of the {bill_sent_flat["count_total"]:,} tweets collected that passed our opinion threshold were found to view the bill favorably!'
+    t_pos = bill_sent_flat['total_positive']
+    t_neg = bill_sent_flat['total_negative']
+    if t_pos > 0 or t_neg > 0:
+        p_pos = bill_sent_flat['total_positive'] / (bill_sent_flat['total_positive'] + bill_sent_flat['total_negative'])
+        p_neg = bill_sent_flat['total_negative'] / (bill_sent_flat['total_positive'] + bill_sent_flat['total_negative'])
+    else:
+        p_pos = 0.0
+        p_neg = 0.0
+    p_neut = bill_sent_flat['total_neutral'] / (bill_sent_flat['analyzed_tweets'])
+    a_tweets = bill_sent_flat['analyzed_tweets']
+
+    if p_neut > 0.5: #Neutral Threshold
+        sent_overall = 'Neutral'
+        sent_classes = 'fa-face-meh text-warning '
+        sent_header = 'Overall reactions to this Bill have been Neutral.'
+        sent_text = f'With {num_users:,} users tweeting about this bill, we found {(p_neut*100):.2f}% of the {a_tweets:,} tweets collected that passed our opinion threshold ({a_tweets:,} total) to not have a strong opinion of the bill either positively or negatively.'
+    else:
+        if p_pos > p_neg:
+            sent_overall = 'Good'
+            sent_classes = 'fa-face-laugh text-success'
+            sent_header = 'Overall reactions to this Bill have been positive!'
+            sent_text = f'With {num_users:,} users tweeting about this bill, {(p_pos*100):.2f}% of the {(t_pos + t_neg):,} tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill favorably!'
+        else:
+            sent_overall = 'Bad'
+            sent_classes = 'fa-face-frown text-danger'
+            sent_header = 'Overall reactions to this Bill have been negative.'
+            sent_text = f'With {num_users:,} users tweeting about this bill, {(p_neg*100):.2f}% of the {(t_pos + t_neg):,} tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill negatively.'
+
+     #TODO: Add chart
 
     parent_div = html.Div([
         dbc.Card([
@@ -613,16 +721,30 @@ class Server:
                 i += 1
 
             # Flat Sent Card
-            if 'non_conf_thresholded_flat' in bill_sent_dict.keys():
+            if 'non_conf_thresholded_flat' in bill_sent_dict.keys() and  bill_sent_dict['num_users'] > 0:
                 bill_info_element.append(
-                    dbc.Row(_getFlatScalingCard(i, bill_sent_dict['non_conf_thresholded_flat']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                    dbc.Row(_getFlatScalingCard(i, bill_sent_dict['non_conf_thresholded_flat'], bill_sent_dict['num_users']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
                 )
                 i += 1
                 
-            # Flat Sent Card
-            if 'conf_thresholded_verified' in bill_sent_dict.keys():
+            # Verified Sent Card
+            if 'non_conf_thresholded_verified' in bill_sent_dict.keys() and  bill_sent_dict['num_verified_users'] > 0:
                 bill_info_element.append(
-                    dbc.Row(_getVerifiedCard(i, bill_sent_dict['conf_thresholded_verified']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                    dbc.Row(_getVerifiedCard(i, bill_sent_dict['conf_thresholded_verified'], bill_sent_dict['num_verified_users']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+
+            # Politician Sent Card
+            if 'non_conf_thresholded_politicians' in bill_sent_dict.keys() and bill_sent_dict['num_politicians_tweeting'] > 0:
+                bill_info_element.append(
+                    dbc.Row(_getPoliticiansCard(i, bill_sent_dict['non_conf_thresholded_politicians'], bill_sent_dict['num_politicians_tweeting']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1
+
+            # Likes-Weighted Sent Card
+            if 'non_conf_thresholded_std_mean_likes' in bill_sent_dict.keys() and bill_sent_dict['num_tweets'] > 0:
+                bill_info_element.append(
+                    dbc.Row(_getInteractionWeightedCard(i, bill_sent_dict['non_conf_thresholded_std_mean_likes'], bill_sent_dict['num_users']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
                 )
                 i += 1
 
@@ -638,4 +760,4 @@ class Server:
 
     # Run this to start the server
     def run(self) -> None:
-        self.app.run_server(debug=True, host='0.0.0.0')
+        self.app.run_server(debug=False, host='0.0.0.0')
