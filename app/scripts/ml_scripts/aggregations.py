@@ -1,5 +1,5 @@
 from machine_learning.aggregation.aggregation_scaffold import get_tweets, get_flat_sentiment, verified_user_sentiment, politician_sentiment, \
-    more_than_average_likes, confidence_weighting
+    more_than_average_likes, confidence_weighting, count_in_buckets
 
 def get_aggregations_dict(bill_id):
 
@@ -16,5 +16,7 @@ def get_aggregations_dict(bill_id):
     initial_dict['conf_thresholded_std_mean_likes'] = more_than_average_likes(tweets, confidence_thresholding=True)
 
     initial_dict['confidence_weighted'] = confidence_weighting(tweets)
+    
+    initial_dict['count_in_buckets'] = count_in_buckets(tweets)
 
     return initial_dict

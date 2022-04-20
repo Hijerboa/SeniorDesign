@@ -258,4 +258,24 @@ def confidence_weighting(tweets):
     }
 
     return results_dict
+
+
+def count_in_buckets(tweets):
+
+    values = []
+    analyzed_tweets = 0
+    
+    for tuple in tweets:
+        tweet = tuple[0]
+        if tweet.sentiment is not None and tweet.sentiment_confidence is not None:
+            analyzed_tweets += 1
+            values.append(tweet.sentiment * tweet.sentiment_confidence)
+            
+    values, buckets = np.histogram(values, bins=list(np.arange(-1,1.1,0.1)))
+            
+    return {
+        'total_tweets': len(tweets),
+        'analyzed_tweets': analyzed_tweets,
+        'values': values.tolist()
+    }
             
