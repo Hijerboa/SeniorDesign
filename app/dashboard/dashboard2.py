@@ -638,8 +638,9 @@ def _getBillSummary(bill):
 def _getInstructionCard(): #TODO: Fill this with usage instructions for page load
     parent_div = html.Div(
         dbc.Card([
-            dbc.CardHeader(html.H4('Bill Summary'), className='bg-primary bg-opacity-25'),
+            dbc.CardHeader(html.H4('Bill Summary'), className='bg-primary bg-opacity-25'), ###TITLE
             dbc.CardBody([
+                ###PUT HTML ELEMENTS HERE @NICK
                 html.H5('Bill Title Here'),
                 html.B('BILL SUMMARY'),
                 html.P(LOREM_TEXT),
@@ -653,6 +654,7 @@ def _getInstructionCard(): #TODO: Fill this with usage instructions for page loa
                 html.Br(),
                 html.A('Bill/Link/url', href='/'),
                 html.P('...')
+                ###END
             ])
         ], className='h-100',
         ),
