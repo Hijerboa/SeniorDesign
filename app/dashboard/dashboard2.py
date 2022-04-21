@@ -641,19 +641,34 @@ def _getInstructionCard(): #TODO: Fill this with usage instructions for page loa
             dbc.CardHeader(html.H4('Bill Summary'), className='bg-primary bg-opacity-25'), ###TITLE
             dbc.CardBody([
                 ###PUT HTML ELEMENTS HERE @NICK
-                html.H5('Bill Title Here'),
-                html.B('BILL SUMMARY'),
-                html.P(LOREM_TEXT),
-                html.B('BILL STATS'),
-                html.Li('TEXT 1'),
-                html.Li('TEXT 2'),
-                html.Li('TEXT 3'),
-                html.B('MORE BILL STUFF'),
-                html.P(LOREM_TEXT),
-                html.B('BILL LINK'),
+                html.H5('How To Use This Dashboard'),
                 html.Br(),
-                html.A('Bill/Link/url', href='/'),
-                html.P('...')
+                html.H6('Searching for Bills'),
+                html.P('To search for a bill, use the search bar in the top of your screen. You can search by the title of the bill, and the bill title and the number of the congress for the bill will appear in the search options. Select any of the bills in this list.'),
+                html.Br(),
+                html.H6('What Will Be Displayed:'),
+                html.Br(),
+                html.Li('Basic bill information such as:'),
+                html.Ul([
+                    html.Li('Bill Title'),
+                    html.Li('Bill Sponsorship Party'),
+                    html.Li('Bill Subject')
+                ]
+                ),
+                html.Li('On the right, you will see cards cooresponding to:'),
+                html.Ul([
+                    html.Li('If a bill is currently active'),
+                    html.Li('If a bill is a "hot topic" in congress'),
+                    html.Li('Whether the bill is a bipartisan effort'),
+                    html.Li('Whether a bill is in our "manually verified" list'),
+                    html.Ul(
+                        html.Li('Bills in our manually verified list have had their keywords handpicked, rather than relying on an automated process')
+                    ),
+                    html.Li('Overall public sentiment'),
+                    html.Li('Sentiment of verified twitter users'),
+                    html.Li('Sentiment of politicians')
+                ]
+                ),
                 ###END
             ])
         ], className='h-100',
