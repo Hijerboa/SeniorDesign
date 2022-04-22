@@ -601,6 +601,30 @@ def _getIsActiveCard(i):
     )
     return parent_div
 
+# TODO: Keyword card
+def _getKeywordsCard(i, keywords):
+    keywords = [str(kw.search_phrase) for kw in keywords]
+
+    parent_div = html.Div([
+        dbc.Card([
+            dbc.CardHeader([
+                html.Div([
+                    html.H4('Generated Bill Keywords',
+                            className='text-align-center'),
+                    html.Div(
+                        html.I(id='button-collapse-'+str(i), className='bi bi-chevron-double-down mb-1 '), className='d-flex justify-content-end flex-fill')
+                ], id='button-collapse-div-'+str(i), className='hstack w-100')
+            ], className='bg-primary bg-opacity-25'),
+            dbc.Collapse([
+                dbc.CardBody(
+                    [html.B('The following keywords were generated for this bill:')] + [html.Li(kw) for kw in keywords]
+                , className='pt-0')
+            ], id='collapse-'+str(i), is_open=False)
+        ], className='w-100')
+    ], className='d-flex align-items-center h-75'
+    )
+    return parent_div
+
 # TODO: Metadata cards
 # TODO: General Results
 # TODO: Specialized Results
@@ -635,14 +659,12 @@ def _getBillSummary(bill):
     )
     return parent_div
 
-def _getInstructionCard(): #TODO: Fill this with usage instructions for page load
+def _getInstructionCard(): 
     parent_div = html.Div(
         dbc.Card([
-            dbc.CardHeader(html.H4('Bill Summary'), className='bg-primary bg-opacity-25'), ###TITLE
+            dbc.CardHeader(html.H4('How To Use This Dashboard'), className='bg-primary bg-opacity-25'), ###TITLE
             dbc.CardBody([
                 ###PUT HTML ELEMENTS HERE @NICK
-                html.H5('How To Use This Dashboard'),
-                html.Br(),
                 html.H6('Searching for Bills'),
                 html.P('To search for a bill, use the search bar in the top of your screen. You can search by the title of the bill, and the bill title and the number of the congress for the bill will appear in the search options. Select any of the bills in this list.'),
                 html.Br(),
@@ -848,6 +870,13 @@ class Server:
                     dbc.Row(_getInteractionWeightedCard(i, bill_sent_dict['non_conf_thresholded_std_mean_likes'], bill_sent_dict['num_users']), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
                 )
                 i += 1
+                
+            # Keywords Card
+            if True:
+                bill_info_element.append(
+                    dbc.Row(_getKeywordsCard(i, bill_selected.keywords), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
+                )
+                i += 1 
 
             # Distribution Card
             #if 'count_in_buckets' in bill_sent_dict.keys() and bill_sent_dict['num_tweets'] > 0:

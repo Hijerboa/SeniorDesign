@@ -1,22 +1,22 @@
 @media only screen and (max-width: 992px) {
-    .scroll-toggle{
+    .scroll-toggle {
         overflow-y: hidden;
     }
 
-    .offcanvas-toggle{
+    .offcanvas-toggle {
         visibility: hidden;
     }
 }
 
 @media only screen and (min-width: 768px) {
-    .searchbar{
-        width:100%;
-        padding-right:1.5rem;
+    .searchbar {
+        width: 100%;
+        padding-right: 1.5rem;
     }
 }
 
 @media only screen and (min-width: 992px) {
-    .scroll-toggle{
+    .scroll-toggle {
         overflow-y: auto;
 
         height: calc(100vh - 52px);
@@ -24,29 +24,29 @@
 
     .scroll-toggle::-webkit-scrollbar {
         display: none;
-      }
+    }
 
-    .bill-info-div{
+    .bill-info-div {
         height: calc(100vh - 52px);
     }
-    
+
     .bill-info-div::-webkit-scrollbar {
         display: none;
-      }
-
-    .bill{
-        height:100%;
     }
 
-    .nav-class{
-        height:52px
+    .bill {
+        height: 100%;
     }
 
-    .offcanvas-toggle{
+    .nav-class {
+        height: 52px
+    }
+
+    .offcanvas-toggle {
         visibility: visible;
     }
 
-    .searchbar{
+    .searchbar {
         width: 47.5vw;
         padding-right: 1.5rem;
     }
