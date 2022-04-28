@@ -834,7 +834,7 @@ class Server:
                 i += 1
 
             # Manually Verified card
-            if bill_id in MANUAL_SLUGS.keys():
+            if bill_id in MANUAL_SLUGS:
                 bill_info_element.append(
                     dbc.Row(_getConfidenceCard(i), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
                 )
