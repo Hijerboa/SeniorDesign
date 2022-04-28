@@ -21,10 +21,14 @@ ACTIONS_HOT_THRESHOLD = 0
 LOREM_TEXT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 # Load these at startup for cheatsies
-SLUGS = json.loads(open("./dashboard/manual_slugs.json").read())['slugs']
+MANUAL_SLUGS = json.loads(open("./dashboard/manual_slugs.json").read())['slugs']
+ALL_SLUGS = json.loads(open("./dashboard/all_slugs.json").read())['slugs']
+for slug in MANUAL_SLUGS:
+    if slug not in ALL_SLUGS:
+        ALL_SLUGS.append(slug)
 conn.initialize()
 sess = conn.create_session()
-BILLS = {bill.bill_id: bill for bill in sess.query(models.Bill).where(models.Bill.bill_id.in_(SLUGS)).all()}
+BILLS = {bill.bill_id: bill for bill in sess.query(models.Bill).where(models.Bill.bill_id.in_(ALL_SLUGS)).all()}
 sess.close()
 
 
@@ -707,7 +711,7 @@ class Server:
                 i += 1
 
             # Manually Verified card
-            if bill_id in BILLS.keys():
+            if bill_id in MANUAL_SLUGS.keys():
                 bill_info_element.append(
                     dbc.Row(_getConfidenceCard(i), className='pb-2 ' + ('pt-lg-2 ' if i == 1 else '')),
                 )
