@@ -29,7 +29,16 @@ for slug in MANUAL_SLUGS:
         ALL_SLUGS.append(slug)
 conn.initialize()
 sess = conn.create_session()
-BILLS = {bill.bill_id: bill for bill in sess.query(models.Bill).where(models.Bill.bill_id.in_(ALL_SLUGS)).all()}
+BILLS = {}
+# This is a less pretty method of getting the bills, but it puts all the verified bills at the top of the listing
+manual_bills = sess.query(models.Bill).where(models.Bill.bill_id.in_(MANUAL_SLUGS)).all()
+for bill in manual_bills:
+    BILLS[bill.bill_id] = bill
+all_bills = sess.query(models.Bill).where(models.Bill.bill_id.in_(ALL_SLUGS)).all()
+for bill in all_bills:
+    if bill.bill_id not in BILLS.keys():
+        BILLS[bill.bill_id] = bill
+# BILLS = {bill.bill_id: bill for bill in sess.query(models.Bill).where(models.Bill.bill_id.in_(ALL_SLUGS)).all()}
 sess.close()
 
 
@@ -38,7 +47,7 @@ sess.close()
 def _getNavbar(logo_src):  #
     LOGO = "./favicon.ico"
     
-    dd_items = [{'label': BILLS[id].short_title[:70] + ('' if len(BILLS[id].short_title) < 70 else '...') + ' [' + str(BILLS[id].bill_slug) + ' - ' + str(BILLS[id].congress) + ']' , 'value': BILLS[id].bill_id} for id in BILLS.keys()]
+    dd_items = [{'label': BILLS[id].short_title[:70] + ('' if len(BILLS[id].short_title) < 70 else '...') + ' [' + str(BILLS[id].bill_slug) + ' - ' + str(BILLS[id].congress) + ']' + (' [VERIFIED]' if id in MANUAL_SLUGS else '') , 'value': BILLS[id].bill_id} for id in BILLS.keys()]
 
     search_bar = dbc.Row(
         [
@@ -189,14 +198,13 @@ def _getInteractionWeightedCard(i, bill_sent_logscaled, num_users):
         sent_text = f'When accounting for how much interaction collected tweets recieved (Likes, Retweets, Replies) and weighting their sentiment accordingly, we found that the overall reaction to this bill was bad with {(p_neg*100):.2f}% of the weighted sentiment being negative.'
 
 
-    df = pd.DataFrame(data={'Weigheted Sentiment Score': [w_neg, w_neu, w_pos], 'Sentiment Category': ['Negative', 'Neutral', 'Positive']})
+    df = pd.DataFrame(data={'Weighted Sentiment Score': [w_neg, w_pos], 'Sentiment Category': ['Negative', 'Positive']})
     plot = px.bar(
-        df, x='Weigheted Sentiment Score', y='Sentiment Category',
+        df, x='Weighted Sentiment Score', y='Sentiment Category',
         orientation='h',
         color='Sentiment Category',
         color_discrete_map={
             'Negative': 'red',
-            'Neutral': 'yellow',
             'Positive': 'green'
         },
     )
@@ -262,14 +270,13 @@ def _getPoliticiansCard(i, bill_sent_politicians, num_users):
         sent_header = 'Politicians Dislike This Bill'
         sent_text = f'With {num_users:,} known politicians tweeting about this bill, {(p_neg*100):.2f}% of their {(t_pos + t_neg):,} tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill negatively.'
 
-    df = pd.DataFrame(data={'Number of Tweets': [t_neg, t_neu, t_pos], 'Sentiment Category': ['Negative', 'Neutral', 'Positive']})
+    df = pd.DataFrame(data={'Number of Tweets': [t_neg, t_pos], 'Sentiment Category': ['Negative', 'Positive']})
     plot = px.bar(
         df, x='Number of Tweets', y='Sentiment Category',
         orientation='h',
         color='Sentiment Category',
         color_discrete_map={
             'Negative': 'red',
-            'Neutral': 'yellow',
             'Positive': 'green'
         },
     )
@@ -334,14 +341,13 @@ def _getVerifiedCard(i, bill_sent_verified, num_users):
         sent_header = 'Verified Users Dislike This Bill'
         sent_text = f'With {num_users:,} verified users tweeting about this bill, {(p_neg*100):.2f}% of their {(t_pos + t_neg):,} verified tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill negatively.'
 
-    df = pd.DataFrame(data={'Number of Tweets': [t_neg, t_neu, t_pos], 'Sentiment Category': ['Negative', 'Neutral', 'Positive']})
+    df = pd.DataFrame(data={'Number of Tweets': [t_neg, t_pos], 'Sentiment Category': ['Negative', 'Positive']})
     plot = px.bar(
         df, x='Number of Tweets', y='Sentiment Category',
         orientation='h',
         color='Sentiment Category',
         color_discrete_map={
             'Negative': 'red',
-            'Neutral': 'yellow',
             'Positive': 'green'
         },
     )
@@ -436,14 +442,13 @@ def _getFlatScalingCard(i, bill_sent_flat, num_users):
         sent_header = 'Overall reactions to this Bill have been negative.'
         sent_text = f'With {num_users:,} users tweeting about this bill, {(p_neg*100):.2f}% of the {(t_pos + t_neg):,} tweets collected that passed our opinion threshold ({a_tweets:,} total) were found to view the bill negatively.'
 
-    df = pd.DataFrame(data={'Number of Tweets': [t_neg, t_neu, t_pos], 'Sentiment Category': ['Negative', 'Neutral', 'Positive']})
+    df = pd.DataFrame(data={'Number of Tweets': [t_neg, t_pos], 'Sentiment Category': ['Negative', 'Positive']})
     plot = px.bar(
         df, x='Number of Tweets', y='Sentiment Category',
         orientation='h',
         color='Sentiment Category',
         color_discrete_map={
             'Negative': 'red',
-            'Neutral': 'yellow',
             'Positive': 'green'
         },
     )
@@ -810,7 +815,7 @@ class Server:
             sess = conn.create_session()
             bill_selected = sess.query(models.Bill).where(models.Bill.bill_id.in_([bill_id])).first()
             bill_sent_dict = bill_selected.sentiment
-            print(bill_sent_dict)
+            # print(bill_sent_dict)
 
             # Bill summary is static and only has one element.
             bill_summary_element = dbc.Row(_getBillSummary(bill_selected), className='h-100 pb-2 pt-2')
