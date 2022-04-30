@@ -903,7 +903,16 @@ class Server:
 
             sess.close()
             return bill_summary_element, bill_info_element
+    
 
     # Run this to start the server
     def run(self) -> None:
         self.app.run_server(debug=False, host='0.0.0.0')
+
+# I know this line looks useless. 
+# Trust me, its not. Don't fucking remove it
+# It's the whole reason I can run this in production
+####### BEGIN NO TOUCHY ZONE
+server = Server()
+server = server.app.server
+####### END NO TOUCHY ZONE
