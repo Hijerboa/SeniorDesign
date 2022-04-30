@@ -18,8 +18,10 @@
                 }
             ],
             "command": [
-                "python3",
-                "dash_runner.py"
+                "gunicorn",
+                "dashboard.dashboard2:server",
+                "-b",
+                "0.0.0.0:8050"
             ],
             "cpu": 0,
             "repositoryCredentials": {
