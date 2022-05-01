@@ -16,10 +16,15 @@ from db import database_connection as conn
 from sqlalchemy.sql import func
 import db.models as models
 
+import logging
+
 STYLE_BUTTON_CLOSED = 'fa bi-chevron-double-down mb-1'
 STYLE_BUTTON_OPENED = 'bi bi-chevron-double-up mb-1'
 ACTIONS_HOT_THRESHOLD = 0
 LOREM_TEXT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+
+logger = logging.getLogger(__name__)
+logger.error('Starting')
 
 # Load these at startup for cheatsies
 MANUAL_SLUGS = json.loads(open("./dashboard/manual_slugs.json").read())['slugs']
@@ -40,6 +45,7 @@ for bill in all_bills:
         BILLS[bill.bill_id] = bill
 # BILLS = {bill.bill_id: bill for bill in sess.query(models.Bill).where(models.Bill.bill_id.in_(ALL_SLUGS)).all()}
 sess.close()
+logger.error('no more bills :(')
 
 
 # Somewhat cannibalized from the DBC documentation
@@ -904,7 +910,16 @@ class Server:
 
             sess.close()
             return bill_summary_element, bill_info_element
+    
 
     # Run this to start the server
     def run(self) -> None:
         self.app.run_server(debug=False, host='0.0.0.0')
+
+# I know this line looks useless. 
+# Trust me, its not. Don't fucking remove it
+# It's the whole reason I can run this in production
+####### BEGIN NO TOUCHY ZONE
+server = Server()
+server = server.app.server
+####### END NO TOUCHY ZONE
