@@ -51,7 +51,8 @@ def _getNavbar(logo_src):  #
 
     search_bar = dbc.Row(
         [
-            dcc.Dropdown(id='bill-dropdown', options=dd_items, className='text-dark', optionHeight=60)
+            dbc.Col(html.H5('Select A Bill', className='text-light'), width=2), #TODO: Breakpoints for mobile devices and screen sizes.
+            dbc.Col(dcc.Dropdown(id='bill-dropdown', options=dd_items, className='text-dark', optionHeight=60))
         ],
         className=" ms-auto mt-3 mt-md-0 flex-auto searchbar",
         align="center",
@@ -662,7 +663,7 @@ def _getBillSummary(bill):
                 html.Br(),
                 html.A(bill.congressdotgov_url, href=bill.congressdotgov_url, target='_blank'),
                 html.P('...')
-            ])
+            ], className='bg-secondary bg-opacity-25')
         ], className='h-100',
         ),
     )
@@ -701,7 +702,7 @@ def _getInstructionCard():
                 ]
                 ),
                 ###END
-            ])
+            ], className='bg-secondary bg-opacity-25')
         ], className='h-100',
         ),
     )
@@ -721,10 +722,10 @@ class Server:
         )
 
         # Load styles for figures
-        load_figure_template('vapor')
+        load_figure_template('bootstrap')
         # Create app context with stylesheets
         self.app = dash.Dash(__name__, external_stylesheets=[
-                             dbc.themes.VAPOR, dbc.icons.BOOTSTRAP, "https://use.fontawesome.com/releases/v6.1.1/css/all.css", dbc_css],
+                             dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP, "https://use.fontawesome.com/releases/v6.1.1/css/all.css", dbc_css],
                              meta_tags=[{'name':'viewport', 'content':'width=device-width, initial-scale=1.0, maximum-scale=1.2, minimum-scale=0.5'}])
 
         self.app.title = "Yay or Nay"
@@ -743,13 +744,13 @@ class Server:
                                 dbc.Row(_getBillSummary(BILLS["hr3755-117"]),
                                         className='h-100 pb-2 pt-2'),
                             ], id='bill-summary-container', className='mw-100 bill-info-div scroll-toggle'),
-                            xl=6, lg=6, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
+                            xl=3, lg=3, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
                         dbc.Col(  # This column contains the sentiment info cards. #
                             dbc.Container([
                                 dbc.Row(_getAttributionsCard(1),
                                         className='pb-2 pt-lg-2'),
                             ], id='bill-info-container', className='mw-100 scroll-toggle'),
-                            xl=6, lg=6, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
+                            xl=9, lg=9, md=12, sm=12,),  # Set breakpoints for mobile responsiveness
                         ],),
             ],
                 fluid=True,
