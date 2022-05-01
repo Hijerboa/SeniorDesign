@@ -65,3 +65,4 @@ deploy:
   #   --task-definition twitter_tweet_worker_3
   # - aws ecs update-service --cluster senior-design --service ml_worker --task-definition
   #   ml_worker
+  - aws ecs update-service --cluster senior-design --service sd-dashboard --task-definition dashboard

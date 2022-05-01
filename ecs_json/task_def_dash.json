@@ -58,7 +58,7 @@
     ],
     "memory": "512",
     "taskRoleArn": "arn:aws:iam::489462363401:role/ecsTaskExecutionRole",
-    "family": "flask_server",
+    "family": "dashboard",
     "requiresCompatibilities": [
         "FARGATE"
     ],
