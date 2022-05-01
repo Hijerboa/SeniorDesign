@@ -388,7 +388,7 @@ def _getVerifiedCard(i, bill_sent_verified, num_users):
     )
     return parent_div
 
-#Card to display if bill has bipartisan support
+#Card to display if bill has bipartisan support TODO: ALIGN ICON CORRECTLY
 def _getBipartisanCard(i, sponsor_counts):
     parent_div = html.Div([
         dbc.Card([
@@ -529,7 +529,7 @@ def _getDistributionCard(i, count_in_buckets):
     )
     return parent_div
 
-# Card to display if bill has a lot of actions associated with it
+# Card to display if bill has a lot of actions associated with it TODO: ALIGN ICON CORRECTLY
 def _getHasManyActionsCard(i):
     parent_div = html.Div([
         dbc.Card([
@@ -559,7 +559,7 @@ def _getHasManyActionsCard(i):
     )
     return parent_div
 
-# Display if bill is in manual set
+# Display if bill is in manual set TODO: ALIGN ICON CORRECTLY
 def _getConfidenceCard(i):
     parent_div = html.Div([
         dbc.Card([
@@ -588,7 +588,7 @@ def _getConfidenceCard(i):
     )
     return parent_div
 
-# Card to display if bill is active
+# Card to display if bill is active TODO: ALIGN ICON CORRECTLY
 def _getIsActiveCard(i):
     parent_div = html.Div([
         dbc.Card([
@@ -910,7 +910,6 @@ class Server:
 
             sess.close()
             return bill_summary_element, bill_info_element
-    
 
     # Run this to start the server
     def run(self) -> None:
