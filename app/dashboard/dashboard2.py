@@ -51,7 +51,7 @@ def _getNavbar(logo_src):  #
 
     search_bar = dbc.Row(
         [
-            dbc.Col(html.H5('Select A Bill', className='text-light'), width=2), #Breakpoints are good enough TBh
+            dbc.Col(html.H5('Select Bill', className='text-light'), width=2), #Breakpoints are good enough TBh
             dbc.Col(dcc.Dropdown(id='bill-dropdown', options=dd_items, className='text-dark', optionHeight=90, clearable=False, value=dd_items[0]['value']))
         ],
         className=" ms-auto mt-3 mt-md-0 flex-auto searchbar",
