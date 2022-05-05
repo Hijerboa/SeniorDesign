@@ -18,7 +18,7 @@ import db.models as models
 
 STYLE_BUTTON_CLOSED = 'fa bi-chevron-double-down mb-1'
 STYLE_BUTTON_OPENED = 'bi bi-chevron-double-up mb-1'
-ACTIONS_HOT_THRESHOLD = 0
+ACTIONS_HOT_THRESHOLD = 10
 LOREM_TEXT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 # Load these at startup for cheatsies
@@ -51,8 +51,8 @@ def _getNavbar(logo_src):  #
 
     search_bar = dbc.Row(
         [
-            dbc.Col(html.H5('Select A Bill', className='text-light'), width=2), #TODO: Breakpoints for mobile devices and screen sizes.
-            dbc.Col(dcc.Dropdown(id='bill-dropdown', options=dd_items, className='text-dark', optionHeight=60))
+            dbc.Col(html.H5('Select A Bill', className='text-light'), width=2), #Breakpoints are good enough TBh
+            dbc.Col(dcc.Dropdown(id='bill-dropdown', options=dd_items, className='text-dark', optionHeight=60, clearable=False, value=dd_items[0]['value']))
         ],
         className=" ms-auto mt-3 mt-md-0 flex-auto searchbar",
         align="center",
@@ -141,7 +141,6 @@ def _getBillInfoCard(i):
 
 #Card to display our sources
 def _getAttributionsCard(i):
-    #TODO: Add all of our sources in here
     parent_div = html.Div([
         dbc.Card([
             dbc.CardHeader([
@@ -155,11 +154,11 @@ def _getAttributionsCard(i):
             dbc.Collapse([
                 dbc.CardBody([
                     html.B('We would like to thank the following sources for allowing us to use their data for this project:'),
-                    html.Li("PROPUBLICA"),
-                    html.Li("API.GOV"),
-                    html.Li("TWITTER"),
-                    html.Li("CSU"),
-                    html.Li("PLOTLY DASH"),
+                    html.Li(html.A("PROPUBLICA", href="https://www.propublica.org/", target="_blank")),
+                    html.Li(html.A("DATA.GOV", href="https://api.data.gov/", target="_blank")),
+                    html.Li(html.A("TWITTER", href="https://developer.twitter.com/en", target="_blank")),
+                    html.Li(html.A("CSU", href="https://www.csuohio.edu/", target="_blank")),
+                    html.Li(html.A("PLOTLY DASH", href="https://plotly.com/dash/", target="_blank")),
                 ], className='pt-0')
             ], id='collapse-'+str(i), is_open=False)
         ], className='w-100')
@@ -382,7 +381,7 @@ def _getVerifiedCard(i, bill_sent_verified, num_users):
     )
     return parent_div
 
-#Card to display if bill has bipartisan support TODO: ALIGN ICON CORRECTLY
+#Card to display if bill has bipartisan support 
 def _getBipartisanCard(i, sponsor_counts):
     parent_div = html.Div([
         dbc.Card([
@@ -404,7 +403,7 @@ def _getBipartisanCard(i, sponsor_counts):
                             style={'font-size': "4rem"}),
                         className='d-flex justify-content-center'
                     ),
-                ], className='d-inline-flex align-items-center')
+                ], className='d-inline-flex align-items-center w-100')
             ], id='collapse-'+str(i), is_open=False)
         ], className='w-100')
     ], className='d-flex align-items-center h-75'
@@ -487,7 +486,7 @@ def _getFlatScalingCard(i, bill_sent_flat, num_users):
 #Card to display sentiment distribution
 def _getDistributionCard(i, count_in_buckets):
     # Logic for determining what face/text to show:
-    # TODO: UNFUCK THIS
+    # TODO: UNFUCK THIS (Not happening -Nathan)
     range = np.arange(-1, 1.0, 0.1)
     df = pd.DataFrame(data={'Weighted Sentiment': range, 'Tweet Count': count_in_buckets['values'], 'Sentiment': (['Negative'] * 7) + (['Neutral'] * 6) + (['Positive'] * 7)})
     plot = px.bar(
@@ -523,7 +522,7 @@ def _getDistributionCard(i, count_in_buckets):
     )
     return parent_div
 
-# Card to display if bill has a lot of actions associated with it TODO: ALIGN ICON CORRECTLY
+# Card to display if bill has a lot of actions associated with it 
 def _getHasManyActionsCard(i):
     parent_div = html.Div([
         dbc.Card([
@@ -546,14 +545,14 @@ def _getHasManyActionsCard(i):
                         className='d-flex justify-content-center'
                     ),
 
-                ], className='d-inline-flex align-items-center')
-            ], id='collapse-'+str(i), is_open=True,)
+                ], className='d-inline-flex align-items-center  w-100')
+            ], id='collapse-'+str(i), is_open=False,)
         ], className='w-100')
     ], className='d-flex align-items-center h-75'
     )
     return parent_div
 
-# Display if bill is in manual set TODO: ALIGN ICON CORRECTLY
+# Display if bill is in manual set 
 def _getConfidenceCard(i):
     parent_div = html.Div([
         dbc.Card([
@@ -575,14 +574,14 @@ def _getConfidenceCard(i):
                             style={'font-size': "4rem"}),
                         className='d-flex justify-content-center'
                     ),
-                ], className='d-inline-flex align-items-center')
-            ], id='collapse-'+str(i), is_open=True,)
+                ], className='d-inline-flex align-items-center w-100')
+            ], id='collapse-'+str(i), is_open=False,)
         ], className='w-100')
     ], className='d-flex align-items-center h-75'
     )
     return parent_div
 
-# Card to display if bill is active TODO: ALIGN ICON CORRECTLY
+# Card to display if bill is active 
 def _getIsActiveCard(i):
     parent_div = html.Div([
         dbc.Card([
@@ -604,14 +603,14 @@ def _getIsActiveCard(i):
                             style={'font-size': "4rem"}),
                         className='d-flex justify-content-center'
                     ),
-                ], className='d-inline-flex align-items-center')
-            ], id='collapse-'+str(i), is_open=True,)
+                ], className='d-inline-flex align-items-center  w-100')
+            ], id='collapse-'+str(i), is_open=False,)
         ], className='w-100')
     ], className='d-flex align-items-center h-75'
     )
     return parent_div
 
-# TODO: Keyword card
+# Keyword Card
 def _getKeywordsCard(i, keywords):
     keywords = [str(kw.search_phrase) for kw in keywords]
 
@@ -635,38 +634,35 @@ def _getKeywordsCard(i, keywords):
     )
     return parent_div
 
-# TODO: Metadata cards
-# TODO: General Results
-# TODO: Specialized Results
-# TODO: Confusion Matrix
-# TODO: Total num tweets
-# TODO: Total num users
-# TODO: Any and all other things we want to use to self document this
-
-
-# TODO: Load data from the selected bill and populate relevant fields
 
 
 def _getBillSummary(bill): 
     parent_div = html.Div(
         dbc.Card([
-            dbc.CardHeader(html.H4('Bill Information'), className='bg-primary bg-opacity-25'),
-            dbc.CardBody([
-                html.H5(bill.title),
-                html.B('BILL SUBJECT'),
-                html.P(bill.primary_subject),
-                html.B('BILL SPONSOR PARTY'),
-                html.P('Democrat' if bill.sponsor_party == 'D' else 'Republican'),
-                html.B('BILL SUMMARY'),
-                html.P(bill.summary),
-                html.B('BILL LINK'),
-                html.Br(),
-                html.A(bill.congressdotgov_url, href=bill.congressdotgov_url, target='_blank'),
-                html.P('...')
-            ], className='bg-secondary bg-opacity-25')
-        ], className='h-100',
+            dbc.CardHeader(
+                html.Div([
+                    html.H4('Bill Information'),
+                    html.Div(
+                        html.I(id='button-collapse-'+str(0), className='bi bi-chevron-double-down mb-1 '), className='d-flex justify-content-end flex-fill')
+                ], id='button-collapse-div-'+str(0), className='hstack w-100')
+            , className='bg-primary bg-opacity-25'),
+            dbc.Collapse([
+                dbc.CardBody([
+                    html.H5(bill.title),
+                    html.B('BILL SUBJECT'),
+                    html.P(bill.primary_subject),
+                    html.B('BILL SPONSOR PARTY'),
+                    html.P('Democrat' if bill.sponsor_party == 'D' else 'Republican'),
+                    html.B('BILL SUMMARY'),
+                    html.P(bill.summary),
+                    html.B('BILL LINK'),
+                    html.Br(),
+                    html.A(bill.congressdotgov_url, href=bill.congressdotgov_url, target='_blank'),
+                    html.P('...')], className='bg-secondary bg-opacity-25')
+                ], id='collapse-'+str(0), is_open=True)
+            ], className='h-100'),
         ),
-    )
+    
     return parent_div
 
 def _getInstructionCard(): 
@@ -762,7 +758,7 @@ class Server:
         )
 
         # Register Card Collapses:
-        for i in range(1, 99):
+        for i in range(0, 99):
             @self.app.callback(
                 Output("collapse-"+str(i), "is_open"),
                 Output("button-collapse-"+str(i), "className"),
@@ -808,8 +804,8 @@ class Server:
         )
         def select_bill(bill_id):
             if bill_id is None:
-                bill_summary_element = dbc.Row(_getInstructionCard(), className='h-100 pb-2 pt-2')
-                bill_info_element = dbc.Row(_getAttributionsCard(1), className='pb-2 pt-lg-2 ')
+                bill_summary_element = None#dbc.Row(_getInstructionCard(), className='h-100 pb-2 pt-2')
+                bill_info_element = None#dbc.Row(_getAttributionsCard(1), className='pb-2 pt-lg-2 ')
                 return bill_summary_element, bill_info_element
 
             # Or actually load a bill
